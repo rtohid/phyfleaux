@@ -1,1 +1,4 @@
 git+https://github.com/STEllAR-GROUP/phylanx.git
+pip+astor
+pip+graphviz
+pip+networkkx
