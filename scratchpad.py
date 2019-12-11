@@ -1,5 +1,8 @@
 import random
 
+
+# Exercise 1
+# https://www.fuzzingbook.org/html/Intro_Testing.html#Exercise-1:-Testing-Shellsort
 def shellsort(elems):
     sorted_elems = elems.copy()
     gaps = [701, 301, 132, 57, 23, 10, 4, 1]
@@ -15,7 +18,7 @@ def shellsort(elems):
     return sorted_elems
 
 
-random_length = random.sample(range(1, 1000000), 1000)
+random_length = random.sample(range(1, 11), 10)
 for length in random_length:
-    test_case = random.sample(range(length), 10000)
-    assert test_case.sort() == shellsort(test_case)
+    test_case = random.sample(range(length + 1), length)
+    assert sorted(test_case) == shellsort(test_case)
