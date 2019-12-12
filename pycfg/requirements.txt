@@ -1,5 +1,5 @@
-git+https://github.com/STEllAR-GROUP/phylanx.git
-pip+astor
-pip+graphviz
-pip+networkx
-pip+numpy
+# git+https://github.com/STEllAR-GROUP/phylanx.git
+astor
+graphviz
+networkx
+numpy
