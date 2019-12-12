@@ -16,7 +16,8 @@ def vector_vector_int_add():
         c[i] = a[i] + b[i] - i 
 
 cfg = gen_cfg(inspect.getsource(vector_vector_int_add))
-# print(cfg)
+print(cfg)
 graph = to_graph(cfg)
-Source(graph)
+print(type(graph))
+
 
