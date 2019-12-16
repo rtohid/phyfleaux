@@ -27,77 +27,46 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-# # Control Flow Graph
-
-if __name__ == "__main__":
-    print('# Control Flow Graph')
-
-
-
-
-# ## Control Flow Graph
-
-if __name__ == "__main__":
-    print('\n## Control Flow Graph')
-
-
-
-
 if __name__ == "__main__":
     # We use the same fixed seed as the notebook to ensure consistency
     import random
     random.seed(2001)
-
 
 import ast
 import re
 import astor
 from graphviz import Source, Graph, Digraph
 
-# ### Registry
 
-if __name__ == "__main__":
-    print('\n### Registry')
-
-
-
-
-REGISTRY_IDX = 0
-
-REGISTRY = {}
-
-def get_registry_idx():
-    global REGISTRY_IDX
-    v = REGISTRY_IDX
-    REGISTRY_IDX += 1
-    return v
-
-def reset_registry():
-    global REGISTRY_IDX
-    global REGISTRY
+class Registry:
     REGISTRY_IDX = 0
     REGISTRY = {}
 
-def register_node(node):
-    node.rid = get_registry_idx()
-    REGISTRY[node.rid] = node
+    @staticmethod
+    def get_registry_idx():
+        reg_idx = Registry.REGISTRY_IDX
+        Registry.REGISTRY_IDX += 1
+        return reg_idx
 
-def get_registry():
-    return dict(REGISTRY)
+    @staticmethod
+    def reset_registry():
+        Registry.REGISTRY_IDX = 0
+        Registry.REGISTRY = {}
 
-# ### CFGNode
+    @staticmethod
+    def register_node(node):
+        node.rid = Registry.get_registry_idx()
+        Registry.REGISTRY[node.rid] = node
 
-if __name__ == "__main__":
-    print('\n### CFGNode')
-
-
+    @staticmethod
+    def get_registry():
+        return dict(Registry.REGISTRY)
 
 
 class CFGNode(dict):
     def __init__(self, parents=[], ast=None):
         assert type(parents) is list
-        register_node(self)
+        Registry.register_node(self)
         self.parents = parents
         self.ast_node = ast
         self.update_children(parents)  # requires self.rid
@@ -120,8 +89,8 @@ class CFGNode(dict):
 
     def __str__(self):
         return "id:%d line[%d] parents: %s : %s" % (
-            self.rid, self.lineno(), str([p.rid for p in self.parents]),
-            self.source())
+            self.rid, self.lineno(), str([p.rid for p in self.parents
+                                          ]), self.source())
 
     def __repr__(self):
         return str(self)
@@ -159,47 +128,18 @@ class CFGNode(dict):
             'ast': self.source()
         }
 
-REGISTRY_IDX = 0
-
-REGISTRY = {}
-
-def get_registry_idx():
-    global REGISTRY_IDX
-    v = REGISTRY_IDX
-    REGISTRY_IDX += 1
-    return v
-
-def reset_registry():
-    global REGISTRY_IDX
-    global REGISTRY
-    REGISTRY_IDX = 0
-    REGISTRY = {}
-
-def register_node(node):
-    node.rid = get_registry_idx()
-    REGISTRY[node.rid] = node
-
-# ### PyCFG
-
-if __name__ == "__main__":
-    print('\n### PyCFG')
-
-
-
 
 class PyCFG:
     def __init__(self):
-        self.founder = CFGNode(
-            parents=[], ast=ast.parse('start').body[0])  # sentinel
+        self.founder = CFGNode(parents=[],
+                               ast=ast.parse('start').body[0])  # sentinel
         self.founder.ast_node.lineno = 0
         self.functions = {}
         self.functions_node = {}
 
-class PyCFG(PyCFG):
     def parse(self, src):
         return ast.parse(src)
 
-class PyCFG(PyCFG):
     def walk(self, node, myparents):
         fname = "on_%s" % node.__class__.__name__.lower()
         if hasattr(self, fname):
@@ -209,7 +149,6 @@ class PyCFG(PyCFG):
         else:
             return myparents
 
-class PyCFG(PyCFG):
     def on_module(self, node, myparents):
         """
         Module(stmt* body)
@@ -221,7 +160,6 @@ class PyCFG(PyCFG):
             p = self.walk(n, p)
         return p
 
-class PyCFG(PyCFG):
     def on_augassign(self, node, myparents):
         """
          AugAssign(expr target, operator op, expr value)
@@ -231,7 +169,6 @@ class PyCFG(PyCFG):
 
         return p
 
-class PyCFG(PyCFG):
     def on_annassign(self, node, myparents):
         """
         AnnAssign(expr target, expr annotation, expr? value, int simple)
@@ -241,7 +178,6 @@ class PyCFG(PyCFG):
 
         return p
 
-class PyCFG(PyCFG):
     def on_assign(self, node, myparents):
         """
         Assign(expr* targets, expr value)
@@ -254,11 +190,9 @@ class PyCFG(PyCFG):
 
         return p
 
-class PyCFG(PyCFG):
     def on_pass(self, node, myparents):
         return [CFGNode(parents=myparents, ast=node)]
 
-class PyCFG(PyCFG):
     def on_break(self, node, myparents):
         parent = myparents[0]
         while not hasattr(parent, 'exit_nodes'):
@@ -274,7 +208,6 @@ class PyCFG(PyCFG):
         # break doesn't have immediate children
         return []
 
-class PyCFG(PyCFG):
     def on_continue(self, node, myparents):
         parent = myparents[0]
         while not hasattr(parent, 'exit_nodes'):
@@ -290,12 +223,11 @@ class PyCFG(PyCFG):
         # for the just next node
         return []
 
-class PyCFG(PyCFG):
     def on_for(self, node, myparents):
         # node.target in node.iter: node.body
         # The For loop in python (no else) can be translated
         # as follows:
-        # 
+        #
         # for a in iterator:
         #      mystatements
         #
@@ -303,11 +235,13 @@ class PyCFG(PyCFG):
         # while __iv.__length_hint() > 0:
         #     a = next(__iv)
         #     mystatements
-        
-        init_node = CFGNode(parents=myparents,
-            ast=ast.parse('__iv = iter(%s)' % astor.to_source(node.iter).strip()).body[0])
+
+        init_node = CFGNode(
+            parents=myparents,
+            ast=ast.parse('__iv = iter(%s)' %
+                          astor.to_source(node.iter).strip()).body[0])
         ast.copy_location(init_node.ast_node, node.iter)
-        
+
         _test_node = CFGNode(
             parents=[init_node],
             ast=ast.parse('_for: __iv.__length__hint__() > 0').body[0])
@@ -317,11 +251,12 @@ class PyCFG(PyCFG):
         _test_node.exit_nodes = []
         test_node = self.walk(node.iter, [_test_node])
 
-        extract_node = CFGNode(parents=test_node,
-            ast=ast.parse('%s = next(__iv)' % astor.to_source(node.target).strip()).body[0])
+        extract_node = CFGNode(
+            parents=test_node,
+            ast=ast.parse('%s = next(__iv)' %
+                          astor.to_source(node.target).strip()).body[0])
         ast.copy_location(extract_node.ast_node, node.iter)
 
-        
         # now we evaluate the body, one at a time.
         p1 = [extract_node]
         for n in node.body:
@@ -332,13 +267,12 @@ class PyCFG(PyCFG):
 
         return _test_node.exit_nodes + test_node
 
-class PyCFG(PyCFG):
     def on_while(self, node, myparents):
         # For a while, the earliest parent is the node.test
         _test_node = CFGNode(
             parents=myparents,
-            ast=ast.parse(
-                '_while: %s' % astor.to_source(node.test).strip()).body[0])
+            ast=ast.parse('_while: %s' %
+                          astor.to_source(node.test).strip()).body[0])
         ast.copy_location(_test_node.ast_node, node.test)
         _test_node.exit_nodes = []
         test_node = self.walk(node.test, [_test_node])
@@ -357,14 +291,13 @@ class PyCFG(PyCFG):
         # link label node back to the condition.
         return _test_node.exit_nodes + test_node
 
-class PyCFG(PyCFG):
     def on_if(self, node, myparents):
         _test_node = CFGNode(
             parents=myparents,
-            ast=ast.parse(
-                '_if: %s' % astor.to_source(node.test).strip()).body[0])
+            ast=ast.parse('_if: %s' %
+                          astor.to_source(node.test).strip()).body[0])
         ast.copy_location(_test_node.ast_node, node.test)
-        test_node = self.walk(node.test, [ _test_node])
+        test_node = self.walk(node.test, [_test_node])
         assert len(test_node) == 1
         g1 = test_node
         for n in node.body:
@@ -374,23 +307,19 @@ class PyCFG(PyCFG):
             g2 = self.walk(n, g2)
         return g1 + g2
 
-class PyCFG(PyCFG):
     def on_binop(self, node, myparents):
         left = self.walk(node.left, myparents)
         right = self.walk(node.right, left)
         return right
 
-class PyCFG(PyCFG):
     def on_compare(self, node, myparents):
         left = self.walk(node.left, myparents)
         right = self.walk(node.comparators[0], left)
         return right
 
-class PyCFG(PyCFG):
     def on_unaryop(self, node, myparents):
         return self.walk(node.operand, myparents)
 
-class PyCFG(PyCFG):
     def on_call(self, node, myparents):
         def get_func(node):
             if type(node.func) is ast.Name:
@@ -418,12 +347,10 @@ class PyCFG(PyCFG):
             c.calllink = 0
         return p
 
-class PyCFG(PyCFG):
     def on_expr(self, node, myparents):
         p = [CFGNode(parents=myparents, ast=node)]
         return self.walk(node.value, p)
 
-class PyCFG(PyCFG):
     def on_return(self, node, myparents):
         if type(myparents) is tuple:
             parent = myparents[0][0]
@@ -444,7 +371,6 @@ class PyCFG(PyCFG):
         # return doesnt have immediate children
         return []
 
-class PyCFG(PyCFG):
     def on_functiondef(self, node, myparents):
         # a function definition does not actually continue the thread of
         # control flow
@@ -483,7 +409,6 @@ class PyCFG(PyCFG):
 
         return myparents
 
-class PyCFG(PyCFG):
     def get_defining_function(self, node):
         if node.lineno() in self.functions_node:
             return self.functions_node[node.lineno()]
@@ -494,9 +419,8 @@ class PyCFG(PyCFG):
         self.functions_node[node.lineno()] = val
         return val
 
-class PyCFG(PyCFG):
     def link_functions(self):
-        for nid, node in REGISTRY.items():
+        for nid, node in Registry.REGISTRY.items():
             if node.calls:
                 for calls in node.calls:
                     if calls in self.functions:
@@ -523,18 +447,15 @@ class PyCFG(PyCFG):
                             # #for c in passn.children: c.add_parent(exit)
                             # #passn.ast_node = exit.ast_node
 
-class PyCFG(PyCFG):
     def update_functions(self):
-        for nid, node in REGISTRY.items():
+        for nid, node in Registry.REGISTRY.items():
             _n = self.get_defining_function(node)
 
-class PyCFG(PyCFG):
     def update_children(self):
-        for nid, node in REGISTRY.items():
+        for nid, node in Registry.REGISTRY.items():
             for p in node.parents:
                 p.add_child(node)
 
-class PyCFG(PyCFG):
     def gen_cfg(self, src):
         """
         >>> i = PyCFG()
@@ -549,12 +470,11 @@ class PyCFG(PyCFG):
         self.update_functions()
         self.link_functions()
 
+
 # ### Supporting Functions
 
 if __name__ == "__main__":
     print('\n### Supporting Functions')
-
-
 
 
 def compute_dominator(cfg, start=0, key='parents'):
@@ -578,17 +498,18 @@ def compute_dominator(cfg, start=0, key='parents'):
             dominator[n] = v
     return dominator
 
+
 def compute_flow(pythonfile):
     cfg, first, last = get_cfg(pythonfile)
-    return cfg, compute_dominator(
-        cfg, start=first), compute_dominator(
-            cfg, start=last, key='children')
+    return cfg, compute_dominator(cfg, start=first), compute_dominator(
+        cfg, start=last, key='children')
+
 
 def gen_cfg(fnsrc, remove_start_stop=True):
-    reset_registry()
+    Registry.reset_registry()
     cfg = PyCFG()
     cfg.gen_cfg(fnsrc)
-    cache = dict(REGISTRY)
+    cache = dict(Registry.REGISTRY)
     if remove_start_stop:
         return {
             k: cache[k]
@@ -596,6 +517,7 @@ def gen_cfg(fnsrc, remove_start_stop=True):
         }
     else:
         return cache
+
 
 def get_cfg(src):
     reset_registry()
@@ -620,6 +542,7 @@ def get_cfg(src):
         g[at]['function'] = cfg.functions_node[v.lineno()]
     return (g, cfg.founder.ast_node.lineno, cfg.last_node.ast_node.lineno)
 
+
 def to_graph(cache, arcs=[]):
     graph = Digraph(comment='Control Flow Graph')
     colors = {0: 'blue', 1: 'red'}
@@ -635,7 +558,10 @@ def to_graph(cache, arcs=[]):
                 shape, peripheries = 'oval', '2'
         else:
             shape = 'rectangle'
-        graph.node(cnode.i(), "%d: %s" % (lineno, unhack(cnode.source())), shape=shape, peripheries=peripheries)
+        graph.node(cnode.i(),
+                   "%d: %s" % (lineno, unhack(cnode.source())),
+                   shape=shape,
+                   peripheries=peripheries)
         for pn in cnode.parents:
             plineno = pn.lineno()
             if hasattr(pn, 'calllink') and pn.calllink > 0 and not hasattr(
@@ -661,26 +587,28 @@ def to_graph(cache, arcs=[]):
                 else:
                     graph.edge(pn.i(), cnode.i(), color='red')
             else:
-                order = {c.i():i for i,c in enumerate(pn.children)}
+                order = {c.i(): i for i, c in enumerate(pn.children)}
                 if len(order) < 2:
                     graph.edge(pn.i(), cnode.i())
                 else:
                     o = order[cnode.i()]
-                    graph.edge(pn.i(), cnode.i(), color=colors[o], label=kind[o])
+                    graph.edge(pn.i(),
+                               cnode.i(),
+                               color=colors[o],
+                               label=kind[o])
     return graph
+
 
 def unhack(v):
     for i in ['if', 'while', 'for', 'elif']:
         v = re.sub(r'^_%s:' % i, '%s:' % i, v)
     return v
 
+
 # ### Examples
 
 if __name__ == "__main__":
     print('\n### Examples')
-
-
-
 
 # #### check_triangle
 
@@ -688,9 +616,7 @@ if __name__ == "__main__":
     print('\n#### check_triangle')
 
 
-
-
-def check_triangle(a,b,c):
+def check_triangle(a, b, c):
     if a == b:
         if a == c:
             if b == c:
@@ -706,17 +632,16 @@ def check_triangle(a,b,c):
             else:
                 return "Scalene"
         else:
-              return "Isosceles"
+            return "Isosceles"
+
 
 import inspect
 
 if __name__ == "__main__":
     graph = to_graph(gen_cfg(inspect.getsource(check_triangle)))
 
-
 if __name__ == "__main__":
     Source(graph)
-
 
 # #### cgi_decode
 
@@ -724,14 +649,30 @@ if __name__ == "__main__":
     print('\n#### cgi_decode')
 
 
-
-
 def cgi_decode(s):
     hex_values = {
-        '0': 0, '1': 1, '2': 2, '3': 3, '4': 4,
-        '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
-        'a': 10, 'b': 11, 'c': 12, 'd': 13, 'e': 14, 'f': 15,
-        'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15,
+        '0': 0,
+        '1': 1,
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '6': 6,
+        '7': 7,
+        '8': 8,
+        '9': 9,
+        'a': 10,
+        'b': 11,
+        'c': 12,
+        'd': 13,
+        'e': 14,
+        'f': 15,
+        'A': 10,
+        'B': 11,
+        'C': 12,
+        'D': 13,
+        'E': 14,
+        'F': 15,
     }
 
     t = ""
@@ -753,13 +694,12 @@ def cgi_decode(s):
         i += 1
     return t
 
+
 if __name__ == "__main__":
     graph = to_graph(gen_cfg(inspect.getsource(cgi_decode)))
 
-
 if __name__ == "__main__":
     Source(graph)
-
 
 # #### gcd
 
@@ -767,46 +707,43 @@ if __name__ == "__main__":
     print('\n#### gcd')
 
 
-
-
 def gcd(a, b):
-    if a<b:
+    if a < b:
         c: int = a
         a: int = b
         b: int = c
 
-    while b != 0 :
+    while b != 0:
         c: int = a
         a: int = b
         b: int = c % b
     return a
 
+
 if __name__ == "__main__":
     graph = to_graph(gen_cfg(inspect.getsource(gcd)))
-
 
 if __name__ == "__main__":
     Source(graph)
 
 
-def compute_gcd(x, y): 
-    if x > y: 
-        small = y 
-    else: 
-        small = x 
-    for i in range(1, small+1): 
-        if((x % i == 0) and (y % i == 0)): 
-            gcd = i 
-              
-    return gcd 
+def compute_gcd(x, y):
+    if x > y:
+        small = y
+    else:
+        small = x
+    for i in range(1, small + 1):
+        if ((x % i == 0) and (y % i == 0)):
+            gcd = i
+
+    return gcd
+
 
 if __name__ == "__main__":
     graph = to_graph(gen_cfg(inspect.getsource(compute_gcd)))
 
-
 if __name__ == "__main__":
     Source(graph)
-
 
 # #### fib
 
@@ -814,21 +751,18 @@ if __name__ == "__main__":
     print('\n#### fib')
 
 
-
-
-def fib(n,):
+def fib(n, ):
     l = [0, 1]
-    for i in range(n-2):
-        l.append(l[-1]+l[-2])
+    for i in range(n - 2):
+        l.append(l[-1] + l[-2])
     return l
+
 
 if __name__ == "__main__":
     graph = to_graph(gen_cfg(inspect.getsource(fib)))
 
-
 if __name__ == "__main__":
     Source(graph)
-
 
 # #### quad_solver
 
@@ -836,40 +770,34 @@ if __name__ == "__main__":
     print('\n#### quad_solver')
 
 
-
-
 def quad_solver(a, b, c):
-    discriminant = b^2 - 4*a*c
+    discriminant = b ^ 2 - 4 * a * c
     r1, r2 = 0, 0
     i1, i2 = 0, 0
     if discriminant >= 0:
         droot = math.sqrt(discriminant)
-        r1 = (-b + droot) / (2*a)
-        r2 = (-b - droot) / (2*a)
+        r1 = (-b + droot) / (2 * a)
+        r2 = (-b - droot) / (2 * a)
     else:
         droot = math.sqrt(-1 * discriminant)
-        droot_ = droot/(2*a)
-        r1, i1 = -b/(2*a), droot_
-        r2, i2 = -b/(2*a), -droot_
+        droot_ = droot / (2 * a)
+        r1, i1 = -b / (2 * a), droot_
+        r2, i2 = -b / (2 * a), -droot_
     if i1 == 0 and i2 == 0:
         return (r1, r2)
-    return ((r1,i1), (r2,i2))
+    return ((r1, i1), (r2, i2))
+
 
 if __name__ == "__main__":
     graph = to_graph(gen_cfg(inspect.getsource(quad_solver)))
 
-
 if __name__ == "__main__":
     Source(graph)
-
 
 # ## Call Graph
 
 if __name__ == "__main__":
     print('\n## Call Graph')
-
-
-
 
 import os
 import networkx as nx
@@ -881,32 +809,32 @@ if __name__ == "__main__":
     print('\n### Call Graph Helpers')
 
 
-
-
 def construct_callgraph(code, name="callgraph"):
     file_name = name + ".py"
     with open(file_name, 'w') as f:
         f.write(code)
     cg_file = name + '.dot'
-    os.system(f'pyan {file_name} --uses --defines --colored --grouped --annotated --dot > {cg_file}')
-    
+    os.system(
+        f'pyan {file_name} --uses --defines --colored --grouped --annotated --dot > {cg_file}'
+    )
+
+
 def callgraph(code, name="callgraph"):
     if not os.path.isfile(name + '.dot'):
         construct_callgraph(code, name)
     return Source.from_file(name + '.dot')
+
 
 def get_callgraph(code, name="callgraph"):
     if not os.path.isfile(name + '.dot'):
         construct_callgraph(code, name)
     return nx.drawing.nx_pydot.read_dot(name + '.dot')
 
+
 # ### Example: Maze
 
 if __name__ == "__main__":
     print('\n### Example: Maze')
-
-
-
 
 if __name__ == "__main__":
     maze_string = """
@@ -939,6 +867,7 @@ def print_maze(out, row, col):
     return output
 """ % maze_string
 
+
 def generate_trap_tile(row, col):
     return """
 def tile_%d_%d(input, index):
@@ -946,6 +875,7 @@ def tile_%d_%d(input, index):
     except: pass
     return print_maze("INVALID", %d, %d)
 """ % (row, col, row, col)
+
 
 def generate_good_tile(c, row, col):
     code = """
@@ -956,13 +886,9 @@ def tile_%d_%d(input, index):
     elif input[index] == 'U': return tile_%d_%d(input, index + 1)
     elif input[index] == 'D': return tile_%d_%d(input, index + 1)
     else : return tile_%d_%d(input, index + 1)
-""" % (row, col, row, col,
-       row, col - 1, 
-       row, col + 1, 
-       row - 1, col, 
-       row + 1, col,
-       row, col)
-    
+""" % (row, col, row, col, row, col - 1, row, col + 1, row - 1, col, row + 1,
+       col, row, col)
+
     if c == "X":
         code += """
 def maze(input):
@@ -970,6 +896,7 @@ def maze(input):
 """ % (row, col)
 
     return code
+
 
 def generate_target_tile(row, col):
     return """
@@ -980,48 +907,45 @@ def target_tile():
     return "tile_%d_%d"
 """ % (row, col, row, col, row, col)
 
+
 def generate_maze_code(maze, name="maze"):
     row = 0
     col = 0
     code = generate_print_maze(maze)
-    
+
     for c in list(maze):
         if c == '\n':
             row += 1
             col = 0
-        else: 
+        else:
             if c == "-" or c == "+" or c == "|":
                 code += generate_trap_tile(row, col)
             elif c == " " or c == "X":
                 code += generate_good_tile(c, row, col)
             elif c == "#":
                 code += generate_target_tile(row, col)
-            else: 
+            else:
                 print("Invalid maze! Try another one.")
             col += 1
 
     return code
 
+
 if __name__ == "__main__":
     maze_code = generate_maze_code(maze_string)
     exec(maze_code)
 
-
 if __name__ == "__main__":
-    print(maze("DDDDRRRRUULLUURRRRDDD")) # Appending one more 'D', you have reached the target.
-
+    print(maze("DDDDRRRRUULLUURRRRDDD")
+          )  # Appending one more 'D', you have reached the target.
 
 if __name__ == "__main__":
     callgraph(maze_code)
-
 
 # ## Cleanup
 
 if __name__ == "__main__":
     print('\n## Cleanup')
-
-
-
 
 import shutil
 
@@ -1031,4 +955,3 @@ if __name__ == "__main__":
 
     if os.path.exists('callgraph.py'):
         os.remove('callgraph.py')
-
