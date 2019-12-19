@@ -1,4 +1,4 @@
-from cfg.ControlFlow import gen_cfg, to_graph
+from ir.cfg import gen_cfg, to_graph
 from graphviz import Source
 import inspect
 import numpy
