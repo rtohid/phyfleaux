@@ -593,3 +593,7 @@ def to_graph(cache, arcs=[]):
                                label=kind[o])
     return graph
 
+
+def unhack(v):
+    for i in ['if', 'while', 'for', 'elif']:
+        v = re.sub(r'^_%s:' % i, '%s:' % i, v)
