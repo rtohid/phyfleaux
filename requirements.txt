@@ -1,5 +1,6 @@
 # git+https://github.com/STEllAR-GROUP/phylanx.git
 astor
+astpretty
 graphviz
 networkx
 numpy
