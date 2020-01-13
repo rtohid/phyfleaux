@@ -1,0 +1,7 @@
+# deirectories
+.vscode/
+__pycache__/
+
+# files
+*.swp
+*.pyc
