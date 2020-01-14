@@ -1,22 +1,47 @@
+<!-- 
+Copyright (c) 2020 R. Tohid
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) 
+-->
+
+
 <!--
 - target machine, anything in between a local Raspberry Pi to  {a / one or more?} full-blown HPC system{s?} accessed remotely.
 ```
 
 -->
 # phyflow
-Phylanx Program-Flow Analyzer.
+A program flow optimizer for Phylanx {any other ideas, or maybe better phrasing?}.
 
-## Goal
+---
+**Please Note**
+
+This document is my attempt to   
+---
+
+## Objective
  
 ---
 
-Build a flexible distributed-runtime-system based on [HPX](https://github.com/stellar-group/hpx.git)- high-performance distributed C++. Provided a (an arbitrary) Python source, and a target machine:
+Build a flexible runtime-system based on [HPX](https://github.com/stellar-group/hpx.git)- high-performance distributed C++. Provided a (an arbitrary) Python source, and a target machine:
 1. Analyze
-   * profile the characteristics of the input source.
-   * profile the characteristics of the available resources.
+   * the code
+      + domain
+      + common (expensive operations)
+      + data layout
+      + domain
+      + ...
+   * resources
+      + number of nodes, cores, gpus, ...
+      + memory hierarchy
+      + ...
 2. Transform
-   * generate [PhySL](https://github.com/STEllAR-GROUP/phylanx/blob/master/examples/interpreter/physl.cpp).
-      - based on the analyses, estimate the cost function representing.
+   * create the IR
+      - possibly Phylanx primitives as it's optimize (based on step 1 analyses)
+   * generate code
+      + [PhySL](https://github.com/STEllAR-GROUP/phylanx/blob/master/examples/interpreter/physl.cpp).
+      - , estimate the cost function representing.
    * many other representations of the program is also generated in the process, including the control- and data-flow graphs, Python AST and possibly more in the future.
 3. Deploy
    * the PhySL code on the target machine.
@@ -54,6 +79,12 @@ As expressed in [Goal](#goal):
 
 
 ## Output
+
+
+
+## ToDo
+- python interpreter as a primitive
+   + In many real application much of the computation happens in a small portion
 <!--
 * PhySL / One or python source (it could be one or more depending on the target. In case of distributed executions, potentially, each node may have its own unique source.)
 -->
