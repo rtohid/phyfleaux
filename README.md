@@ -10,7 +10,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ---
 **<span style="color:red">CAUTION</span>**
 
-this document may contain horrific mistakes and assumptions! Please critic, your feedback is very much appreciated.
+This document may contain horrific mistakes and assumptions! Please critic, your feedback is very much appreciated.
 
 ---
 
