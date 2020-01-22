@@ -23,13 +23,18 @@ class BracketList:
     def push(bl, e):
         return bl.insert(0,e)
 
-    # 
+    # topmost bracket in bl
     def top(bl):
+        return bl[0]
 
-
+    # delete e from bl
     def delete(bl, e):
+        return bl.remove(e)
 
+    # concatenate bl1 and bl2
     def concat(bl1, bl2):
+        bl = bl1 + bl2
+        return bl
 
 
 # step1: perform an undirected depth-first search
