@@ -10,7 +10,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ---
 **<span style="color:red">CAUTION</span>**
 
-this document may contain horrific mistakes and assumptions! please critic, your feedback is very much appreciated.
+this document may contain horrific mistakes and assumptions! Please critic, your feedback is very much appreciated.
 
 ---
 
@@ -28,7 +28,7 @@ note (to @rtohid)
 
 ### **<span style="color:gold">mutable object</span>**
 
-an object with mutable state. at this point we only focus on two kinds of such objects:
+an object with mutable state. At this point we only focus on two kinds of such objects:
 
 1. functions with variable arguments(?) {the input arguments may change- not only between calls, but also during a single call.:rtoihd}
       + {during a single call?? is it possible to change the arguments of the function without changing the function itself?
@@ -57,7 +57,7 @@ a relation between two sets.
 1. input set: input arguments
 2. output set: returned values {/variables:@rtohid})
 
-each element of the first set (input set) associates to exactly one element of the second set. in our framework we implement :class:Function: as
+Each element of the first set (input set) associates to exactly one element of the second set. In our framework we implement :class:Function: as
 
 ``` python
 # not the best implementation
@@ -77,7 +77,7 @@ class Function:
 
 ```
 
-the issue with the above implementation is that such function has global artifacts, making it difficult to analyze data and control. in order to avoid this, we make sure that functions only work with copies of data while changes to the original data is made through :class:Data: handles by the runtime system- not the application.
+The issue with the above implementation is that such function has global artifacts, making it difficult to analyze data and control. In order to avoid this, we make sure that functions only work with copies of data while changes to the original data is made through :class:Data: handles by the runtime system- not the application.
 
 ``` python
 # better implementation:
@@ -179,7 +179,7 @@ update the state of the data
 
 ---
 
-* each flow object must have a <span style="color:lightblue">cost</span> attribute- cost of:
+* Each flow object must have a <span style="color:lightblue">cost</span> attribute- cost of:
 
    + data movement, and/or
    + computation.
