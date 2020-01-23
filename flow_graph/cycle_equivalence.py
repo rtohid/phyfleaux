@@ -5,37 +5,54 @@
 
 import networkx as nx
 
-# BracketList 
-class BracketList:
+
+# BracketList class
+class BracketList(list):
     # attributes:
-        # bl : list of brackets
-        # e : bracket
-    
-    # make an empty BracketList structure
-    def create():
-        self.bl = []
+    # bl:list of brackets
+    # e:bracket    
+
 
     # number of elements in BracketList structure
     def size(bl):
         return len(bl)
 
+
     # push e on top of bl
-    def push(bl, e):
-        return bl.insert(0,e)
+    # for a list, top means the last item
+    # function push(bl,e) will call list.append(e)
+    
+
 
     # topmost bracket in bl
+    # return the last item in a list
+    # Different from list.pop() which removes and return the last item, here we 
+    #   only return the last item without removing it.
     def top(bl):
-        return bl[0]
+        return bl[size(bl)-1]
+
 
     # delete e from bl
-    def delete(bl, e):
-        return bl.remove(e)
+    # Will call list.remove(e), which will remove the first item from the list
+    #   whose value is equal to e. Here, each bracket is different(?), the first 
+    #   one is the only one.
+
 
     # concatenate bl1 and bl2
     def concat(bl1, bl2):
         bl = bl1 + bl2
         return bl
 
+
+# node class
+class node:
+    # attributes:
+    # dfsnum: depth-first search number of node
+    # blist: pointer to node's bracketlist
+    # hi: dfsnum of destination node closet to root of any edge originating from a descendant of node n
+
+    def __init__(self):
+        self.dfsnum = 
 
 # step1: perform an undirected depth-first search
 G = nx.path_graph(5)
