@@ -47,12 +47,12 @@ class BracketList(list):
 # node class
 class node:
     # attributes:
-    # dfsnum: depth-first search number of node
+    # dfsnum: depth-first search number of node ()
     # blist: pointer to node's bracketlist
     # hi: dfsnum of destination node closet to root of any edge originating from a descendant of node n
 
     def __init__(self):
-        self.dfsnum = 
+        self.dfsnum = ...
 
 # step1: perform an undirected depth-first search
 G = nx.path_graph(5)
