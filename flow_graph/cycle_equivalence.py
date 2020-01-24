@@ -2,12 +2,13 @@
 # Distributed under the Boost Software License, Version 1.0. (See a copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+# Adapted from: https://bit.ly/38DE1H0
 
 import networkx as nx
 
 
 # BracketList class
-class BracketList(list):
+Class BracketList(list):
     # attributes:
     # bl:list of brackets
     # e:bracket    
@@ -29,7 +30,7 @@ class BracketList(list):
     # Different from list.pop() which removes and return the last item, here we 
     #   only return the last item without removing it.
     def top(bl):
-        return bl[size(bl)-1]
+        return bl[-1]
 
 
     # delete e from bl
@@ -45,14 +46,17 @@ class BracketList(list):
 
 
 # node class
-class node:
+Class Vertex:
+    # understanding of backedges in undirected graph: the back edges are the edges between the vertices but not are tree edges. 
+    # Note that there are no forward edges and cross edges in undirected graph.
     # attributes:
-    # dfsnum: depth-first search number of node ()
+    # dfsnum: depth-first search number of node (the start time of the node)
     # blist: pointer to node's bracketlist
     # hi: dfsnum of destination node closet to root of any edge originating from a descendant of node n
 
     def __init__(self):
-        self.dfsnum = ...
+        # find the edge of self
+        self.parent = 
 
 # step1: perform an undirected depth-first search
 G = nx.path_graph(5)
