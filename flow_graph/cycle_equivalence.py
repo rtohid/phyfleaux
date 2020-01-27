@@ -13,18 +13,24 @@ class BracketList(list):
     # bl:list of brackets
     # e:bracket    
 
+    # create()
+    # Dont need to create() to make an empty BracketList structure
 
+
+    # size(bl)
     # number of elements in BracketList structure
     def size(bl):
         return len(bl)
 
 
+    # push(bl, e)
     # push e on top of bl
     # for a list, top means the last item
     # function push(bl,e) will call list.append(e)
     
 
 
+    # top(bl)
     # topmost bracket in bl
     # return the last item in a list
     # Different from list.pop() which removes and return the last item, here we 
@@ -33,12 +39,14 @@ class BracketList(list):
         return bl[-1]
 
 
+    # delete(bl,e)
     # delete e from bl
     # Will call list.remove(e), which will remove the first item from the list
     #   whose value is equal to e. Here, each bracket is different(?), the first 
     #   one is the only one.
 
 
+    # concat(bl1,bl2)
     # concatenate bl1 and bl2
     def concat(bl1, bl2):
         bl = bl1 + bl2
