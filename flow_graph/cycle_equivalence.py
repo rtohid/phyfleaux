@@ -8,7 +8,7 @@ import networkx as nx
 
 
 # BracketList class
-Class BracketList(list):
+class BracketList(list):
     # attributes:
     # bl:list of brackets
     # e:bracket    
@@ -46,7 +46,7 @@ Class BracketList(list):
 
 
 # node class
-Class Vertex:
+class Vertex:
     # understanding of backedges in undirected graph: the back edges are the edges between the vertices but not are tree edges. 
     # Note that there are no forward edges and cross edges in undirected graph.
     # attributes:
