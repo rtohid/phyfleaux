@@ -8,5 +8,8 @@ pprint(list(G.nodes))
 #nx.draw_networkx(G)
 #plt.show()
 
-G.add_node(1, ancedantes = {0})
+G.add_node(1, ancestors = {0})
+pprint(list(G.nodes(data = True)))
+
+G.add_node(1, descendants = {2,3,4})
 pprint(list(G.nodes(data = True)))
