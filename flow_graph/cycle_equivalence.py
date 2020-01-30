@@ -54,25 +54,65 @@ class BracketList(list):
 
 
 # node class
-class Vertex:
+# adapted from https://bit.ly/2tUOoYk
+class Vertex(dict):
+    def __init__(self, parents=[]):       
+        self.parents = parents
+        self.discovery_time = []
+        self.children = []
+
+    def add_child(self, c):
+        if c not in self.children:
+            self.children.append(c)
+
+    def set_parents(self, p):
+        self.parents = p
+
+    def add_parent(self, p):
+        if p not in self.parents:
+            self.parents.append(p)
+
+    def add_parents(self, ps):
+        for p in ps:
+            self.add_parent(p)
+
+
     # understanding of backedges in undirected graph: the back edges are the edges between the vertices but not are tree edges. 
     # Note that there are no forward edges and cross edges in undirected graph.
-    # attributes:
-    # dfsnum: depth-first search number of node (the start time of the node)
-    # blist: pointer to node's bracketlist
-    # hi: dfsnum of destination node closet to root of any edge originating from a descendant of node n
 
-    def __init__(self):
-        # find the edge of self
-        self.parent = 
+    # attributes:
+    # dfsnum: depth-first search number of node (the discovery time of the node)
+    # blist: pointer to node's bracketlist
+    # hi: dfsnum of destination node closet to root of any edge originating from a descendant of node n (discovert time of the
+    # node that is closest to the root and also the destination of any edge from a descendant of node n)
+
+
+
+class Edge:
+    # attributes:
+    # class: index of dege's cycle equivalence class
+    # recentSize: size of bracket set when e was most recently the topmost edge in a bracket set
+    # recentClass: equivalence class number of tree edge for which e was most recently the topmost bracket
+
+# Adapted from: https://bit.ly/2RAol1n, which is directed graph
+
+
+# The cycle equivalence algorithm
 
 # step1: perform an undirected depth-first search
 G = nx.path_graph(5)
 nx.dfs_postorder_nodes(G, source=0)
-# step2: for each node n in reverse depth-first order
-for n in list(nx.dfs_postorder_nodes(G, source=0)):
-    # step3: compute n.hi
+list_PostOrder_Nodes = list(nx.dfs_postorder_nodes(G, source=0, depth_limit=None))
+# converting a post order list to a dictionary with list elements as values in dictionary
+# and keys are discovery time
+dict_PostOrder_Nodes = {i:list_PostOrder_Nodes[i] for i in range((len(list_PostOrder_Nodes)+1), 1)}
 
+# step2: for each node n in reverse depth-first order
+for value in dict_PostOrder_Nodes.values():
+    # find backedge from n to t, i.e., backedge (n, t)
+    edges = nx.dfs_labeled_edges(G, source=value, depth_limit=len(list_PostOrder_Nodes)-1)
+    for value, v, d in edges if d == 'nontree'
+    value.backedge 
 
 
 print(list(nx.dfs_postorder_nodes(G, source=0)))
