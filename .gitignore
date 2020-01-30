@@ -1,6 +1,7 @@
 # deirectories
 .vscode/
 __pycache__/
+.pytest_cache/
 
 # files
 *.swp
