@@ -56,25 +56,25 @@ class BracketList(list):
 # node class
 # adapted from https://bit.ly/2tUOoYk
 class Vertex(dict):
-    def __init__(self, parents=[]):       
-        self.parents = parents
-        self.discovery_time = []
-        self.children = []
-
-    def add_child(self, c):
-        if c not in self.children:
-            self.children.append(c)
-
-    def set_parents(self, p):
-        self.parents = p
-
-    def add_parent(self, p):
-        if p not in self.parents:
-            self.parents.append(p)
-
-    def add_parents(self, ps):
-        for p in ps:
-            self.add_parent(p)
+#    def __init__(self, parents=[]):       
+#        self.parents = parents
+#        self.discovery_time = []
+#        self.children = []
+#
+#    def add_child(self, c):
+#        if c not in self.children:
+#            self.children.append(c)
+#
+#    def set_parents(self, p):
+#        self.parents = p
+#
+#    def add_parent(self, p):
+#        if p not in self.parents:
+#            self.parents.append(p)
+#
+#    def add_parents(self, ps):
+#        for p in ps:
+#            self.add_parent(p)
 
 
     # understanding of backedges in undirected graph: the back edges are the edges between the vertices but not are tree edges. 
@@ -105,14 +105,16 @@ nx.dfs_postorder_nodes(G, source=0)
 list_PostOrder_Nodes = list(nx.dfs_postorder_nodes(G, source=0, depth_limit=None))
 # converting a post order list to a dictionary with list elements as values in dictionary
 # and keys are discovery time
-dict_PostOrder_Nodes = {i:list_PostOrder_Nodes[i] for i in range((len(list_PostOrder_Nodes)+1), 1)}
+# ====> ?? dict_PostOrder_Nodes = {i:list_PostOrder_Nodes[i] for i in range((len(list_PostOrder_Nodes)+1), 1)}
 
 # step2: for each node n in reverse depth-first order
-for value in dict_PostOrder_Nodes.values():
+for n in list_PostOrder_Nodes:
+    # add attibute discovery time
+    G.add_node(n,discovey_time=n+1)
     # find backedge from n to t, i.e., backedge (n, t)
-    edges = nx.dfs_labeled_edges(G, source=value, depth_limit=len(list_PostOrder_Nodes)-1)
-    for value, v, d in edges if d == 'nontree'
-    value.backedge 
-
+    edges = nx.dfs_labeled_edges(G, source=n, depth_limit=len(list_PostOrder_Nodes)-1)
+    for n, v, d in edges if d == 'nontree'
+    G.add_node(n, ancestors_with_backedge = {v})
+    
 
 print(list(nx.dfs_postorder_nodes(G, source=0)))
