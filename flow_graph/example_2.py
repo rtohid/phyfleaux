@@ -20,12 +20,4 @@ pprint(list(G.nodes[1]))
 pprint(list(G.nodes[1]['descendants']))
 print("==============================================================")
 
-G = nx.path_graph(5)
-pprint(list(G.nodes))
-nx.set_node_attributes(G, 111, 'color')
-pprint(G.nodes[2]['color'])
 
-labels=[]
-nx.set_node_attributes(G, labels, 'labels')
-labels.append('foo')
-pprint(G.nodes[1]['labels'])
