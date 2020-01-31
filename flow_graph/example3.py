@@ -19,7 +19,8 @@ nx.draw_networkx(G, node_color='r', edge_color='b')
 #plt.show()
 
 # oriented tree constructed from dfs given G
-T=nx.dfs_tree(G,source=1)
+T = nx.Graph()
+T.add_edges_from(nx.dfs_edges(G, source=1))
 nx.draw_networkx(T, node_color='r', edge_color='b')
 #plt.show()
 
@@ -35,5 +36,20 @@ list_increasing_order= list(T.nodes)
 print("reverse order:", list(reversed(list_increasing_order)))
 
 print("=============================================================================================")
+
+edges = nx.dfs_labeled_edges(G, source=1)
+
+#pprint(list(edges))
+print(T.has_edge(4,2))
+print(T.has_edge(4,1))
+
 # step2: for each node n in reverse depth-first order
-#for n in list(reversed(list_increasing_order)):
+for n in list(reversed(list_increasing_order)):
+    # add attribute dfs number, i.e., discovery time,
+    T.add_node(n, dfsnum=n)
+    # find backedge from n to t, i.e., backedge (n, t)    
+    for n, v, d in edges:
+         if d == 'nontree' and n > v and not T.has_edge(n,v):
+             T.add_node_from(n, ancestors_with_backedge.append{v}})
+
+pprint(list(T.nodes(data = True)))
