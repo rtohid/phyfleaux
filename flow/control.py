@@ -11,14 +11,22 @@ import inspect
 
 from networkx import DiGraph
 
+start_location = {
+    'lineno': 0,
+    'col_offset': 0,
+    'end_lineno': 0,
+    'end_col_offset': 0
+}
+
+end_location = {
+    'lineno': -1,
+    'col_offset': -1,
+    'end_lineno': -1,
+    'end_col_offset': -1
+}
+
 
 def get_cfg_start():
-    start_location = {
-        'lineno': 0,
-        'col_offset': 0,
-        'end_lineno': 0,
-        'end_col_offset': 0
-    }
 
     start_node = ast.Expr(value=(ast.Name('__phy_cfg_start',
                                           ctx=ast.Load(),
@@ -28,12 +36,6 @@ def get_cfg_start():
 
 
 def get_cfg_end():
-    end_location = {
-        'lineno': -1,
-        'col_offset': -1,
-        'end_lineno': -1,
-        'end_col_offset': -1
-    }
 
     end_node = ast.Expr(value=(ast.Name('__phy_cfg_end',
                                         ctx=ast.Load(),
@@ -42,12 +44,13 @@ def get_cfg_end():
     return end_node
 
 
-class ControlBlock:
+class ControlNode:
     def __init__(self, cfg, parents=[], _ast=None):
         if type(parents) is not list:
             raise Exception(TypeError,
                             "Expected a list but got: %s" % (type(parents)))
-        self.parents = parents
+        if parents:
+            self.parents = parents
         self.ast_node = _ast
 
 
@@ -66,20 +69,31 @@ class CFG:
         self.graph = None
         self.walk(self.ast)
 
-    def walk(self, node):
+    def walk(self, node, parents=[]):
         fn_name = "on_%s" % node.__class__.__name__.lower()
         if hasattr(self, fn_name):
             fn = getattr(self, fn_name)
-            return fn(node)
+            return fn(node, parents)
 
-    def on_module(self, node):
-        start = ControlBlock(self, _ast=get_cfg_start())
-        self.graph = DiGraph().add_node(start)
-        node = self.ast
-        self.walk(node.body)
+    def on_module(self, node, parents):
+        self.graph = DiGraph()
 
-    def on_functiondef(self, node):
-        return True
+        start = ControlNode(self, parents=parents, _ast=get_cfg_start())
+        self.graph.add_node(start)
+
+        for child in node.body:
+            self.walk(child, [node])
+
+        stop = ControlNode(self, parents=parents, _ast=get_cfg_end())
+        self.graph.add_node(stop)
+
+    def on_functiondef(self, node, parents):
+        fn_name = node.name
+        args = node.args
+        returns = node.returns
+
+        block = ControlNode(self, parents=parents, _ast=node)
+        self.graph.add_node(block)
 
 
 class Context:
@@ -95,9 +109,7 @@ class Context:
 
 class Function(object):
     '''
-    Floating Function.
-
-    Functions run on :class:Context:
+     A function run on a :class:Context:.
     '''
 
     def __init__(self, fn):
