@@ -39,17 +39,29 @@ print("=========================================================================
 
 edges = nx.dfs_labeled_edges(G, source=1)
 
-#pprint(list(edges))
-print(T.has_edge(4,2))
+
+# Test: (1,2) is the same edge of (2,1)
+print(G.has_edge(1,2))
+print(G.has_edge(2,1))
+
+# Test: T only has tree edges right now. Note:(4,2) and (4,1) are backedges
+print(T.has_edge(4,2)) 
 print(T.has_edge(4,1))
+
+print("=============================================================================================")
 
 # step2: for each node n in reverse depth-first order
 for n in list(reversed(list_increasing_order)):
     # add attribute dfs number, i.e., discovery time,
     T.add_node(n, dfsnum=n)
-    # find backedge from n to t, i.e., backedge (n, t)    
+    # find backedge from n to t, i.e., backedge (n, t)   
+     
     for n, v, d in edges:
-         if d == 'nontree' and n > v and not T.has_edge(n,v):
-             T.add_node_from(n, ancestors_with_backedge.append{v}})
-
-pprint(list(T.nodes(data = True)))
+        n_ancestors_nodes=[]
+        if d == 'nontree' and n > v and not T.has_edge(n,v):             
+             n_ancestors_nodes.append(v)
+             print(n,n_ancestors_nodes)
+             #T.add_node(n, n_ancestors_with_backedge={v})
+             #T.add_node_from(n, n_ancestors_with_backedge=n_ancestors_nodes)
+   
+#pprint(list(T.nodes(data = True)))

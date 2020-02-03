@@ -20,4 +20,8 @@ pprint(list(G.nodes[1]))
 pprint(list(G.nodes[1]['descendants']))
 print("==============================================================")
 
-
+list_1=[]
+list_1.append(22)
+print(list_1)
+list_1.append(23)
+print(list_1)
