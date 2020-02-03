@@ -55,14 +55,21 @@ ancestor_nodes=defaultdict(list)
 for node in list(reversed(list_increasing_order)):
     # add attribute dfs number, i.e., discovery time,
     T.add_node(node, dfsnum=node)
-    # find backedge from n to t, i.e., backedge (n, t)   
-    
+    print('before node:', node)
+   
+    # find backedge from n to t, i.e., backedge (n, t)       
     ancestor_nodes[node]=[]
-    for node, node_2, edgeType in G_edges:
-        
-        if edgeType == 'nontree' and node > node_2 and not T.has_edge(node,node_2):             
-             ancestor_nodes[node].append(node_2)            
-             T.add_node(node, n_ancestors_with_backedge=ancestor_nodes[node])
+    for node_1, node_2, edgeType in G_edges:
+        if edgeType == 'nontree' and node_1 > node_2 and not T.has_edge(node_1,node_2):             
+             ancestor_nodes[node_1].append(node_2)            
+             T.add_node(node_1, n_ancestors_with_backedge=ancestor_nodes[node_1])
+             print('inside node_1:', node_1, ancestor_nodes[node_1])
+    # find min(t.dfsnum when (n,t) is a backedge)
+
+    print('outside node:', node, ancestor_nodes[node])
+    #for node in list(ancestor_nodes[node]):
+    #    node_min_dfsnum=min(ancestor_nodes[node])
+    #    print(1)
 
    
-pprint(list(T.nodes(data = True)))
+#pprint(list(T.nodes(data = True)))
