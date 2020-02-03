@@ -1,6 +1,7 @@
 from pprint import pprint
 import networkx as nx
 import matplotlib.pyplot as plt
+from collections import defaultdict
 
 G = nx.Graph()
 # add nodes from a list
@@ -37,7 +38,7 @@ print("reverse order:", list(reversed(list_increasing_order)))
 
 print("=============================================================================================")
 
-edges = nx.dfs_labeled_edges(G, source=1)
+G_edges = nx.dfs_labeled_edges(G, source=1)
 
 
 # Test: (1,2) is the same edge of (2,1)
@@ -49,19 +50,19 @@ print(T.has_edge(4,2))
 print(T.has_edge(4,1))
 
 print("=============================================================================================")
-
+ancestor_nodes=defaultdict(list)
 # step2: for each node n in reverse depth-first order
-for n in list(reversed(list_increasing_order)):
+for node in list(reversed(list_increasing_order)):
     # add attribute dfs number, i.e., discovery time,
-    T.add_node(n, dfsnum=n)
+    T.add_node(node, dfsnum=node)
     # find backedge from n to t, i.e., backedge (n, t)   
-     
-    for n, v, d in edges:
-        n_ancestors_nodes=[]
-        if d == 'nontree' and n > v and not T.has_edge(n,v):             
-             n_ancestors_nodes.append(v)
-             print(n,n_ancestors_nodes)
-             #T.add_node(n, n_ancestors_with_backedge={v})
-             #T.add_node_from(n, n_ancestors_with_backedge=n_ancestors_nodes)
+    
+    ancestor_nodes[node]=[]
+    for node, node_2, edgeType in G_edges:
+        
+        if edgeType == 'nontree' and node > node_2 and not T.has_edge(node,node_2):             
+             ancestor_nodes[node].append(node_2)            
+             T.add_node(node, n_ancestors_with_backedge=ancestor_nodes[node])
+
    
-#pprint(list(T.nodes(data = True)))
+pprint(list(T.nodes(data = True)))
