@@ -1,46 +1,42 @@
-import networkx as nx
+
 from pprint import pprint
+import networkx as nx
 import matplotlib.pyplot as plt
+from collections import defaultdict
+import random
+def buildAdjacencyList(self, n, edgesList):
+        adjList = [[] for _ in range(n)]
+        # c2 (course 2) is a prerequisite of c1 (course 1)
+        # i.e c2c1 is a directed edge in the graph
+        for c1, c2 in edgesList:
+            adjList[c2].append(c1)
+        return adjList
 
-G = nx.path_graph(5)
-pprint(list(G.nodes))
-nx.dfs_postorder_nodes(G, source=0)
-list_PostOrder_Nodes = list(nx.dfs_postorder_nodes(G, source=0, depth_limit=None))
-pprint(list_PostOrder_Nodes)
-# converting a post order list to a dictionary with list elements as values in dictionary
-# and keys are discovery time
-# ====> ?? dict_PostOrder_Nodes = {i:list_PostOrder_Nodes[i] for i in range((len(list_PostOrder_Nodes)+1), 1)}
+G = nx.Graph()
+# add nodes from a list
+G.add_nodes_from([1,2,3,4,5,6,7])
 
-# step2: for each node n in reverse depth-first order
-for n in list_PostOrder_Nodes:
-    # add attribute discovery time, the dfs number
-    G.add_node(n, discovey_time=n+1)
-    # find backedge from n to t, i.e., backedge (n, t)
-    edges = nx.dfs_labeled_edges(G, source=n)
-    for n, v, d in edges:
-         if d == 'nontree':
-             G.add_node(n, ancestors_with_backedge = {v})
+# add tree edges from a list
+G.add_edges_from([(1,2),(2,3),(3,4),(1,5),(5,6),(6,7)])
 
-pprint(list(G.nodes(data = True)))    
-pprint(list(G.nodes(data = 'ancestors_with_backedge')))
+# add back edges from a list
+G.add_edges_from([(3,1),(4,2),(4,1),(7,5)])
 
+#print("nodes in G:", list(G.nodes))
+#print("edges in G:", list(G.edges))
 
+#nx.draw_networkx(G, node_color='r', edge_color='b')
+#plt.show()
 
-# step2: for each node n in reverse depth-first order
-for n in list(G.nodes):
-    # add attribute discovery time, the dfs number
-    G.add_node(n, discovey_time=n+1)
-    # find backedge from n to t, i.e., backedge (n, t)
-    edges = nx.dfs_labeled_edges(G, source=n)
-    for n, v, d in edges:
-         if d == 'nontree':
-             G.add_node(n, ancestors_with_backedge = {v})
+# oriented tree constructed from dfs given G
+T = nx.Graph()
+T.add_edges_from(nx.dfs_edges(G, source=1))
 
-pprint(list(G.nodes(data = True)))    
+list_increasing_order= list(T.nodes)
+G_edges = list(nx.dfs_labeled_edges(G, source=1))
 
+set1=[20,25]
+for node in list(reversed(list_increasing_order)):
+    T.add_node(node, min_dfs=min(min(set1),33))
 
-
-#for n in list_PostOrder_Nodes:
-#    # find the min t.dfs where (n,t) is backedge from n
-#    for v in list(G.nodes[n]['ancestors_with_backedge'])
-
+pprint(list(T.nodes(data = True)))

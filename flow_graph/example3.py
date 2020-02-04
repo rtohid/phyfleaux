@@ -196,10 +196,25 @@ G_edges = nx.dfs_labeled_edges(G, source=1)
 #nx.draw_networkx(T, pos=pos, with_labels=True)
 #plt.show()
 
-# adapted from https://bit.ly/31wWBhG
+
 # find descendant of each node
-#descendant_nodes=defaultdict(list)
-#def find_descendants():
+# code from Rod
+
+# find children of each node. Note that children means direct descendant 
+children = defaultdict(set, nx.bfs_successors(T, source=1))
+# recursively call find_descendants. Note that python has 1000 maximum limit for recursive function
+def find_descendants(node, _children):
+    descendants = set()
+    for c in _children:
+        descendants.add(c)
+        for d in find_descendants(c, children[c]):
+            descendants.add(d) 
+    return descendants
+
+for i in list_increasing_order:
+    print(i, ':', find_descendants(i, set(children[i])))
+
+#def find_descendants(parent):
 #    for node_des_1, node_des_2, edgeType in G_edges:
 #        if edgeType == 'forward' and node_des_1 < node_des_2:
 #            descendant_nodes[node_des_1].append(node_des_2)
@@ -214,13 +229,13 @@ G_edges = nx.dfs_labeled_edges(G, source=1)
 
 
 
-descendant_nodes=defaultdict(list)
-for node_des_1, node_des_2, edgeType in G_edges:
-    if edgeType == 'forward' and node_des_1 < node_des_2:
-        descendant_nodes[node_des_1].append(node_des_2)
-        T.add_node(node_des_1, n_descendants=descendant_nodes[node_des_1])
-        if descendant_nodes[node_des_2]:
-            descendant_nodes[node_des_1].append(node_des_2)
-        print('node:', node_des_1, descendant_nodes[node_des_1])
+#descendant_nodes=defaultdict(list)
+#for node_des_1, node_des_2, edgeType in G_edges:
+#    if edgeType == 'forward' and node_des_1 < node_des_2:
+#        descendant_nodes[node_des_1].append(node_des_2)
+#        T.add_node(node_des_1, n_descendants=descendant_nodes[node_des_1])
+#        if descendant_nodes[node_des_2]:
+#            descendant_nodes[node_des_1].append(node_des_2)
+#        print('node:', node_des_1, descendant_nodes[node_des_1])
 
-pprint(list(T.nodes(data = True)))
+#pprint(list(T.nodes(data = True)))
