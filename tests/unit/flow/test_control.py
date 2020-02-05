@@ -5,24 +5,24 @@
 
 raise NotImplementedError('*** this test is broken ***')
 
-from __future__ import absolute_import
+# from __future__ import absolute_import
 
-import ast
-import inspect
+# import ast
+# import inspect
 
-from flow.control import Function
-
-
-def func(x):
-    return x + 1
+# from flow.control import Function
 
 
-def test_function():
-    py_funcion = Function(func)
-    _src = inspect.getsource(func)
-    _ast = ast.parse(_src)
+# def func(x):
+#     return x + 1
 
-    _cfg = py_funcion.pst.cfg
-    assert py_funcion.fn == func
-    assert _cfg.python_code == _src
-    assert ast.dump(_cfg.ast) == ast.dump(_ast)
+
+# def test_function():
+#     py_funcion = Function(func)
+#     _src = inspect.getsource(func)
+#     _ast = ast.parse(_src)
+
+#     _cfg = py_funcion.pst.cfg
+#     assert py_funcion.fn == func
+#     assert _cfg.python_code == _src
+#     assert ast.dump(_cfg.ast) == ast.dump(_ast)
