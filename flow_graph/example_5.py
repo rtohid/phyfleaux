@@ -45,7 +45,7 @@ def dfsnum(node):
 
 max_number = len(T.nodes)
 
-# find the highest anscestor of each node
+# find the highest anscestor of each node, h_i0
 ancestor_nodes=defaultdict(list)
 highest_ancestor_nodes=defaultdict(list)
 for node, node_2, edgeType in G_edges:
@@ -54,6 +54,38 @@ for node, node_2, edgeType in G_edges:
         ancestor_nodes[node].append(node_2)            
         # find the highest ancestor
         highest_ancestor_nodes[node]=find_min(ancestor_nodes[node],max_number)
-        T.add_node(node, n_highest_ancestor_with_backedge=highest_ancestor_nodes[node])
+        
+# find children of each node. Note that children means direct descendant 
+children = defaultdict(set, nx.bfs_successors(T, source=1))
+
+
+#hi_nodes=dict.fromkeys(list_increasing_order, [])
+hi_nodes=defaultdict(lambda:None)
+hi_1_nodes=defaultdict(lambda:None)
+hi_0_nodes=defaultdict(lambda:None)
+
+
+# create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
+hi_children_nodes=defaultdict(list)
+
+for node in list(reversed(list_increasing_order)):
+    # add attribute dfs number, i.e., discovery time,
+    T.add_node(node, dfsnum=dfsnum(node))
+    hi_0_nodes[node]=find_min(ancestor_nodes[node],max_number)
+    # add attribute hi_0, the highest ancestor with backedge 
+    T.add_node(node, n_hi_0=hi_0_nodes[node])
+    # build the list for node n within that are the hi of all child of node n
+    for child in children[node]:
+        if hi_nodes[child]:
+            hi_children_nodes[node].append(hi_nodes[child])
+    #hi_1_nodes[node].append(find_min(hi_children_nodes[node],max_number))
+    # add attribute hi
+    #print('hi_0 of node', node, ':', find_min(ancestor_nodes[node],max_number))
+    hi_1_nodes[node] = find_min(hi_children_nodes[node],max_number)
+    #print('hi_1 of node', node, ':', hi_1_nodes[node])
+    #print('hi_1', find_min(hi_1,max_number))
+    hi_nodes[node] = min(hi_0_nodes[node], hi_1_nodes[node])
+    T.add_node(node, n_hi=hi_nodes[node])
+
+#print('check', find_min([[]],max_number))
 pprint(list(T.nodes(data = True)))
-print('highest_ancestor_nodes:', highest_ancestor_nodes)
