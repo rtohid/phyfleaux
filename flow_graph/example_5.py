@@ -58,34 +58,39 @@ for node, node_2, edgeType in G_edges:
 # find children of each node. Note that children means direct descendant 
 children = defaultdict(set, nx.bfs_successors(T, source=1))
 
-
-#hi_nodes=dict.fromkeys(list_increasing_order, [])
 hi_nodes=defaultdict(lambda:None)
+hi_2_nodes=defaultdict(lambda:None)
 hi_1_nodes=defaultdict(lambda:None)
 hi_0_nodes=defaultdict(lambda:None)
 
-
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
+hi_2_children_nodes=defaultdict(list)
 
 for node in list(reversed(list_increasing_order)):
     # add attribute dfs number, i.e., discovery time,
-    T.add_node(node, dfsnum=dfsnum(node))
-    hi_0_nodes[node]=find_min(ancestor_nodes[node],max_number)
+    T.add_node(node, dfsnum=dfsnum(node))    
     # add attribute hi_0, the highest ancestor with backedge 
+    hi_0_nodes[node]=find_min(ancestor_nodes[node],max_number)
     T.add_node(node, n_hi_0=hi_0_nodes[node])
     # build the list for node n within that are the hi of all child of node n
     for child in children[node]:
         if hi_nodes[child]:
             hi_children_nodes[node].append(hi_nodes[child])
-    #hi_1_nodes[node].append(find_min(hi_children_nodes[node],max_number))
-    # add attribute hi
-    #print('hi_0 of node', node, ':', find_min(ancestor_nodes[node],max_number))
+    # add attribute hi_1
     hi_1_nodes[node] = find_min(hi_children_nodes[node],max_number)
-    #print('hi_1 of node', node, ':', hi_1_nodes[node])
-    #print('hi_1', find_min(hi_1,max_number))
+    T.add_node(node, n_hi_1=hi_1_nodes[node]) 
+    # add attribute hi
     hi_nodes[node] = min(hi_0_nodes[node], hi_1_nodes[node])
     T.add_node(node, n_hi=hi_nodes[node])
+    # find hichild that having the highest hi as hi_1
+    hi_2_children_nodes[node]=hi_children_nodes[node]
+    for child in children[node]:
+        if hi_nodes[child] and hi_nodes[child]==hi_1_nodes[node]:
+            hi_2_children_nodes[node].remove(hi_nodes[child])
+     # add attribute hi_2
+    hi_2_nodes[node] = find_min(hi_2_children_nodes[node],max_number)
+    T.add_node(node, n_hi_2=hi_2_nodes[node]) 
 
-#print('check', find_min([[]],max_number))
+
 pprint(list(T.nodes(data = True)))
