@@ -50,6 +50,12 @@ def find_min(_set, number):
     else:
         return number+1
 
+def find_second_min(_list, number):
+    if _list:
+        return _list[1]
+    else:
+        return number+1
+
 #for i in list_increasing_order:
 #    print(i, ':',find_min(find_descendants(i, set(children[i])), len(T.nodes)))
 
@@ -84,10 +90,8 @@ for node in list(reversed(list_increasing_order)):
     # add attribute smallest dfs according to the descendat of n
     T.add_node(node, min_descendant=find_min(find_descendants(node, set(children[node])), max_number))
     # add attribute smallest dfs (min(descendat, backedge))
-    #if find_min(find_descendants(node, set(children[node])), max_number) < find_min(ancestor_nodes[node_ans_1],max_number):
-    #    min_dfs_num =find_min(find_descendants(node, set(children[node])), max_number)
-    #else:
-    #    min_dfs_num = find_min(ancestor_nodes[node_ans_1],max_number)
     T.add_node(node, min_dfs=min(find_min(find_descendants(node, set(children[node])), max_number),find_min(ancestor_nodes[node_ans_1],max_number)))
+    # add attribute second highest
+    
 
 pprint(list(T.nodes(data = True)))
