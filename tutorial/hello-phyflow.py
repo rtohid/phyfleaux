@@ -4,6 +4,10 @@
 # # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
+
+raise NotImplementedError('*** this tutorial is out of date. ***')
+
+
 class Flow:
     class Data:
         def __init__(self, value=None, address=None):

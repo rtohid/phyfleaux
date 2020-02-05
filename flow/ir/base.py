@@ -8,23 +8,7 @@ from inspect import getsource, getsourcefile, getsourcelines
 
 
 class Transformer:
-    '''Transform code (in AST format) based on given transformation rules.
-
-    By default, :meth:`Transform.transform` solely walks the tree and returns
-    the python AST of the 
-
-    :arg python_obj: a python object to be ve transformed.
-    :arg python_ast: the ast  
-
-    Initialise PyOP2: select the backend and potentially other configuration
-    options. :arg debug:     The level of debugging output. :arg comm:      The
-    MPI communicator to use for parallel communication, defaults to
-    `MPI_COMM_WORLD` :arg log_level: The log level. Options: DEBUG, INFO,
-    WARNING, ERROR, CRITICAL For debugging purposes, `init` accepts all keyword
-    arguments accepted by the PyOP2 :class:`Configuration` object, see
-    :meth:`Configuration.__init__` for details of further accepted options. ..
-    note:: Calling ``init`` again with a different backend raises an exception.
-    '''
+    '''Transform code (in AST format) based on given transformation rules.'''
 
     def __init__(self, fn, transformation=None):
         self.python_fn = fn
