@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-from phyflow.flow.control import phyfn
+from flow import flowfn
 
 import numpy
 
@@ -19,7 +19,7 @@ for i in range(N):
     b[i] = 2 * i + 1
 
 
-@phyfn
+@flowfn
 def vector_vector_add_int(a, b, c):
 
     for i in range(N):
@@ -28,4 +28,4 @@ def vector_vector_add_int(a, b, c):
     return c
 
 
-print(vector_vector_add_int(a, b, c))
+# print(vector_vector_add_int(a, b, c))
