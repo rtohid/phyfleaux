@@ -4,7 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
-from inspect import getsource, getsourcefile, getsourcelines
+from inspect import getsource
 
 
 class Transformer:
@@ -278,7 +278,7 @@ class Transformer:
 
         return IsNot
 
-    def on_In(self, node, parents):
+    def on_in(self, node, parents):
         class In:
             pass
 
