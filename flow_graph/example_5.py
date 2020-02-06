@@ -20,7 +20,7 @@ T.add_edges_from(nx.dfs_edges(G, source=1))
 
 list_increasing_order= list(T.nodes)
 
-G_edges = nx.dfs_labeled_edges(G, source=1)
+G_edges = list(nx.dfs_labeled_edges(G, source=1))
 
 # find highest node
 # empty set return infinity number (N+1)
@@ -54,7 +54,8 @@ for node, node_2, edgeType in G_edges:
         ancestors_backedge_nodes[node].append(node_2)            
         # find the highest ancestor
         highest_ancestor_nodes[node]=find_min(ancestors_backedge_nodes[node],max_number)
-        
+
+print('ancestors_backedge_nodes', ancestors_backedge_nodes)       
 # find children of each node. Note that children means direct descendant 
 children = defaultdict(set, nx.bfs_successors(T, source=1))
 
@@ -65,6 +66,16 @@ hi_0_nodes=defaultdict(lambda:None)
 
 blist_nodes=defaultdict(list)
 capping_backedge_nodes=defaultdict(list)
+
+descendants_backedge_nodes=defaultdict(list)
+# find the list of descendants of each node that has a backedge from the descendant to the node
+for node, node_2, edgeType in G_edges:
+    if edgeType == 'nontree' and node < node_2: 
+        descendants_backedge_nodes[node].append(node_2) 
+                   
+print('descendants_backedge_nodes', descendants_backedge_nodes)    
+print('descendants_backedge_nodes of node', 1, ':', descendants_backedge_nodes[1])   
+
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
 hi_2_children_nodes=defaultdict(list)
