@@ -40,8 +40,10 @@ for node in list(reversed(list_increasing_order)):
     T.add_node(node, min_dfs=min(min(set1),33))
 
 pprint(list(T.nodes(data = True)))
-a=[]
-b=5
-c=8
-d=[a,b]
-print(min(d))
+
+blist_nodes=defaultdict(list)
+x=(50,55)
+blist_nodes[1].append((21,23))
+blist_nodes[1].append(x)
+
+print(blist_nodes[1])

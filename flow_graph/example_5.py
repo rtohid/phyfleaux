@@ -46,14 +46,14 @@ def dfsnum(node):
 max_number = len(T.nodes)
 
 # find the highest anscestor of each node, h_i0
-ancestor_nodes=defaultdict(list)
+ancestors_backedge_nodes=defaultdict(list)
 highest_ancestor_nodes=defaultdict(list)
 for node, node_2, edgeType in G_edges:
     if edgeType == 'nontree' and node > node_2 and not T.has_edge(node,node_2): 
         # find ancestors of each node that has a backedge between the ancestor and the node.         
-        ancestor_nodes[node].append(node_2)            
+        ancestors_backedge_nodes[node].append(node_2)            
         # find the highest ancestor
-        highest_ancestor_nodes[node]=find_min(ancestor_nodes[node],max_number)
+        highest_ancestor_nodes[node]=find_min(ancestors_backedge_nodes[node],max_number)
         
 # find children of each node. Note that children means direct descendant 
 children = defaultdict(set, nx.bfs_successors(T, source=1))
@@ -63,15 +63,18 @@ hi_2_nodes=defaultdict(lambda:None)
 hi_1_nodes=defaultdict(lambda:None)
 hi_0_nodes=defaultdict(lambda:None)
 
+blist_nodes=defaultdict(list)
+capping_backedge_nodes=defaultdict(list)
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
 hi_2_children_nodes=defaultdict(list)
 
 for node in list(reversed(list_increasing_order)):
+    # part - compute n.hi
     # add attribute dfs number, i.e., discovery time,
     T.add_node(node, dfsnum=dfsnum(node))    
     # add attribute hi_0, the highest ancestor with backedge 
-    hi_0_nodes[node]=find_min(ancestor_nodes[node],max_number)
+    hi_0_nodes[node]=find_min(ancestors_backedge_nodes[node],max_number)
     T.add_node(node, n_hi_0=hi_0_nodes[node])
     # build the list for node n within that are the hi of all child of node n
     for child in children[node]:
@@ -88,9 +91,19 @@ for node in list(reversed(list_increasing_order)):
     for child in children[node]:
         if hi_nodes[child] and hi_nodes[child]==hi_1_nodes[node]:
             hi_2_children_nodes[node].remove(hi_nodes[child])
-     # add attribute hi_2
+    # add attribute hi_2
     hi_2_nodes[node] = find_min(hi_2_children_nodes[node],max_number)
     T.add_node(node, n_hi_2=hi_2_nodes[node]) 
+
+    # part - compute bracketlist
+    for child in children[node]:
+        blist_nodes[node]=blist_nodes[child]+blist_nodes[node]
+
+    # find capping backedges from descendats of n to n 
+    for capping_backedge in  capping_backedge_nodes[node]:
+        blist_nodes[node].remove(capping_backedge)
+
+
 
 
 pprint(list(T.nodes(data = True)))
