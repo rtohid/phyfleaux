@@ -54,8 +54,7 @@ for node, node_2, edgeType in G_edges:
         ancestors_backedge_nodes[node].append(node_2)            
         # find the highest ancestor
         highest_ancestor_nodes[node]=find_min(ancestors_backedge_nodes[node],max_number)
-
-print('ancestors_backedge_nodes', ancestors_backedge_nodes)       
+     
 # find children of each node. Note that children means direct descendant 
 children = defaultdict(set, nx.bfs_successors(T, source=1))
 
@@ -67,15 +66,14 @@ hi_0_nodes=defaultdict(lambda:None)
 blist_nodes=defaultdict(list)
 capping_backedge_nodes=defaultdict(list)
 
+# data structure as {node_1:(descendant_1_node_1, node_1),(descendant_2_node_1, node_1)..}
+# (descendant_1_node_1, node_1) is the backedge from descendant of current node to current node 
 descendants_backedge_nodes=defaultdict(list)
 # find the list of descendants of each node that has a backedge from the descendant to the node
 for node, node_2, edgeType in G_edges:
     if edgeType == 'nontree' and node < node_2: 
-        descendants_backedge_nodes[node].append(node_2) 
-                   
-print('descendants_backedge_nodes', descendants_backedge_nodes)    
-print('descendants_backedge_nodes of node', 1, ':', descendants_backedge_nodes[1])   
-
+        descendants_backedge_nodes[node].append((node_2, node)) 
+   
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
 hi_2_children_nodes=defaultdict(list)
@@ -112,9 +110,21 @@ for node in list(reversed(list_increasing_order)):
 
     # find capping backedges from descendats of n to n 
     for capping_backedge in  capping_backedge_nodes[node]:
-        blist_nodes[node].remove(capping_backedge)
+        while True:
+            try:
+                blist_nodes[node].remove(capping_backedge)
+            except:
+                break
+    
+    # find backedge from a descendant of n to n
+    for backedge_descendant in descendants_backedge_nodes[node]:
+        while True:
+            try:
+                blist_nodes[node].remove(backedge_descendant)
+            except:
+                break
 
 
 
 
-pprint(list(T.nodes(data = True)))
+#pprint(list(T.nodes(data = True)))
