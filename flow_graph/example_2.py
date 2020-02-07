@@ -38,9 +38,17 @@ a = defaultdict(list)
 
 a[0].append(edge_1)
 a[0].append(edge_2)
-print(a)
+print('a is',a)
 
 for b in a[0]:
-    print(b.classIndex)
-    #if b.classIndex == None:
-    #    print('b is none')
+    print('b.classIndex:',b.classIndex)
+
+
+ddd=defaultdict(list)
+eee=[edge_1, edge_2]
+ddd[2]=[Edge(21,25)]
+ddd[0]=ddd[2] + ddd[0]
+print(ddd[0])
+
+for b in ddd[0]:
+    print('b.classIndex:',b.classIndex)
