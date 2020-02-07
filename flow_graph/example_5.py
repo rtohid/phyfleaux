@@ -139,7 +139,7 @@ for node in list(reversed(list_increasing_order)):
             except:
                 break
     
-    # find backedge from a descendant of n to n
+    # for each backedge from a descendant of n to n
     for backedge_descendant in descendants_backedge_nodes[node]:
         while True:
             try:
@@ -149,8 +149,14 @@ for node in list(reversed(list_increasing_order)):
         if not backedge_descendant.classIndex:
             backedge_descendant.classIndex=backedge_descendant.set_classIndex()
         
+    # for each backedge e from n to an ancestor of n
+    for backedge_ancestor in ancestors_backedge_nodes[node]:
+        blist_nodes[node].append(backedge_ancestor)
 
-
+    # whether create capping backedge
+    if hi_2_nodes[node] < hi_0_nodes[node]:
+        backedge_d = (node, list_increasing_order[hi_2_nodes[node]])
+        blist_nodes[node].append(backedge_d)
 
 
 #pprint(list(T.nodes(data = True)))
