@@ -45,6 +45,30 @@ def dfsnum(node):
 
 max_number = len(T.nodes)
 
+class Edge:
+    def __init__(self, source=None, destination=None):
+        self.edgeValue=(source,destination)
+        # index of edge's cycle equivalence class
+        self.classIndex=[]
+        # size of bracket set when e was most recently the topmost edge in a bracket set
+        self.recentSize=[]
+        # euqivalence class number of tree edge for which e was most recently the topmost bracket
+        self.recentClass=[]
+
+    # static variable access through class
+    staticVar = 0 
+
+    @staticmethod
+    def new_class():
+        Edge.staticVar += 1
+        return Edge.staticVar
+    
+    @classmethod
+    def set_classIndex(_class):
+        classIndex = _class.new_class()
+        return classIndex
+
+
 # find the highest anscestor of each node, h_i0
 ancestors_backedge_nodes=defaultdict(list)
 highest_ancestor_nodes=defaultdict(list)
@@ -72,33 +96,12 @@ descendants_backedge_nodes=defaultdict(list)
 # find the list of descendants of each node that has a backedge from the descendant to the node
 for node, node_2, edgeType in G_edges:
     if edgeType == 'nontree' and node < node_2: 
-        descendants_backedge_nodes[node].append((node_2, node)) 
+        descendants_backedge_nodes[node].append(Edge(node_2, node)) 
    
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
 hi_2_children_nodes=defaultdict(list)
 
-class Edge:
-    def __init__(self):
-        # index of edge's cycle equivalence class
-        self.classIndex=[]
-        # size of bracket set when e was most recently the topmost edge in a bracket set
-        self.recentSize=[]
-        # euqivalence class number of tree edge for which e was most recently the topmost bracket
-        self.recentClass=[]
-
-    # static variable access through class
-    staticVar = 0 
-
-    @staticmethod
-    def new_class():
-        Edge.staticVar += 1
-        return Edge.staticVar
-    
-    @classmethod
-    def set_classIndex(_class):
-        classIndex = _class.new_class()
-        return classIndex
 
 
 for node in list(reversed(list_increasing_order)):
