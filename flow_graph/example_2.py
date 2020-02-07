@@ -1,36 +1,23 @@
 from pprint import pprint
 import networkx as nx
 import matplotlib.pyplot as plt
+from collections import defaultdict
+import random
 
 G = nx.path_graph(5)
 list(G.nodes)
-pprint(list(G.nodes))
-#nx.draw_networkx(G)
-#plt.show()
-
-G.add_node(1, ancestors = {0})
-pprint(list(G.nodes(data = True)))
-
-G.add_node(1, descendants = {2,3,4})
-pprint(list(G.nodes(data = True)))
-
-pprint(list(G.nodes))
-pprint(list(G.nodes(data = 'ancestors')))
-pprint(list(G.nodes[1]))
-pprint(list(G.nodes[1]['descendants']))
-print("==============================================================")
-
 
 
 
 class Edge:
-    def __init__(self):
+    def __init__(self, source=None, destination=None):
+        self.edgeValue=(source,destination)
         # index of edge's cycle equivalence class
-        self.classIndex=[]
+        self.classIndex=None
         # size of bracket set when e was most recently the topmost edge in a bracket set
-        self.recentSize=[]
+        self.recentSize=None
         # euqivalence class number of tree edge for which e was most recently the topmost bracket
-        self.recentClass=[]
+        self.recentClass=None
 
     # static variable access through class
     staticVar = 0 
@@ -45,16 +32,14 @@ class Edge:
         classIndex = _class.new_class()
         return classIndex
 
-edge_1=Edge()
-print(edge_1.set_classIndex())
-print(edge_1.set_classIndex())
-edge_2=Edge()
-print(edge_2.set_classIndex())
-edge_3=Edge()
-edge_3.classIndex=edge_3.set_classIndex()
-print(edge_3.classIndex)
-if edge_3.classIndex:
-    print('not emptyof edge:')
-edge_4=Edge()
-if not edge_4.classIndex:
-    print('not empty')
+edge_1 = Edge(1,2)
+edge_2 = Edge(3,42)
+a = defaultdict(list)
+
+a[0].append(edge_1.edgeValue)
+a[0].append(edge_2.edgeValue)
+print(a)
+
+for b in a[0]:
+    if b.classIndex == None:
+        print('b is none')
