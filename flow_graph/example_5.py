@@ -78,6 +78,29 @@ for node, node_2, edgeType in G_edges:
 hi_children_nodes=defaultdict(list)
 hi_2_children_nodes=defaultdict(list)
 
+class Edge:
+    def __init__(self):
+        # index of edge's cycle equivalence class
+        self.classIndex=[]
+        # size of bracket set when e was most recently the topmost edge in a bracket set
+        self.recentSize=[]
+        # euqivalence class number of tree edge for which e was most recently the topmost bracket
+        self.recentClass=[]
+
+    # static variable access through class
+    staticVar = 0 
+
+    @staticmethod
+    def new_class():
+        Edge.staticVar += 1
+        return Edge.staticVar
+    
+    @classmethod
+    def set_classIndex(_class):
+        classIndex = _class.new_class()
+        return classIndex
+
+
 for node in list(reversed(list_increasing_order)):
     # part - compute n.hi
     # add attribute dfs number, i.e., discovery time,
@@ -123,6 +146,9 @@ for node in list(reversed(list_increasing_order)):
                 blist_nodes[node].remove(backedge_descendant)
             except:
                 break
+        if not backedge_descendant.classIndex:
+            backedge_descendant.classIndex=backedge_descendant.set_classIndex()
+        
 
 
 
