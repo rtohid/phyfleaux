@@ -36,10 +36,11 @@ edge_1 = Edge(1,2)
 edge_2 = Edge(3,42)
 a = defaultdict(list)
 
-a[0].append(edge_1.edgeValue)
-a[0].append(edge_2.edgeValue)
+a[0].append(edge_1)
+a[0].append(edge_2)
 print(a)
 
 for b in a[0]:
-    if b.classIndex == None:
-        print('b is none')
+    print(b.classIndex)
+    #if b.classIndex == None:
+    #    print('b is none')

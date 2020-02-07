@@ -100,7 +100,7 @@ descendants_backedge_nodes_edgelist=defaultdict(list)
 # find the list of descendants of each node that has a backedge from the descendant to the node
 for node, node_2, edgeType in G_edges:
     if edgeType == 'nontree' and node < node_2: 
-        descendants_backedge_nodes_edgelist[node].append(Edge(node_2, node).edgeValue) 
+        descendants_backedge_nodes_edgelist[node].append(Edge(node_2, node)) 
    
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
@@ -162,8 +162,8 @@ for node in list(reversed(list_increasing_order)):
 
     # whether create capping backedge
     if hi_2_nodes[node] < hi_0_nodes[node]:
-        capping_backedge_nodes_edgelist[list_increasing_order[hi_2_nodes[node]]].append(Edge(node, list_increasing_order[hi_2_nodes[node]]).edgeValue)
-        blist_nodes[node].append(backedge_d)
+        capping_backedge_nodes_edgelist[list_increasing_order[hi_2_nodes[node]]].append(Edge(node, list_increasing_order[hi_2_nodes[node]]))
+        blist_nodes[node].append(Edge(node, list_increasing_order[hi_2_nodes[node]]))
 
     # add attribute blist
     T.add_node(node, n_blist=blist_nodes[node])
