@@ -164,14 +164,18 @@ for node in list(reversed(list_increasing_order)):
                 if node ==5:
                     print('before removing, the backedge_descendant is:', backedge_descendant.edgeValue)
                 blist_nodes_edgelist[node].remove(backedge_descendant)
+                if node ==5:
+                    for edge in blist_nodes_edgelist[node]:
+                        print('after edge in node 5 is:', edge.edgeValue)  
+
                 if backedge_descendant.classIndex == None:
                     backedge_descendant.classIndex=backedge_descendant.set_classIndex()
             except:
                 break
         
-    if node ==5:
-        for edge in blist_nodes_edgelist[node]:
-            print('after edge in node 5 is:', edge.edgeValue)    
+#    if node ==5:
+#        for edge in blist_nodes_edgelist[node]:
+#            print('after edge in node 5 is:', edge.edgeValue)    
     # for each backedge e from n to an ancestor of n
     for backedge_ancestor in ancestors_backedge_nodes_edgelist[node]:
         blist_nodes_edgelist[node].append(backedge_ancestor)
