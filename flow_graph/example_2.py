@@ -28,9 +28,10 @@ class Edge:
         return Edge.staticVar
     
     @classmethod
-    def set_classIndex(_class):
-        classIndex = _class.new_class()
-        return classIndex
+    def set_classIndex(_cls):
+        _classIndex=_cls.new_class()
+        return _classIndex
+       
 
 edge_1 = Edge(1,2)
 edge_2 = Edge(3,42)
@@ -38,17 +39,9 @@ a = defaultdict(list)
 
 a[0].append(edge_1)
 a[0].append(edge_2)
-print('a is',a)
 
-for b in a[0]:
-    print('b.classIndex:',b.classIndex)
+edge_1.classIndex = edge_1.set_classIndex()
+print('edge_1.classIndex is:', edge_1.classIndex)
 
+print('edge_2.classIndex is:', edge_2.classIndex)
 
-ddd=defaultdict(list)
-eee=[edge_1, edge_2]
-ddd[2]=[Edge(21,25)]
-ddd[0]=ddd[2] + ddd[0]
-print(ddd[0])
-
-for b in ddd[0]:
-    print('b.classIndex:',b.classIndex)

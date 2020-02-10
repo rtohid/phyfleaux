@@ -65,8 +65,8 @@ class Edge:
     
     @classmethod
     def set_classIndex(_class):
-        classIndex = _class.new_class()
-        return classIndex
+        _classIndex = _class.new_class()
+        return _classIndex
 
 
 # find the highest anscestor of each node, h_i0
@@ -102,8 +102,10 @@ descendants_backedge_nodes_edgelist=defaultdict(list)
 for node, node_2, edgeType in G_edges:
     if edgeType == 'nontree' and node < node_2: 
         descendants_backedge_nodes_edgelist[node].append(Edge(node_2, node)) 
-   
-print('descendants_backedge_nodes_edgelist:', descendants_backedge_nodes_edgelist)
+
+for edge in descendants_backedge_nodes_edgelist[5]:
+    print('decendants_backedge in node 5:', edge.edgeValue)
+
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
 hi_2_children_nodes=defaultdict(list)
@@ -143,6 +145,10 @@ for node in list(reversed(list_increasing_order)):
     for child in children[node]:
         blist_nodes_edgelist[node]=blist_nodes_edgelist[child]+blist_nodes_edgelist[node]
 
+    if node ==5:
+        for edge in blist_nodes_edgelist[node]:
+            print('before edge in node 5 is:', edge.edgeValue)
+
     # find capping backedges from descendats of n to n 
     for capping_backedge in  capping_backedge_nodes_edgelist[node]:
         while True:
@@ -155,13 +161,17 @@ for node in list(reversed(list_increasing_order)):
     for backedge_descendant in descendants_backedge_nodes_edgelist[node]:
         while True:
             try:
+                if node ==5:
+                    print('before removing, the backedge_descendant is:', backedge_descendant.edgeValue)
                 blist_nodes_edgelist[node].remove(backedge_descendant)
                 if backedge_descendant.classIndex == None:
                     backedge_descendant.classIndex=backedge_descendant.set_classIndex()
             except:
                 break
         
-        
+    if node ==5:
+        for edge in blist_nodes_edgelist[node]:
+            print('after edge in node 5 is:', edge.edgeValue)    
     # for each backedge e from n to an ancestor of n
     for backedge_ancestor in ancestors_backedge_nodes_edgelist[node]:
         blist_nodes_edgelist[node].append(backedge_ancestor)
