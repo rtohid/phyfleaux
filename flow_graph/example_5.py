@@ -55,6 +55,12 @@ class Edge:
         # euqivalence class number of tree edge for which e was most recently the topmost bracket
         self.recentClass=None
 
+    def __repr__(self):
+        return str(self.edgeValue)
+
+    def __eq__(self, other):
+        return self.edgeValue == other.edgeValue
+
     # static variable access through class
     staticVar = 0 
 
@@ -81,7 +87,6 @@ for node, node_2, edgeType in G_edges:
         # find the highest ancestor
         highest_ancestor_nodes[node]=find_min(ancestors_backedge_nodes[node],max_number)
 
-print('ancestors_backedge_nodes_edgelist:', ancestors_backedge_nodes_edgelist)
 # find children of each node. Note that children means direct descendant 
 children = defaultdict(set, nx.bfs_successors(T, source=1))
 
@@ -102,9 +107,6 @@ descendants_backedge_nodes_edgelist=defaultdict(list)
 for node, node_2, edgeType in G_edges:
     if edgeType == 'nontree' and node < node_2: 
         descendants_backedge_nodes_edgelist[node].append(Edge(node_2, node)) 
-
-for edge in descendants_backedge_nodes_edgelist[5]:
-    print('decendants_backedge in node 5:', edge.edgeValue)
 
 # create a data structure: {node_1, {child_1_node_1.hi, child_2_node_1.hi,...}}
 hi_children_nodes=defaultdict(list)
@@ -138,44 +140,22 @@ for node in list(reversed(list_increasing_order)):
     hi_2_nodes[node] = find_min(hi_2_children_nodes[node],max_number)
     T.add_node(node, n_hi_2=hi_2_nodes[node]) 
 
-
-
-
     # part - compute bracketlist
     for child in children[node]:
         blist_nodes_edgelist[node]=blist_nodes_edgelist[child]+blist_nodes_edgelist[node]
 
-    if node ==5:
-        for edge in blist_nodes_edgelist[node]:
-            print('before edge in node 5 is:', edge.edgeValue)
-
     # find capping backedges from descendats of n to n 
     for capping_backedge in  capping_backedge_nodes_edgelist[node]:
-        while True:
-            try:
-                blist_nodes_edgelist[node].remove(capping_backedge)
-            except:
-                break
+        if capping_backedge:
+            blist_nodes_edgelist[node].remove(capping_backedge)
     
     # for each backedge from a descendant of n to n
     for backedge_descendant in descendants_backedge_nodes_edgelist[node]:
-        while True:
-            try:
-                if node ==5:
-                    print('before removing, the backedge_descendant is:', backedge_descendant.edgeValue)
-                blist_nodes_edgelist[node].remove(backedge_descendant)
-                if node ==5:
-                    for edge in blist_nodes_edgelist[node]:
-                        print('after edge in node 5 is:', edge.edgeValue)  
-
-                if backedge_descendant.classIndex == None:
-                    backedge_descendant.classIndex=backedge_descendant.set_classIndex()
-            except:
-                break
-        
-#    if node ==5:
-#        for edge in blist_nodes_edgelist[node]:
-#            print('after edge in node 5 is:', edge.edgeValue)    
+        if backedge_descendant:
+            blist_nodes_edgelist[node].remove(backedge_descendant)
+            if backedge_descendant.classIndex == None:
+                backedge_descendant.classIndex=backedge_descendant.set_classIndex()
+         
     # for each backedge e from n to an ancestor of n
     for backedge_ancestor in ancestors_backedge_nodes_edgelist[node]:
         blist_nodes_edgelist[node].append(backedge_ancestor)
@@ -186,10 +166,10 @@ for node in list(reversed(list_increasing_order)):
         blist_nodes_edgelist[node].append(Edge(node, list_increasing_order[hi_2_nodes[node]]))
 
     # add attribute blist
-    for edge in blist_nodes_edgelist[node]:
-        print('edge:', edge ,'in blist_nodes_edgelist of node', node, ':', edge.edgeValue)
-    #T.add_node(node, n_blist=blist_nodes_edgelist[node])
+    #for edge in blist_nodes_edgelist[node]:
+    #    print('edge:', edge ,'in blist_nodes_edgelist of node', node, ':', edge)
+    T.add_node(node, n_blist=blist_nodes_edgelist[node])
 
 
 
-#pprint(list(T.nodes(data = True)))
+pprint(list(T.nodes(data = True)))
