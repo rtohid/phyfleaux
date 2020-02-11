@@ -45,3 +45,6 @@ print('edge_1.classIndex is:', edge_1.classIndex)
 
 print('edge_2.classIndex is:', edge_2.classIndex)
 
+for b in a[0]:
+    print('')
+

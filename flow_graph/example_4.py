@@ -89,9 +89,10 @@ for node in list(reversed(list_increasing_order)):
     T.add_node(node, dfsnum=dfsnum(node))
     # add attribute smallest dfs according to the descendat of n
     T.add_node(node, min_descendant=find_min(find_descendants(node, set(children[node])), max_number))
+    T.add_node(node, min_descendant=find_min(find_descendants(node, set(children[node])), max_number))
     # add attribute smallest dfs (min(descendat, backedge))
     T.add_node(node, min_dfs=min(find_min(find_descendants(node, set(children[node])), max_number),find_min(ancestor_nodes[node_ans_1],max_number)))
     # add attribute second highest
-    
+
 
 pprint(list(T.nodes(data = True)))

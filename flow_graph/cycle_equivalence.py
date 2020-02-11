@@ -109,12 +109,17 @@ list_PostOrder_Nodes = list(nx.dfs_postorder_nodes(G, source=0, depth_limit=None
 
 # step2: for each node n in reverse depth-first order
 for n in list_PostOrder_Nodes:
-    # add attibute discovery time
-    G.add_node(n,discovey_time=n+1)
+    # add attribute discovery time, the dfs number
+    G.add_node(n, discovey_time=n+1)
     # find backedge from n to t, i.e., backedge (n, t)
-    edges = nx.dfs_labeled_edges(G, source=n, depth_limit=len(list_PostOrder_Nodes)-1)
+    edges = nx.dfs_labeled_edges(G, source=n)
     for n, v, d in edges if d == 'nontree'
     G.add_node(n, ancestors_with_backedge = {v})
     
 
-print(list(nx.dfs_postorder_nodes(G, source=0)))
+for n in list_PostOrder_Nodes:
+    # find the min t.dfs where (n,t) is backedge from n
+    for v in list(G.nodes[n]['ancestors_with_backedge'])
+
+
+

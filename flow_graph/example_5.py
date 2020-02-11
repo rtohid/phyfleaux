@@ -19,6 +19,7 @@ T = nx.Graph()
 T.add_edges_from(nx.dfs_edges(G, source=1))
 
 list_increasing_order= list(T.nodes)
+print('list increasing order:', list_increasing_order)
 
 G_edges = list(nx.dfs_labeled_edges(G, source=1))
 
@@ -136,6 +137,7 @@ for node in list(reversed(list_increasing_order)):
     for child in children[node]:
         if hi_nodes[child] and hi_nodes[child]==hi_1_nodes[node]:
             hi_2_children_nodes[node].remove(hi_nodes[child])
+    print('hi2 children nodes of node', node, 'are:', hi_2_children_nodes)
     # add attribute hi_2
     hi_2_nodes[node] = find_min(hi_2_children_nodes[node],max_number)
     T.add_node(node, n_hi_2=hi_2_nodes[node]) 
@@ -146,15 +148,13 @@ for node in list(reversed(list_increasing_order)):
 
     # find capping backedges from descendats of n to n 
     for capping_backedge in  capping_backedge_nodes_edgelist[node]:
-        if capping_backedge:
-            blist_nodes_edgelist[node].remove(capping_backedge)
+        blist_nodes_edgelist[node].remove(capping_backedge)
     
     # for each backedge from a descendant of n to n
     for backedge_descendant in descendants_backedge_nodes_edgelist[node]:
-        if backedge_descendant:
-            blist_nodes_edgelist[node].remove(backedge_descendant)
-            if backedge_descendant.classIndex == None:
-                backedge_descendant.classIndex=backedge_descendant.set_classIndex()
+        blist_nodes_edgelist[node].remove(backedge_descendant)
+        if backedge_descendant.classIndex == None:
+            backedge_descendant.classIndex=backedge_descendant.set_classIndex()
          
     # for each backedge e from n to an ancestor of n
     for backedge_ancestor in ancestors_backedge_nodes_edgelist[node]:
@@ -162,12 +162,12 @@ for node in list(reversed(list_increasing_order)):
 
     # whether create capping backedge
     if hi_2_nodes[node] < hi_0_nodes[node]:
-        capping_backedge_nodes_edgelist[list_increasing_order[hi_2_nodes[node]]].append(Edge(node, list_increasing_order[hi_2_nodes[node]]))
-        blist_nodes_edgelist[node].append(Edge(node, list_increasing_order[hi_2_nodes[node]]))
-
+        for destination_node in hi_2_children_nodes[node]:
+            # make sure it is a backedge
+            if destination_node < node:
+                capping_backedge_nodes_edgelist[list_increasing_order[destination_node-1]].append(Edge(node, list_increasing_order[destination_node-1]))
+                blist_nodes_edgelist[node].append(Edge(node, list_increasing_order[destination_node-1]))
     # add attribute blist
-    #for edge in blist_nodes_edgelist[node]:
-    #    print('edge:', edge ,'in blist_nodes_edgelist of node', node, ':', edge)
     T.add_node(node, n_blist=blist_nodes_edgelist[node])
 
 
