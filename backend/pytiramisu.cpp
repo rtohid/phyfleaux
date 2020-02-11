@@ -1,0 +1,925 @@
+//  Copyright (c) 2019-2020 Christopher Taylor
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+#include <memory>
+#include <vector>
+#include <algorithm>
+
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_set.h>
+#include <isl/union_map.h>
+#include <isl/ast_build.h>
+#include <isl/schedule.h>
+#include <isl/schedule_node.h>
+#include <isl/space.h>
+#include <isl/constraint.h>
+
+//#include <pybind11/stl.h>
+
+#include <tiramisu/tiramisu.h>
+/*
+ *
+ *  tiramisu/include/tiramisu/macros.h:4:9: note: macro 'cast' defined here
+ *  #define cast(TYPE, EXPRESSION) (tiramisu::expr(tiramisu::o_cast, TYPE, EXPRESSION))
+ *
+ *  undef b/c this macro conflicts with a method/function signature in pybind11
+ *
+ */
+#undef cast
+
+#include <pybind11/pybind11.h>
+
+#include "physl_tiramisu.hpp"
+#include "pytiramisu.hpp"
+
+
+namespace py = pybind11;
+using namespace tiramisu;
+
+// wrapper types for isl_map and isl_set
+//
+class isl_map_t {
+public:
+    isl_map * value;
+
+    isl_map_t() :
+        value(nullptr) {
+    }
+};
+
+class isl_set_t {
+public:
+    isl_set * value;
+
+    isl_set_t() :
+        value(nullptr) {
+    } 
+};
+
+PYBIND11_MODULE(pytiramisu, m) {
+    m.doc() = "pybind11 bindings for isl";
+
+    // enums from `tiramisu/include/tiramisu/type.h`
+    py::enum_<expr_t>(m, "expr_t")
+        .value("e_val", e_val)
+        .value("e_var", e_var)
+        .value("e_sync", e_sync)
+        .value("e_op", e_op)
+        .value("e_none", e_none)
+        .export_values();
+
+    py::enum_<primitive_t>(m, "primitive_t")
+        .value("p_uint8", p_uint8)
+        .value("p_uint16", p_uint16)
+        .value("p_uint32", p_uint32)
+        .value("p_uint64", p_uint64)
+        .value("p_int8", p_int8)
+        .value("p_int16", p_int16)
+        .value("p_int32", p_int32)
+        .value("p_int64", p_int64)
+        .value("p_float32", p_float32)
+        .value("p_float64", p_float64)
+        .value("p_boolean", p_boolean)
+        .value("p_async", p_async)
+        .value("p_wait_ptr", p_wait_ptr)
+        .value("p_void_ptr", p_void_ptr)
+        .value("pnone", p_none)
+        .export_values();
+
+    py::enum_<argument_t>(m, "argument_t")
+        .value("a_input", a_input)
+        .value("a_output", a_output)
+        .value("a_temporary", a_temporary)
+        .export_values();
+
+    py::enum_<op_t>(m, "op_t")
+        .value("o_minus", o_minus)
+        .value("o_floor", o_floor)
+        .value("o_sin", o_sin)
+        .value("o_cos", o_cos)
+        .value("o_tan", o_tan)
+        .value("o_asin", o_asin)
+        .value("o_acos", o_acos)
+        .value("o_atan", o_atan)
+        .value("o_sinh", o_sinh)
+        .value("o_cosh", o_cosh)
+        .value("o_tanh", o_tanh)
+        .value("o_asinh", o_asinh)
+        .value("o_acosh", o_acosh)
+        .value("o_atanh", o_atanh)
+        .value("o_abs", o_abs)
+        .value("o_sqrt", o_sqrt)
+        .value("o_expo", o_expo)
+        .value("o_log", o_log)
+        .value("o_ceil", o_ceil)
+        .value("o_round", o_round)
+        .value("o_trunc", o_trunc)
+        .value("o_allocate", o_allocate)
+        .value("o_free", o_free)
+        .value("o_cast", o_cast)
+        .value("o_address", o_address)
+        .value("o_add", o_add)
+        .value("o_sub", o_sub)
+        .value("o_mul", o_mul)
+        .value("o_div", o_div)
+        .value("o_mod", o_mod)
+        .value("o_logical_and", o_logical_and)
+        .value("o_logical_or", o_logical_or)
+        .value("o_logical_not", o_logical_not)
+        .value("o_eq", o_eq)
+        .value("o_ne", o_ne)
+        .value("o_le", o_le)
+        .value("o_lt", o_lt)
+        .value("o_ge", o_ge)
+        .value("o_gt", o_gt)
+        .value("o_max", o_max)
+        .value("o_min", o_min)
+        .value("o_right_shift", o_right_shift)
+        .value("o_left_shift", o_left_shift)
+        .value("o_memcpy", o_memcpy)
+        .value("o_select", o_select)
+        .value("o_cond", o_cond)
+        .value("o_lerp", o_lerp)
+        .value("o_call", o_call)
+        .value("o_access", o_access)
+        .value("o_address_of", o_address_of)
+        .value("o_lin_index", o_lin_index)
+        .value("o_type", o_type)
+        .value("o_dummy", o_dummy)
+        .value("o_buffer", o_buffer)
+        .value("o_none", o_none)
+        .export_values();
+
+    py::enum_<rank_t>(m, "rank_t")
+        .value("r_sender", rank_t::r_sender)
+        .value("r_receiver", rank_t::r_receiver)
+        .export_values();
+
+    py::class_<expr>(m, "expr")
+        .def("__init__", [](expr e) {
+            new(&e) expr();
+        });
+
+    py::class_<buffer>(m, "buffer")
+        .def("__init__", [](buffer &b,
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt,
+                std::shared_ptr<function> & fct, // = global::get_implicit_function(),
+                std::string corr) {
+            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), corr);
+        })
+        .def("__init__", [](buffer &b,
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt,
+                std::string corr) {
+            new (&b) buffer(name, dim_sizes, type, argt, global::get_implicit_function(), corr);
+        })
+        .def("__init__", [](buffer &b,
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt,
+                std::shared_ptr<function> & fct) {
+            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), "");
+        })
+        .def("allocate_at", [](buffer &b,
+                computation & C,
+                var level) {
+            std::shared_ptr<computation> cptr{};
+            cptr.reset(b.allocate_at(C, level));
+            return cptr;
+        })
+        .def("allocate_at", [](buffer &b,
+                computation & C,
+                int level) {
+            std::shared_ptr<computation> cptr{};
+            cptr.reset(b.allocate_at(C, level));
+            return cptr;
+        })
+        .def("dump", [](buffer &b,
+                bool exhaustive) {
+            b.dump(exhaustive);
+        })
+        .def("get_argument_type", [](buffer &b) {
+            return b.get_argument_type();
+        })
+        .def("get_location", [](buffer &b) {
+            return b.get_location();
+        })
+        .def("get_name", [](buffer &b) {
+            return b.get_name();
+        })
+        .def("get_n_dims", [](buffer &b) {
+            return b.get_n_dims();
+        })
+        .def("get_elements_type", [](buffer &b) {
+            return b.get_elements_type();
+        })
+        .def("get_dim_sizes", [](buffer &b) {
+            return b.get_dim_sizes();
+        })
+        .def("set_auto_allocate", [](buffer &b,
+                bool auto_allocation) {
+            return b.set_auto_allocate(auto_allocation);
+        })
+        .def("set_automatic_gpu_copy", [](buffer &b,
+                bool auto_gpu_copy) {
+            return b.set_automatic_gpu_copy(auto_gpu_copy);
+        })
+        .def("has_constant_extents", [](buffer &b) {
+            return b.has_constant_extents();
+        })
+        .def("is_allocated", [](buffer &b) {
+            return b.is_allocated();
+        })
+        .def("mark_as_allocated", [](buffer &b) {
+            b.mark_as_allocated();
+        })
+        .def("tag_gpu_global", [](buffer &b) {
+            b.tag_gpu_global();
+        })
+        .def("tag_gpu_register", [](buffer &b) {
+            b.tag_gpu_register();
+        })
+        .def("tag_gpu_shared", [](buffer &b) {
+            b.tag_gpu_shared();
+        })
+        .def("tag_gpu_local", [](buffer &b) {
+            b.tag_gpu_local();
+        })
+        .def("tag_gpu_constant", [](buffer &b) {
+            b.tag_gpu_constant();
+        });
+
+    py::class_<constant>(m, "constant")
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t,
+            bool function_wide,
+            std::shared_ptr<computation> &with_computation,
+            int at_loop_level,
+            std::shared_ptr<function> & func) {
+                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, func.get());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t,
+            bool function_wide,
+            std::shared_ptr<computation> &with_computation,
+            int at_loop_level) {
+                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, global::get_implicit_function());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t,
+            std::shared_ptr<function> &func) {
+                new(&c) constant(param_name, param_expr, t, func.get());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t) {
+                new(&c) constant(param_name, param_expr, t, global::get_implicit_function());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr) {
+                new(&c) constant(param_name, param_expr);
+        })
+        .def("get_computation_with_whom_this_is_computed", [](constant &c) {
+                std::shared_ptr<computation> cptr{nullptr};
+                cptr.reset(c.get_computation_with_whom_this_is_computed());
+                return cptr;
+        })
+        .def("dump", [](constant &c,
+            bool exhaustive) {
+                c.dump(exhaustive);
+        })
+        .def("__call__", [](constant &c) {
+                return c();
+        });
+
+    py::class_<input>(m, "input")
+        .def("__int__", [](input &i,
+            std::string name, std::vector<var> & iterator_variables, primitive_t t) {
+            new(&i) input(name, iterator_variables, t);
+        })
+        .def("__int__", [](input &i,
+            std::vector<var> & iterator_variables, primitive_t t) {
+            new(&i) input(iterator_variables, t);
+        })
+        .def("__int__", [](input &i,
+            std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
+            new(&i) input(name, dimension_names, dimension_sizes, t);
+        });
+
+    py::class_<Input>(m, "Input")
+        .def("__int__", [](Input &i,
+            std::string name, std::vector<expr> & sizes, primitive_t t) {
+            new(&i) Input(name, sizes, t);
+        })
+        .def("iterators_from_size_expressions", [](Input &i,
+            std::vector<expr> & sizes) {
+            return i.iterators_from_size_expressions(sizes);
+        });
+
+    py::class_<var>(m, "var")
+        .def("__init__", [](var &v,
+            primitive_t type_, std::string name) {
+            new(&v) var(type_, name);
+        })
+        .def("__init__", [](var &v,
+            std::string name) {
+            new(&v) var(name);
+        })
+        .def("__init__", [](var &v,
+            std::string name, expr upper, expr lower) {
+            new(&v) var(name, upper, lower);
+        })
+        .def("__init__", [](var &v) {
+            new(&v) var();
+        })
+        .def("get_upper", [](var &v) { return v.get_upper(); })
+        .def("get_lower", [](var &v) { return v.get_lower(); });
+
+    py::class_<isl_set_t>(m, "isl_set")
+        .def("__init__", [](isl_set_t &d) {
+            new(&d) isl_set_t();
+        });
+
+    py::class_<isl_map_t>(m, "isl_map")
+        .def("__init__", [](isl_map_t &d) {
+            new(&d) isl_map_t();
+        });
+
+    py::class_<computation>(m, "computation")
+        .def("__init__", [](computation &c,
+            std::string iteration_domain,
+            expr e,
+            bool schedule_this_computation,
+            primitive_t t,
+            std::shared_ptr<function> func) {
+                new(&c) computation(iteration_domain, e, schedule_this_computation, t, func.get());
+        })
+        .def("__init__", [](computation &c,
+            std::string iteration_domain,
+            std::vector<var> iterator_variables,
+            expr e,
+            bool schedule_this_computation) {
+                new(&c) computation(iteration_domain, iterator_variables, e, schedule_this_computation);
+        })
+        .def("__init__", [](computation &c,
+            std::vector<var> iterator_variables,
+            expr e) {
+                new(&c) computation(iterator_variables, e);
+        })
+        .def("__init__", [](computation &c,
+            std::vector<var> iterator_variables,
+            expr predicate,
+            expr e) {
+                new(&c) computation(iterator_variables, predicate, e);
+        })
+        .def("__init__", [](computation &c,
+            std::string name,
+            std::vector<var> iterator_variables,
+            expr e) {
+                new(&c) computation(name, iterator_variables, e);
+        })
+        .def("__init__", [](computation &c,
+            std::string name,
+            std::vector<var> iterator_variables,
+            expr predicate,
+            expr e) {
+                new(&c) computation(name, iterator_variables, predicate, e);
+        })
+        .def("__init__", [](computation &c,
+            std::vector<var> iterator_variables,
+            expr e,
+            bool schedule_this_operation) {
+                new(&c) computation(iterator_variables, e, schedule_this_operation);
+        })
+        .def("__init__", [](computation &c,
+            std::string name,
+            std::vector<var> iterator_variables,
+            primitive_t t) {
+                new(&c) computation(name, iterator_variables, t);
+        })
+        .def("__init__", [](computation &c,
+            std::vector<var> iterator_variables,
+            primitive_t t) {
+                new(&c) computation(iterator_variables, t);
+        })
+        .def("is_send", [](computation &c) { return c.is_send(); })
+        .def("is_recv", [](computation &c) { return c.is_recv(); })
+        .def("is_send_recv", [](computation &c) { return c.is_send_recv(); })
+        .def("is_wait", [](computation &c) { return c.is_wait(); })
+        .def("add_associated_let_stmt", [](computation &c,
+            std::string access_name,
+            expr e) {
+                return c.add_associated_let_stmt(access_name, e);
+        })
+        .def("unschedule_this_computation", [](computation &c) {
+                c.unschedule_this_computation();
+        })
+        .def("add_definitions", [](computation &c,
+            std::string iteration_domain_str,
+            expr e,
+            bool schedule_this_computation,
+            primitive_t t,
+            std::shared_ptr<function> & fct) {
+                c.add_definitions(iteration_domain_str, e, schedule_this_computation, t, fct.get());
+        })
+        .def("add_predicate", [](computation &c,
+             expr e) {
+                c.add_predicate(e);
+        })
+        .def("after", [](computation &c,
+             computation & comp,
+             var iterator) {
+                c.after(comp, iterator);
+        })
+        .def("after", [](computation &c,
+             computation & comp,
+             int level) {
+                c.after(comp, level);
+        })
+        .def("after_low_level", [](computation &c,
+             computation & comp,
+             int level) {
+                c.after_low_level(comp, level);
+        })
+        .def("after_low_level", [](computation &c,
+             computation & comp,
+             std::vector<int> levels) {
+                c.after_low_level(comp, levels);
+        })
+        .def("allocate_and_map_buffer_automatically", [](computation &c,
+             argument_t type) {
+                c.allocate_and_map_buffer_automatically(type);
+        })
+        .def("allocate_and_map_buffer_automatically", [](computation &c) {
+                c.allocate_and_map_buffer_automatically(a_temporary);
+        })
+        .def("apply_transformation_on_schedule", [](computation &c,
+            std::string map_str) {
+                c.apply_transformation_on_schedule(map_str);
+        })
+        .def("auto_buffer", [](computation &c) {
+                std::shared_ptr<buffer> bptr{};
+                bptr.reset(c.auto_buffer());
+                return bptr;
+        })
+        .def("before", [](computation &c,
+            computation &consumer,
+            var L) {
+                c.before(consumer, L);
+        })
+        .def("between", [](computation &c,
+            computation &before_comp,
+            var before_l,
+            computation &after_comp,
+            var after_l) {
+                c.between(before_comp, before_l, after_comp, after_l);
+        })
+        .def("between", [](computation &c,
+            computation &before_comp,
+            int before_l,
+            computation &after_comp,
+            int after_l) {
+                c.between(before_comp, before_l, after_comp, after_l);
+        })
+        .def("store_in", [](computation &c,
+            std::shared_ptr<buffer> & buff) {
+                c.store_in(buff.get());
+        })
+        .def("store_in", [](computation &c,
+            std::shared_ptr<buffer> & buff,
+            std::vector<expr> iterators) {
+                c.store_in(buff.get(), iterators);
+        })
+        .def("store_in", [](computation &c,
+            std::vector<expr> mapping,
+            std::vector<expr> sizes) {
+                c.store_in(mapping, sizes);
+        })
+        .def("cache_shared", [](computation &c,
+            computation & inp,
+            const var & level,
+            std::vector<int> buffer_shape,
+            std::vector<expr> copy_offsets,
+            bool pad_buffer) {
+                std::shared_ptr<computation> cptr{};
+                cptr.reset(c.cache_shared(inp, level, buffer_shape, copy_offsets, pad_buffer));
+                return cptr;
+        })
+        .def("cache_shared", [](computation &c,
+            computation & inp,
+            const var & level,
+            std::vector<int> buffer_shape,
+            std::vector<expr> copy_offsets) {
+                std::shared_ptr<computation> cptr{};
+                cptr.reset(c.cache_shared(inp, level, buffer_shape, copy_offsets));
+                return cptr;
+        })
+        .def("compute_at", [](computation &c,
+            computation &consumer,
+            var L) {
+                c.compute_at(consumer, L);
+        })
+        .def("compute_at", [](computation &c,
+            computation &consumer,
+            int L) {
+                c.compute_at(consumer, L);
+        })
+        .def("compute_maximal_AST_depth", [](computation &c) {
+            return c.compute_maximal_AST_depth();
+        })
+        .def("dump_iteration_domain", [](computation &c) {
+            c.dump_iteration_domain();
+        })
+        .def("dump_schedule", [](computation &c) {
+            c.dump_schedule();
+        })
+        .def("dump", [](computation &c) {
+            c.dump();
+        })
+        .def("fuse_after", [](computation &c,
+            var lev, computation & comp) {
+            c.after(comp, lev);
+        })
+        .def("gen_time_space_domain", [](computation &c) {
+            c.gen_time_space_domain();
+        })
+        .def("drop_rank_iter", [](computation &c,
+            var level) {
+                c.drop_rank_iter(level);
+        })
+        .def("get_buffer", [](computation &c) {
+                std::shared_ptr<buffer> bptr{};
+                bptr.reset(c.get_buffer());
+                return bptr;
+        })
+        .def("get_datatype", [](computation &c) {
+                return c.get_data_type();
+        })
+        .def("get_expr", [](computation &c) {
+                return c.get_expr();
+        })
+        .def("get_iteration_domain", [](computation &c) {
+                std::shared_ptr<isl_set_t> rptr{};
+                rptr->value = c.get_iteration_domain();
+                return rptr;
+        })
+        .def("get_last_update", [](computation &c) {
+                return c.get_last_update();
+        })
+        .def("get_loop_level_number_from_dimension_name", [](computation &c,
+            std::string dim_name) {
+                return c.get_loop_level_number_from_dimension_name(dim_name);
+        })
+        .def("get_name", [](computation &c) {
+                return c.get_name();
+        })
+        .def("get_predecessor", [](computation &c) {
+                std::shared_ptr<computation> cptr{};
+                cptr.reset(c.get_predecessor());
+                return cptr;
+        })
+        .def("get_successor", [](computation &c) {
+                std::shared_ptr<computation> cptr{};
+                cptr.reset(c.get_successor());
+                return cptr;
+        })
+        .def("get_update", [](computation &c, int index) {
+                return c.get_update(index);
+        })
+        .def("get_schedule", [](computation &c) {
+                std::shared_ptr<isl_map_t> rptr{};
+                rptr->value = c.get_schedule();
+                return rptr;
+        })
+        .def("gpu_tile", [](computation &c,
+            var L0, var L1,
+            int sizeX, int sizeY) {
+                c.gpu_tile(L0, L1, sizeX, sizeY);
+        })
+        .def("gpu_tile", [](computation &c,
+            var L0, var L1,
+            int sizeX, int sizeY,
+            var L0_outer, var L1_outer,
+            var L0_inner, var L1_inner) {
+                c.gpu_tile(L0, L1, sizeX, sizeY, L0_outer, L1_outer, L0_inner, L1_inner);
+        })
+        .def("gpu_tile", [](computation &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ) {
+                c.gpu_tile(L0, L1, L2, sizeX, sizeY, sizeZ);
+        })
+        .def("gpu_tile", [](computation &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ,
+            var L0_outer, var L1_outer, var L2_outer,
+            var L0_inner, var L1_inner, var L2_inner) {
+                c.gpu_tile(L0, L1, L2, sizeX, sizeY, sizeZ, L0_outer, L1_outer, L2_outer, L0_inner, L1_inner, L2_inner);
+        })
+        .def("get_automatically_allocated_buffer", [](computation &c) {
+                std::shared_ptr<buffer> bptr{};
+                bptr.reset(c.get_automatically_allocated_buffer());
+                return bptr;
+        })
+        .def("interchange", [](computation &c,
+            var L0, var L1) {
+                c.interchange(L0, L1);
+        })
+        .def("interchange", [](computation &c,
+            int L0, int L1) {
+                c.interchange(L0, L1);
+        })
+        .def("mark_as_let_statement", [](computation &c) {
+                c.mark_as_let_statement();
+        })
+        .def("mark_as_library_call", [](computation &c) {
+                c.mark_as_library_call();
+        })
+        .def("parallelize", [](computation &c,
+            var L) {
+                c.parallelize(L);
+        })
+        .def("set_access", [](computation &c,
+            std::string access_str) {
+                c.set_access(access_str);
+        })
+        .def("set_access", [](computation &c,
+            std::shared_ptr<isl_map_t> &access) {
+                c.set_access(access->value);
+        })
+        .def("set_wait_access", [](computation &c,
+            std::string access_str) {
+                c.set_wait_access(access_str);
+        })
+        .def("set_wait_access", [](computation &c,
+            std::shared_ptr<isl_map_t> &access) {
+                c.set_wait_access(access->value);
+        })
+        .def("set_expression", [](computation &c,
+            expr e) {
+                c.set_expression(e);
+        })
+        .def("set_inline", [](computation &c,
+            bool is_inline) {
+                c.set_inline(is_inline);
+        })
+        .def("set_inline", [](computation &c) {
+                c.set_inline(true);
+        })
+        .def("is_inline_computation", [](computation &c) {
+                c.is_inline_computation();
+        })
+        .def("set_low_level_schedule", [](computation &c,
+            std::shared_ptr<isl_map_t> &map) {
+                c.set_low_level_schedule(map->value);
+        })
+        .def("set_low_level_schedule", [](computation &c,
+             std::string map_str) {
+                c.set_low_level_schedule(map_str);
+        })
+        .def("shift", [](computation &c,
+            var L0, int n) {
+                c.shift(L0, n);
+        })
+        .def("skew", [](computation &c,
+            var i, var j, int f, var ni, var nj) {
+                c.skew(i, j, f, ni, nj);
+        })
+        .def("skew", [](computation &c,
+            var i, var j, var k, int factor, var ni, var nj, var nk) {
+                c.skew(i, j, k, factor, ni, nj, nk);
+        })
+        .def("skew", [](computation &c,
+            var i, var j, var k, var l, int factor, var ni, var nj, var nk, var nl) {
+                c.skew(i, j, k, l, factor, ni, nj, nk, nl);
+        })
+        .def("skew", [](computation &c,
+            var i, var j, int f) {
+                c.skew(i, j, f);
+        })
+        .def("skew", [](computation &c,
+            var i, var j, var k, int f) {
+                c.skew(i, j, k, f);
+        })
+        .def("skew", [](computation &c,
+            var i, var j, var k, var l, int f) {
+                c.skew(i, j, k, l, f);
+        })
+        .def("skew", [](computation &c,
+            int i, int j, int f) {
+                c.skew(i, j, f);
+        })
+        .def("skew", [](computation &c,
+            int i, int j, int k, int f) {
+                c.skew(i, j, k, f);
+        })
+        .def("skew", [](computation &c,
+            int i, int j, int k, int l, int f) {
+                c.skew(i, j, k, l, f);
+        })
+        .def("split", [](computation &c,
+            var L0, int sizeX) {
+                c.split(L0, sizeX);
+        })
+        .def("split", [](computation &c,
+            var L0, int sizeX, var L0_outer, var L0_inner) {
+                c.split(L0, sizeX, L0_outer, L0_inner);
+        })
+        .def("split", [](computation &c,
+            int L0, int sizeX) {
+                c.split(L0, sizeX);
+        })
+        .def("storage_fold", [](computation &c,
+            var dim, int f) {
+                c.storage_fold(dim, f);
+        })
+        .def("tag_gpu_level", [](computation &c,
+            var L0, var L1) {
+                c.tag_gpu_level(L0, L1);
+        })
+        .def("tag_gpu_level", [](computation &c,
+            var L0, var L1, var L2, var L3) {
+                c.tag_gpu_level(L0, L1, L2, L3);
+        })
+        .def("tag_gpu_level", [](computation &c,
+            var L0, var L1, var L2, var L3, var L4, var L5) {
+                c.tag_gpu_level(L0, L1, L2, L3, L4, L5);
+        })
+        .def("tag_parallel_level", [](computation &c,
+            var L) {
+                c.tag_parallel_level(L);
+        })
+        .def("tag_parallel_level", [](computation &c,
+            int L) {
+                c.tag_parallel_level(L);
+        })
+        .def("tag_vector_level", [](computation &c,
+            var L,
+            int len) {
+                c.tag_vector_level(L, len);
+        })
+        .def("tag_vector_level", [](computation &c,
+            int L,
+            int len) {
+                c.tag_vector_level(L, len);
+        })
+        .def("tag_distribute_level", [](computation &c,
+            var L) {
+                c.tag_distribute_level(L);
+        })
+        .def("tag_distribute_level", [](computation &c,
+            int L) {
+                c.tag_distribute_level(L);
+        })
+        .def("tag_unroll_level", [](computation &c,
+            var L) {
+                c.tag_unroll_level(L);
+        })
+        .def("tag_unroll_level", [](computation &c,
+            int L) {
+                c.tag_unroll_level(L);
+        })
+        .def("tag_unroll_level", [](computation &c,
+            var L, int F) {
+                c.tag_unroll_level(L, F);
+        })
+        .def("tag_unroll_level", [](computation &c,
+            int L, int F) {
+                c.tag_unroll_level(L, F);
+        })
+        .def("then", [](computation &c,
+            computation & next, var L) {
+                return c.then(next, L);
+        })
+        .def("then", [](computation &c,
+            computation & next, int L) {
+                return c.then(next, L);
+        })
+        .def("tile", [](computation &c,
+            var L0, var L1,
+            int sizeX, int sizeY) {
+                c.tile(L0, L1, sizeX, sizeY);
+        })
+        .def("tile", [](computation &c,
+            int L0, int L1,
+            int sizeX, int sizeY) {
+                c.tile(L0, L1, sizeX, sizeY);
+        })
+        .def("tile", [](computation &c,
+            var L0, var L1,
+            int sizeX, int sizeY,
+            var L0_outer, var L1_outer,
+            var L0_inner, var L1_inner) {
+                c.tile(L0, L1, sizeX, sizeY, L0_outer, L1_outer, L0_inner, L1_inner);
+        })
+        .def("tile", [](computation &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ) {
+                c.tile(L0, L1, L2, sizeX, sizeY, sizeZ);
+        })
+        .def("tile", [](computation &c,
+            int L0, int L1, int L2,
+            int sizeX, int sizeY, int sizeZ) {
+                c.tile(L0, L1, L2, sizeX, sizeY, sizeZ);
+        })
+        .def("tile", [](computation &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ,
+            var L0_outer, var L1_outer, var L2_outer,
+            var L0_inner, var L1_inner, var L2_inner) {
+                c.tile(L0, L1, L2, sizeX, sizeY, sizeZ, L0_outer, L1_outer, L2_outer, L0_inner, L1_inner, L2_inner);
+        })
+        .def("unroll", [](computation &c,
+            var L, int fac) {
+                c.unroll(L, fac);
+        })
+        .def("unroll", [](computation &c,
+            var L, int fac, var L_outer, var L_inner) {
+                c.unroll(L, fac, L_outer, L_inner);
+        })
+        .def("vectorize", [](computation &c,
+            var L, int fac) {
+                c.vectorize(L, fac);
+        })
+        .def("vectorize", [](computation &c,
+            var L, int fac, var L_outer, var L_inner) {
+                c.vectorize(L, fac, L_outer, L_inner);
+        })
+        .def("gen_communication", [](computation &c) { c.gen_communication(); })
+        .def("gen_communication", [](computation &c, var L) { c.gen_communication(L); })
+        .def("__call__", [](computation &c, var i) {
+            return c(i);
+        })
+        .def("__call__", [](computation &c, var i, var j) {
+            return c(i, j);
+        })
+        .def("__call__", [](computation &c, var i, var j, var k) {
+            return c(i, j, k);
+        })
+        .def("__call__", [](computation &c, var i, var j, var k, var l) {
+            return c(i, j, k, l);
+        })
+        .def("__call__", [](computation &c) { c(); })
+        .def("create_xfer", [](computation &c,
+            std::string send_iter_domain, std::string recv_iter_domain,
+            expr send_dest, expr recv_src, xfer_prop send_prop, xfer_prop recv_prop,
+            expr send_expr, std::shared_ptr<function> & fct) {
+                return c.create_xfer(send_iter_domain, recv_iter_domain,
+                    send_dest, recv_src, send_prop, recv_prop, send_expr, fct.get());
+        })
+        .def("create_xfer", [](computation &c,
+            std::string iter_domain, xfer_prop prop, expr exper, std::shared_ptr<function> & fct) {
+                return c.create_xfer(iter_domain, prop, exper, fct.get());
+        });
+       
+    py::class_<generator>(m, "generator")
+        .def("__init__", [](generator &g) {
+            new (&g) generator();
+        })
+        .def_static("update_producer_expr_name", [](generator &g,
+                std::shared_ptr<computation> comp, std::string name_to_replace, std::string replace_with) {
+            g.update_producer_expr_name(comp.get(), name_to_replace, replace_with);
+        });
+
+    // init
+    //
+    m.def("init", [](pybind11::module &m) { tiramisu::init(); });
+    m.def("init", [](pybind11::module &m, std::string name) { tiramisu::init(name); });
+
+    // codegen
+    //
+    m.def("codegen", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string obj_filename) {
+       std::vector<buffer *> bufs;
+       bufs.reserve(arguments.size());
+       std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+       tiramisu::codegen(bufs, obj_filename, false);
+    });
+
+    m.def("codegen", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string obj_filename, bool gen_cuda_stmt) {
+       std::vector<buffer *> bufs;
+       bufs.reserve(arguments.size());
+       std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+       tiramisu::codegen(bufs, obj_filename, gen_cuda_stmt);
+    });
+
+    m.def("codegen_physl", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string & code_buffer) {
+       physl::tiramisu::codegen(arguments, code_buffer);
+    });
+
+} // end pyisl module

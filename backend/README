@@ -1,0 +1,10 @@
+===Building Tiramisu===
+
++ Dependencies
+
+	* install clang-8, pthreads, libdl
+	* git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
+	* cp ./install_submodules.sh $(TIRAMISU_ROOT)/utils/scripts/ (this script installs isl, Halide)
+	* modify: $(TIRAMISU_ROOT)/configure.cmake
+	* read $(TIRAMISU_ROOT)/INSTALL.md or use the following script `./utils/scripts/install_submodules.sh $(TIRAMISU_ROOT)`
+	* run through the following semicolon delimited commands: mkdir build; cd build; cmake ..; make -j tiramisu
