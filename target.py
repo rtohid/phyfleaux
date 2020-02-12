@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-from flow import flowfn
+from flow import flow
 
 import numpy
 
@@ -19,13 +19,10 @@ for i in range(N):
     b[i] = 2 * i + 1
 
 
-@flowfn
+@flow
 def vector_vector_add_int(a, b, c):
 
     for i in range(N):
         c[i] = a[i] + b[i] - i
 
     return c
-
-
-# print(vector_vector_add_int(a, b, c))

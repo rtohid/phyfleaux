@@ -5,4 +5,4 @@
 
 from __future__ import absolute_import
 
-from flow.ir.utils import flowfn
+from flow.ir.base import flow
