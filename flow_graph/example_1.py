@@ -1,9 +1,8 @@
-
-# from pprint import pprint
-# import networkx as nx
-# import matplotlib.pyplot as plt
-# from collections import defaultdict
-# import random
+from pprint import pprint
+import networkx as nx
+import matplotlib.pyplot as plt
+from collections import defaultdict
+import random
 # def buildAdjacencyList(self, n, edgesList):
 #         adjList = [[] for _ in range(n)]
 #         # c2 (course 2) is a prerequisite of c1 (course 1)
@@ -48,7 +47,23 @@
 
 # print(blist_nodes[1])
 
-def foo():
-    return('exampple1')
+a= defaultdict(list)
+a[0]=[1,2 ,3,4]
+c=a[0][-1]
+a[1]=[]
+print(a)
+if a[1]:
+    print(a[1][-1])
 
-foo()
+
+a= dict()
+a[2]=[21,22,23,24]
+a[5]=[]
+print('another a is:', a)
+if a[5]:
+    print(a[5][-1])
+
+
+ca =[]
+print(len(ca))
+print(c[-1])
