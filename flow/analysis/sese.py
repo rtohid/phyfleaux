@@ -13,8 +13,8 @@ class BracketList(list):
     def __init__(self):
         '''Maintains lists of brackets.
 
-        a bracket of a tree edge *t* is a backedge connecting a descendent of *t* to
-        an ancestor of it.
+        a bracket of a tree edge *t* is a backedge connecting a descendent of
+        *t* to an ancestor of it.
         '''
         self.bl = []
 
@@ -48,12 +48,16 @@ class BracketList(list):
 
 
 class Node:
-    def __init__(self):
+    def __init__(self, label):
         '''Node datastructure.'''
 
-        self.dfsnum
+        self.dfs_num
         self.bl = BracketList()
         self.hi = -1
+
+    def find_hi(self, graph_dfs):
+        pass
+        # self.hi = 
 
 
 #    def __init__(self, parents=[]):
@@ -78,7 +82,7 @@ class Node:
 
 
 class Edge:
-    def __init__(self, source=None, destination=None, idx=None):
+    def __init__(self, source=None, destination=None, label=None):
         '''Edge datastructure.
 
         :param? idx: idx of the edge; optional.
@@ -90,7 +94,7 @@ class Edge:
         '''
 
         if all(isinstance(x, int) for x in (source, destination)):
-            self.id = (idx, source, destination)
+            self.id = (label, source, destination)
         else:
             raise
         self.class_idx = None

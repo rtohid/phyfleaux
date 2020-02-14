@@ -10,12 +10,15 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import networkx as nx
 
+from flow.analysis.sese import Node, Edge, BracketList
 
-def build_graph():
+
+def setup_example():
     G = nx.Graph()
     G.add_nodes_from([1, 2, 3, 4, 5, 6, 7])
+
     # tree edges
-    G.add_edges_from([(1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (5, 7), (6, 8),
+    G.add_edges_from ([(1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (5, 7), (6, 8),
                       (7, 9)])
 
     # backedges
@@ -23,37 +26,24 @@ def build_graph():
     return G
 
 
-psuedo_cfg = build_graph()
-tree = nx.Graph()
-tree.add_edges_from(nx.dfs_edges(psuedo_cfg, source=1))
+# setup example from https://bit.ly/38sBzDn, figure 3c.
+psuedo_cfg = setup_example()
 
-for i in tree.adjacency():
-    print(i)
+dfs = nx.Graph()
+dfs.add_edges_from(nx.dfs_edges(psuedo_cfg, source=1))
 
-nx.draw_networkx(psuedo_cfg)
-plt.draw()
-plt.pause(5)
+nodes_list = list(dfs.nodes)
+print(nodes_list)
 
-plt.clf()
-nx.draw_networkx(tree)
-plt.draw()
-plt.pause(5)
-
-''' 
-nx.draw_networkx(psuedo_cfg)
-plt.show()
-plt.clf()
-nx.draw_networkx(tree)
-plt.show()
-'''
-
-# for a in T.adjacency():
-#     print(a[1].keys())
-#     print('a', a)
-# list_increasing_order = list(T.nodes)
-
-# G_edges = list(nx.dfs_labeled_edges(G, source=1))
-# nx.str
+edges_list = list(nx.dfs_labeled_edges(psuedo_cfg, source=1))
+for s, d, e in edges_list:
+    if s < d:
+        print(s, d, e)
+num = 0
+for destination, source, edge_type in edges_list:
+    if edge_type == 'nontree' and destination < source:
+        print(source, destination)
+        # descendants_backedge_nodes_edgelist[node].append(Edge(node_2, node))
 
 # # find highest node
 # # empty set return infinity number (N+1)
@@ -208,3 +198,22 @@ plt.show()
 #             b.classIndex = e.classIndex
 
 # pprint(list(T.nodes(data=True)))
+
+__scratchpad__ = '''
+for i in tree.adjacency():
+    print(i)
+
+nx.draw_networkx(psuedo_cfg)
+plt.draw()
+plt.pause(5)
+
+plt.clf()
+nx.draw_networkx(tree)
+plt.draw()
+plt.pause(5)
+
+nx.draw_networkx(psuedo_cfg)
+plt.show()
+plt.clf()
+nx.draw_networkx(tree)
+plt.show()'''
