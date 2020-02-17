@@ -48,41 +48,29 @@ class BracketList(list):
 
 
 class Node:
-    def __init__(self, label):
+    nodes = dict()
+
+    def __init__(self, id):
         '''Node datastructure.'''
 
-        self.dfs_num
+        self.id = id
+        self.dfs_num = None
         self.bl = BracketList()
         self.hi = -1
+        self.children = []
+        Node.nodes[self.id] = self
+
+    def add_child(self, child):
+        self.children.append(child)
 
     def find_hi(self, graph_dfs):
         pass
-        # self.hi = 
-
-
-#    def __init__(self, parents=[]):
-#        self.parents = parents
-#        self.discovery_time = []
-#        self.children = []
-#
-#    def add_child(self, c):
-#        if c not in self.children:
-#            self.children.append(c)
-#
-#    def set_parents(self, p):
-#        self.parents = p
-#
-#    def add_parent(self, p):
-#        if p not in self.parents:
-#            self.parents.append(p)
-#
-#    def add_parents(self, ps):
-#        for p in ps:
-#            self.add_parent(p)
 
 
 class Edge:
-    def __init__(self, source=None, destination=None, label=None):
+    edges = dict()
+
+    def __init__(self, source, destination, id, class_=None):
         '''Edge datastructure.
 
         :param? idx: idx of the edge; optional.
@@ -93,16 +81,16 @@ class Edge:
         the edge was most recently the top-most brancket. 
         '''
 
-        if all(isinstance(x, int) for x in (source, destination)):
-            self.id = (label, source, destination)
-        else:
-            raise
+        self.e = (source, destination)
+        self.id = id
+        self.recent_class = class_
         self.class_idx = None
         self.recent_size = None
-        self.recent_class = None
+        Edge.edges[self.id] = self
 
     def __repr__(self):
-        return str(self.id)
+        return "{}: id {}, type '{}'".format(str(self.edge), self.id,
+                                             self.recent_class)
 
     def __eq__(self, other):
         return self.ends == other.id
