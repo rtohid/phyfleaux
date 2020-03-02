@@ -1,9 +1,9 @@
-from ir.cfg import gen_cfg, to_graph
+from physl.ir.cfg import gen_cfg, to_graph
 from graphviz import Source
 import inspect
 import numpy
 
-
+@physl
 def vector_vector_int_add():
     a = numpy.zeros(10, dtype=int)
     b = numpy.zeros(10, dtype=int)

@@ -10,7 +10,7 @@ from inspect import getsource
 from collections import OrderedDict
 from typing import Callable
 
-from flow.ir.utils import print_dict
+from physl.ir.utils import print_dict
 
 
 class IR:
@@ -44,9 +44,3 @@ class IR:
     def on_module(self, node, parents=[]):
         return self.generate(node.body[0])
 
-
-def flow(fn: Callable):
-    internal_rep = IR(fn)
-
-    print_dict(internal_rep.ir, _depth=10, _indent=2)
-    return internal_rep.python_fn
