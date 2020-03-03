@@ -1,7 +1,8 @@
 # Copyright (c) 2019 R. Tohid
 #
 # Distributed under the Boost Software License, Version 1.0. (See a copy at
-# http://www.boost.org/LICENSE_1_0.txt)import setuptools
+# http://www.boost.org/LICENSE_1_0.txt)
+
 import setuptools
 
 with open("README.md", "r") as fh:
