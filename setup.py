@@ -8,14 +8,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="phycfg-rtohid",  # Replace with your own username
+    name="phyflow-rtohid",  # Replace with your own username
     version="0.0.1",
     author="R. Tohid",
     author_email="stellar dot python at gmail dot com",
-    description="A small example package",
+    description="Phylanx optimization framework.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/rtohid/phycfg",
+    url="https://github.com/rtohid/phyflow",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
