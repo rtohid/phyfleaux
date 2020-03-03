@@ -5,7 +5,7 @@
 
 from typing import Callable
 
-from phylanx.ir.base import IR
+from phylanx.core.function import PhyFn
 
 
 def Phylanx(__phylanx_arg=None, **kwargs):
@@ -14,11 +14,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
             :param fn: A python function.
             """
-            self.ir = IR(fn)
+            self.ir = PhyFn(fn)
 
         def __call__(self, *args, **kwargs):
-            return self.ir.python_fn(*args, **kwargs)
-
+            return self.ir.fn(*args, **kwargs)
 
     if callable(__phylanx_arg):
         return _PhylanxDecorator(__phylanx_arg)

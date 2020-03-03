@@ -1,5 +1,5 @@
 import numpy
-from phylanx.core.decorators import Phylanx
+from phylanx.core.directives import Phylanx
 
 
 @Phylanx
@@ -23,6 +23,8 @@ def vector_vector_int_add():
     for i in range(10):
         c[i] = a[i] + b[i] - i
 
+print()
+print("DONE TARGET")
 
 # print(vector_vector_int_add.ir)
 

@@ -7,25 +7,38 @@ from __future__ import absolute_import
 
 import ast
 import astpretty
+import networkx
 import pprint
 
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 from inspect import getsource
 from typing import Callable, List
 
+from phylanx.core.data import DataRegistry
+from phylanx.core.task import TaskRegistry
 from phylanx.ir.nodes import Function
 
 
-class IRTable:
-    fucntions = defaultdict(lambda: None)
-    variables = defaultdict(lambda: None)
-
-    def __init__(self, fn: Callable, ast: ast.AST):
-        pass
+class IRNode:
+    def __init__(self, fn):
+        self.phy_fn = fn
+        self.functions = TaskRegistry(fn)
+        self.data = DataRegistry(fn)
+        IRGraph.register(self)
 
 
 class IRGraph:
-    def __init__(self, fn: Callable, ast: ast.AST):
+    graph = networkx.DiGraph()
+
+    def __init__(self, node: IRNode, ast_: ast.AST):
+        pass
+
+    @staticmethod
+    def register(node: IRNode):
+        IRGraph.graph.add_node()
+
+    @staticmethod
+    def funcname(parameter_list):
         pass
 
 
