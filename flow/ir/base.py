@@ -13,10 +13,8 @@ from typing import Callable
 from flow.ir.utils import print_dict
 
 
-
 class IR:
     '''Internal Representation of code.'''
-
     def __init__(self, fn, transformation_rules: Callable = None):
         '''Construct internal representation.'''
         self.python_fn = fn
