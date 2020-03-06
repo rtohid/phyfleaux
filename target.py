@@ -1,3 +1,12 @@
+from __future__ import absolute_import
+
+_license__ = """ 
+Copyright (c) 2020 R. Tohid
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+"""
+
 import numpy
 from phylanx.core.directives import Phylanx
 
@@ -23,10 +32,8 @@ def vector_vector_int_add():
     for i in range(10):
         c[i] = a[i] + b[i] - i
 
-print()
-print("DONE TARGET")
 
-# print(vector_vector_int_add.ir)
+print(vector_vector_int_add.fn.ir)
 
 # from phylanx.analysis.cfg import gen_cfg, to_graph
 # from graphviz import Source
