@@ -7,9 +7,13 @@ Distributed under the Boost Software License, Version 1.0. (See accompanying
 file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
+from phylanx.core.data import DataRegistry
+from phylanx.core.task import TaskRegistry
+from phylanx.ir.nodes import Function
+
 
 class IRNode:
-    def __init__(self, name, scope, lineno=None, col_offset=None):
+    def __init__(self, fn, name, scope, lineno=None, col_offset=None):
         self.name = name
         self.scope = scope
         self.lineno = lineno
@@ -24,6 +28,7 @@ class IRNode:
 class Variable(IRNode):
     def __init__(self, name, scope, lineno, col_offset, type_=None):
         super().__init__(name, scope, lineno, col_offset)
+        self.data = DataRegistry(fn)
         self.type = type_
 
     def __eq__(self, other):
@@ -66,6 +71,8 @@ class Array(Variable):
 class Function(IRNode):
     def __init__(self, name, scope, lineno, col_offset, dtype=''):
         super().__init__(name, scope, lineno, col_offset)
+        self.fn = fn
+        self.functions = TaskRegistry(fn)
         self.args_list = []
         self.dtype = dtype
 
