@@ -14,8 +14,10 @@ from typing import Callable
 
 
 class TaskRegistry:
-    fucntions = OrderedDict([])
+    tasks = OrderedDict([])
 
+
+class Task:
     def __init__(self, fn: Callable, ast_: ast.AST):
         self.fn = fn
         self.fn_ast = ast_

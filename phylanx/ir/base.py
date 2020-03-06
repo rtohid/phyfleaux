@@ -1,9 +1,11 @@
-# Copyright (c) 2020 R. Tohid
-#
-# Distributed under the Boost Software License, Version 1.0. (See accompanying
-# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
 from __future__ import absolute_import
+
+_license__ = """ 
+Copyright (c) 2020 R. Tohid
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+"""
 
 import ast
 import astpretty
@@ -14,46 +16,74 @@ from collections import OrderedDict
 from inspect import getsource
 from typing import Callable, List
 
-from phylanx.core.data import DataRegistry
-from phylanx.core.task import TaskRegistry
-from phylanx.ir.nodes import Function
 
+class NameSpace:
+    full_name = []
 
-class IRNode:
-    def __init__(self, fn):
-        self.phy_fn = fn
-        self.functions = TaskRegistry(fn)
-        self.data = DataRegistry(fn)
-        IRGraph.register(self)
-
-
-class IRGraph:
-    graph = networkx.DiGraph()
-
-    def __init__(self, node: IRNode, ast_: ast.AST):
-        pass
+    def __init__(self, namespace=None):
+        self.current_space = namespace
 
     @staticmethod
-    def register(node: IRNode):
-        IRGraph.graph.add_node()
+    def get():
+        return '_'.join(NameSpace.full_name)
 
-    @staticmethod
-    def funcname(parameter_list):
-        pass
+    def __enter__(self):
+        if self.namespace:
+            NameSpace.full_name.append(self.current_space)
+
+    def __exit__(self, type, value, traceback):
+        if self.namespace:
+            NameSpace.full_name.pop()
 
 
 class IR:
     '''Internal Representation of code.'''
-    def __init__(self, fn: Callable, transformation_rules: Callable = None):
+
+    graph = networkx.DiGraph()
+
+    def __init__(self, fn: Callable):
         '''Construct internal representation.'''
         self.python_fn = fn
         self.python_ast = ast.parse(getsource(fn))
 
+        self.build_node()
+        self.register_node()
+
+    def build_node(self):
+
+        # discount the decorator line.
         ast.increment_lineno(self.python_ast, n=-1)
-        astpretty.pprint(self.python_ast.body[0])
-        # self.ir_table = IRTable(self.python_fn, self.python_ast)
-        # self.ir_graph = IRGraph(self.python_fn, self.python_ast)
-        self.ir = self.generate(self.python_ast)
+
+        def _FunctionDef(self, node):
+            """class FunctionDef(name, args, body, decorator_list, returns)
+            `name` is a raw string of the function name.
+            `args` is a arguments node.
+            `body` is the list of nodes inside the function.
+            `decorator_list` is the list of decorators to be applied, stored
+                outermost first (i.e. the first in the list will be applied last).
+            `returns` is the return annotation (Python 3 only).
+            Notes:
+                We ignore decorator_list and returns.
+            """
+
+            func = FunctionDef(node.name, NameSpace.get(), node.lineno,
+                               node.col_offset)
+
+            with NameSpace(func.name) as ns:
+                func.add_arg(self.visit(node.args))
+                body = FunctionCall('block', NameSpace.get(),
+                                    node.body[0].lineno,
+                                    node.body[0].col_offset)
+
+                for statement in node.body:
+                    body.add_arg(self.visit(statement))
+                func.add_arg(body)
+            SymbolTable.add_symbol(func)
+            return func
+
+    def register_node(self):
+        pass
+        # IR.graph.add_node()
 
     def generate(self, node: ast, parents: list = []):
         node_name = node.__class__.__name__.lower()
@@ -76,7 +106,7 @@ class IR:
             return node
 
     def __repr__(self):
-        return pprint.pformat(self.ir)
+        return pprint.pformat(self.python_ast)
 
     def on_module(self, node: ast.AST, parents: List = []):
         return self.generate(node.body[0])
