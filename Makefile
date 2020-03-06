@@ -9,4 +9,6 @@ cleanpy:
 	find . -name .pytest_cache | xargs rm -rf 
 	find . -name __pycache__ | xargs rm -rf 
 
+test_unit:
+	pytest ${HOME}/repos/phyflow/test/unit
 .PHONY:

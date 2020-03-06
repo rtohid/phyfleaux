@@ -10,10 +10,22 @@ import pytest
 from phylanx.core.decorators import Phylanx
 
 
+@Phylanx
 def times_two(x):
     return x * 2
 
 
-class TestDecorators:
-    def test_phylanx(self):
-        assert times_two(2) == Phylanx(times_two)(2)
+print(times_two.ir)
+
+
+def foo_1():
+    a = 3
+
+
+print(hash(foo_1))
+
+
+def foo(fn):
+    print(hash(fn))
+
+foo(foo_1)

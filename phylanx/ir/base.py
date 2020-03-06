@@ -6,19 +6,40 @@
 from __future__ import absolute_import
 
 import ast
-from inspect import getsource
-from collections import OrderedDict
-from typing import Callable
+import astpretty
+import pprint
 
-from physl.ir.utils import print_dict
+from collections import OrderedDict, defaultdict
+from inspect import getsource
+from typing import Callable, List
+
+from phylanx.ir.nodes import Function
+
+
+class IRTable:
+    fucntions = defaultdict(lambda: None)
+    variables = defaultdict(lambda: None)
+
+    def __init__(self, fn: Callable, ast: ast.AST):
+        pass
+
+
+class IRGraph:
+    def __init__(self, fn: Callable, ast: ast.AST):
+        pass
 
 
 class IR:
     '''Internal Representation of code.'''
-    def __init__(self, fn, transformation_rules: Callable = None):
+    def __init__(self, fn: Callable, transformation_rules: Callable = None):
         '''Construct internal representation.'''
         self.python_fn = fn
         self.python_ast = ast.parse(getsource(fn))
+
+        ast.increment_lineno(self.python_ast, n=-1)
+        astpretty.pprint(self.python_ast.body[0])
+        # self.ir_table = IRTable(self.python_fn, self.python_ast)
+        # self.ir_graph = IRGraph(self.python_fn, self.python_ast)
         self.ir = self.generate(self.python_ast)
 
     def generate(self, node: ast, parents: list = []):
@@ -41,6 +62,8 @@ class IR:
         else:
             return node
 
-    def on_module(self, node, parents=[]):
-        return self.generate(node.body[0])
+    def __repr__(self):
+        return pprint.pformat(self.ir)
 
+    def on_module(self, node: ast.AST, parents: List = []):
+        return self.generate(node.body[0])
