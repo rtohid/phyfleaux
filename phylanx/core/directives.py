@@ -21,7 +21,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             self.fn = PhyFn(fn)
 
         def __call__(self, *args, **kwargs):
-            return self.ir.fn(*args, **kwargs)
+            return self.fn(*args, **kwargs)
 
     if callable(__phylanx_arg):
         return _PhylanxDecorator(__phylanx_arg)

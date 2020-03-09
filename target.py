@@ -16,9 +16,6 @@ def foo(x):
     return x * 2
 
 
-# print(foo.ir)
-# print(foo(2))
-
 @Phylanx
 def vector_vector_int_add():
     a = numpy.zeros(10, dtype=int)
