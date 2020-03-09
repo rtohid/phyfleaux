@@ -16,21 +16,28 @@ def foo(x):
     return x * 2
 
 
+print(foo.fn(2))
+
+
 @Phylanx
-def vector_vector_int_add():
-    a = numpy.zeros(10, dtype=int)
-    b = numpy.zeros(10, dtype=int)
-    c = numpy.zeros(10, dtype=int)
-
-    for i in range(10):
-        a[i] = i
-        b[i] = 2 * i + 1
-
-    for i in range(10):
-        c[i] = a[i] + b[i] - i
+def in_foo():
+    return True
 
 
-print(vector_vector_int_add.fn.ir)
+# @Phylanx
+# def vector_vector_int_add():
+#     a = numpy.zeros(10, dtype=int)
+#     b = numpy.zeros(10, dtype=int)
+#     c = numpy.zeros(10, dtype=int)
+
+#     for i in range(10):
+#         a[i] = i
+#         b[i] = 2 * i + 1
+
+#     for i in range(10):
+#         c[i] = a[i] + b[i] - i
+
+# print(vector_vector_int_add.fn.ir)
 
 # from phylanx.analysis.cfg import gen_cfg, to_graph
 # from graphviz import Source

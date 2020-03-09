@@ -14,8 +14,8 @@ from phylanx.ir.base import IR
 
 class PhyFn:
     def __init__(self, fn: Callable):
-        self.ir = IR(fn)
-        self.fn = self.ir.python_fn
+        self.node = IR(fn)
+        self.fn = self.node.ir.fn
 
     def __call__(self, *args, **kwargs):
         return self.fn(*args, **kwargs)

@@ -18,9 +18,8 @@ class TaskRegistry:
 
 
 class Task:
-    def __init__(self, fn: Callable, ast_: ast.AST):
+    def __init__(self, fn: Callable):
         self.fn = fn
-        self.fn_ast = ast_
         self.update()
 
     def update(self):
