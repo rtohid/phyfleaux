@@ -13,29 +13,10 @@ import networkx
 import pprint
 
 from collections import OrderedDict
-from inspect import getsource
 from typing import Callable, List
 
-from phylanx.ir.nodes import Function
+from phylanx.core.function import Function
 
-
-class NameSpace:
-    full_name = []
-
-    def __init__(self, namespace=None):
-        self.current_space = namespace
-
-    @staticmethod
-    def get() -> str:
-        return '_'.join(NameSpace.full_name)
-
-    def __enter__(self):
-        if self.current_space:
-            NameSpace.full_name.append(self.current_space)
-
-    def __exit__(self, type, value, traceback):
-        if self.current_space:
-            NameSpace.full_name.pop()
 
 
 class IR:
@@ -45,12 +26,13 @@ class IR:
 
     def __init__(self, fn: Callable) -> None:
         '''Construct internal representation.'''
-        self.python_ast = ast.parse(getsource(fn)).body[0]
 
-        self.ir = self.build_node(fn)
+        self.fn = self.build_node(fn)
         self.register_node()
 
     def build_node(self, fn: Callable) -> Function:
+
+        self.python_ast = ast.parse(getsource(fn)).body[0]
 
         # discount the decorator line.
         ast.increment_lineno(self.python_ast, n=-1)
@@ -60,7 +42,7 @@ class IR:
                         node.col_offset)
 
         with NameSpace(func.name) as ns:
-            self.generate(func, self.python_ast)
+            self.fillout_node(func, self.python_ast)
             print(NameSpace.get())
         print(NameSpace.get())
 
@@ -70,10 +52,10 @@ class IR:
         pass
         # IR.graph.add_node()
 
-    def generate(self, fn: Function, node: ast, parents: list = []):
+    def fillout_node(self, fn: Function, node: ast, parents: list = []):
         node_name = node.__class__.__name__.lower()
         if isinstance(node, list):
-            _node = [self.generate(n) for n in node]
+            _node = [self.fillout_node(fn, n) for n in node]
             return _node
 
         handler_name = 'on_' + node_name
@@ -85,13 +67,13 @@ class IR:
             _node = OrderedDict()
             _node['node'] = (node_hash, node)
             for key, value in vars(node).items():
-                _node[key] = self.generate(value)
+                _node[key] = self.fillout_node(fn, value)
             return _node
         else:
             return node
 
     def __repr__(self):
-        return pprint.pformat(self.python_ast.body[0])
+        return pprint.pformat(self.python_ast)
 
     def on_module(self, node: ast.AST, parents: List = []):
-        return self.generate(node.body[0])
+        return self.fillout_node(node.body[0])

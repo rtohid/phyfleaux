@@ -10,32 +10,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import numpy
 from phylanx.core.directives import Phylanx
 
-
 @Phylanx
-def foo(x):
-    return x * 2
+def vector_vector_int_add():
+    a = numpy.zeros(10, dtype=int)
+    b = numpy.zeros(10, dtype=int)
+    c = numpy.zeros(10, dtype=int)
 
+    for i in range(10):
+        a[i] = i
+        b[i] = 2 * i + 1
 
-print(foo.fn(2))
+    for i in range(10):
+        c[i] = a[i] + b[i] - i
 
-
-@Phylanx
-def in_foo():
-    return True
-
-
-# @Phylanx
-# def vector_vector_int_add():
-#     a = numpy.zeros(10, dtype=int)
-#     b = numpy.zeros(10, dtype=int)
-#     c = numpy.zeros(10, dtype=int)
-
-#     for i in range(10):
-#         a[i] = i
-#         b[i] = 2 * i + 1
-
-#     for i in range(10):
-#         c[i] = a[i] + b[i] - i
+import astpretty
+astpretty.pprint(vector_vector_int_add.fn.python_ast)
 
 # print(vector_vector_int_add.fn.ir)
 
