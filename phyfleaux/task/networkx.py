@@ -1,4 +1,6 @@
-_license__ = """ 
+from __future__ import absolute_import
+
+__license__ = """
 Copyright (c) 2020 R. Tohid
 
 Distributed under the Boost Software License, Version 1.0. (See accompanying
