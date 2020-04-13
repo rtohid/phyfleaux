@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from numpy import *
+
 __license__ = """
 Copyright (c) 2020 R. Tohid
 

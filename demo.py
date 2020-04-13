@@ -25,6 +25,8 @@ def matmul(N):
         for j in range(N):
             for k in range(N):
                 c[i][j] += a[i][k] * b[k][j]
+        # for j in range(N):
+        #         c[j] = a[i]
 
     return c
 
@@ -32,6 +34,6 @@ def matmul(N):
 print(matmul(9))
 
 # def test_kmeans(*args, **kwargs):
-#     """Test all scipy's kmeans functionalities are supported in phyfleaux."""
+#     """Test all kmeans functionalities in scipy."""
 
 #     pass
