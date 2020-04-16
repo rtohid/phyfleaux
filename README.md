@@ -38,9 +38,12 @@ PhySL code, where:
 * Each PhySL primitive can run on one or more nodes.
 * There is a cost function associated to each PhySL function, a.k.a., task.
 
-assign time-step and target node (each could be a range) for each task so the
+assign time-step and target node (each could be a range) to each task so the
 cost function is minimized.
 
 ## Notes
-cost could be minimizing execution time or maximizing throughput.
+* Cost could be minimizing execution time or maximizing throughput.
+* Ideally, the cost function returns outputs of a NN.
+* Several common iteration space, e.g., affine, mesh, tree, ... are supported as
+  data domains.
 
