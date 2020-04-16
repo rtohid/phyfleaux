@@ -22,7 +22,7 @@ A valid Python program encapsuled in a function which we refer to as *code*.
 
 * Already checked for syntax and grammar.
 
-* Code is accessible through its python AST within the framework.
+* Within the framework, code is accessible through its python AST.
 
 * Indexing of all possible iteration spaces are known, either:
    * parametrically, e.g., affine iteration spaces, or
@@ -33,10 +33,10 @@ A valid Python program encapsuled in a function which we refer to as *code*.
    <!-- * It might be beneficial to assume the initial memory layout in 1-d. -->
 
 #### Description
-Given a valid Python code, and specification of the system, generate distributed
+Given a valid Python code and specification of the system, generate distributed
 PhySL code, where:
 * Each PhySL primitive can run on one or more nodes.
-* There is a cost function associated to each PhySL function, a.k.a., task.
+* There is a cost function associated to each PhySL function, a.k.a., Task.
 
 assign time-step and target node (each could be a range) to each task so the
 cost function is minimized.
@@ -44,6 +44,6 @@ cost function is minimized.
 ## Notes
 * Cost could be minimizing execution time or maximizing throughput.
 * Ideally, the cost function returns outputs of a NN.
-* Several common iteration space, e.g., affine, mesh, tree, ... are supported as
-  data domains.
+* Several common iteration space, e.g., affine, mesh, tree, ... will be
+  supported as data domains.
 
