@@ -31,10 +31,11 @@
 #undef cast
 
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/functional.h>
 
-#include "physl_tiramisu.hpp"
+//#include "physl_tiramisu.hpp"
 #include "pytiramisu.hpp"
-
 
 namespace py = pybind11;
 using namespace tiramisu;
@@ -63,6 +64,7 @@ PYBIND11_MODULE(pytiramisu, m) {
     m.doc() = "pybind11 bindings for isl";
 
     // enums from `tiramisu/include/tiramisu/type.h`
+
     py::enum_<expr_t>(m, "expr_t")
         .value("e_val", e_val)
         .value("e_var", e_var)
@@ -159,266 +161,194 @@ PYBIND11_MODULE(pytiramisu, m) {
         .export_values();
 
     py::class_<expr>(m, "expr")
-        .def("__init__", [](expr e) {
-            new(&e) expr();
-        });
+        .def(py::init( []() {
+            return expr{};
+        }))
+        .def(py::init( [](primitive_t dtype) {
+            return expr{dtype};
+        }))
+        .def(py::init( [](op_t o, primitive_t dtype, expr expr0) {
+            return expr{o, dtype, expr0};
+        }))
+        .def(py::init( [](op_t o, expr expr0) {
+            return expr{o, expr0};
+        }))
+        .def(py::init( [](op_t o, std::string name) {
+            return expr{o, name};
+        }))
+        .def(py::init( [](op_t o, expr expr0, expr expr1) {
+            return expr{o, expr0, expr1};
+        }))
+        .def(py::init( [](op_t o, expr expr0, expr expr1, expr expr2) {
+            return expr{o, expr0, expr1, expr2};
+        }))
+        .def(py::init( [](op_t o, std::string name, std::vector<expr> vec, primitive_t dtype) {
+            return expr{o, name, vec, dtype};
+        }))
+        .def(py::init( [](uint8_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](int8_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](uint16_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](int16_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](uint32_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](int32_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](uint64_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](int64_t val) {
+            return expr{val};
+        }))
+        .def(py::init( [](float val) {
+            return expr{val};
+        }))
+        .def(py::init( [](double val) {
+            return expr{val};
+        }))
+        .def("copy", [](expr &e) { return e.copy(); })
+        .def("get_uint8_value", [](expr &e) { return e.get_uint8_value(); })
+        .def("get_int8_value", [](expr &e) { return e.get_int8_value(); })
+        .def("get_uint16_value", [](expr &e) { return e.get_uint16_value(); })
+        .def("get_int16_value", [](expr &e) { return e.get_int16_value(); })
+        .def("get_uint32_value", [](expr &e) { return e.get_uint32_value(); })
+        .def("get_int32_value", [](expr &e) { return e.get_int32_value(); })
+        .def("get_uint64_value", [](expr &e) { return e.get_uint64_value(); })
+        .def("get_int64_value", [](expr &e) { return e.get_int64_value(); })
+        .def("get_float32_value", [](expr &e) { return e.get_float32_value(); })
+        .def("get_float64_value", [](expr &e) { return e.get_float64_value(); })
+        .def("get_int_val", [](expr &e) { return e.get_int_val(); })
+        .def("get_double_val", [](expr &e) { return e.get_double_val(); })
+        .def("get_operand", [](expr &e, int i) { return e.get_operand(i); })
+        .def("get_n_arg", [](expr &e) { return e.get_n_arg(); })
+        .def("get_expr_type", [](expr &e) { return e.get_expr_type(); })
+        .def("get_data_type", [](expr &e) { return e.get_data_type(); })
+        .def("get_name", [](expr &e) { return e.get_name(); })
+        .def("set_name", [](expr &e, std::string name) { e.set_name(name); })
+        .def("replace_op_in_expr", [](expr &e, std::string &to_replace, std::string &replace_with) { return e.replace_op_in_expr(to_replace, replace_with); })
+        .def("get_op_type", [](expr &e) { return e.get_op_type(); })
+        .def("get_access", [](expr &e) { return e.get_access(); })
+        .def("get_arguments", [](expr &e) { return e.get_arguments(); })
+        .def("get_n_dim_access", [](expr &e) { return e.get_n_dim_access(); })
+        .def("is_defined", [](expr &e) { return e.is_defined(); })
+        .def("is_equal", [](expr &e, expr e_) { return e.is_equal(e_); })
+        .def("is_integer", [](expr &e) { return e.is_integer(); })
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self / py::self)
+        .def(py::self * py::self)
+        .def(py::self % py::self)
+        .def(py::self >> py::self)
+        .def(py::self << py::self)
+//        .def(py::self && py::self)
+//        .def(py::self || py::self)
+        .def(-py::self)
+        .def(!py::self)
+        .def(py::self == py::self)
+	.def(py::self < py::self)
+        .def(py::self <= py::self)
+	.def(py::self > py::self)
+        .def(py::self >= py::self)
+        .def("set_access", [](expr &e, std::vector<expr> vec) { e.set_access(vec); })
+        .def("set_access_dimension", [](expr &e, int i, expr acc) { e.set_access_dimension(i, acc); })
+        .def("set_arguments", [](expr &e, std::vector<expr> vec) { e.set_arguments(vec); })
+        .def("dump", [](expr &e, bool exhaust) { e.dump(exhaust); })
+        .def("is_constant", [](expr &e) { return e.is_constant(); })
+        .def("is_unbounded", [](expr &e) { return e.is_unbounded(); })
+        .def("simplify", [](expr &e) { return e.simplify(); })
+        .def("__repr__", [](expr &e) { return e.to_str(); })
+        .def("substitute", [](expr &e, std::vector<std::pair<var, expr>> substitutions) { return e.substitute(substitutions); })
+        .def("substitute_access", [](expr &e, std::string orig, std::string sub) { return e.substitute_access(orig, sub); });
+        //.def("apply_to_operands", [](expr &e, std::function<expr () { return e.substitute_access(orig, sub); })
 
-    py::class_<buffer>(m, "buffer")
-        .def("__init__", [](buffer &b,
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt,
-                std::shared_ptr<function> & fct, // = global::get_implicit_function(),
-                std::string corr) {
-            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), corr);
-        })
-        .def("__init__", [](buffer &b,
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt,
-                std::string corr) {
-            new (&b) buffer(name, dim_sizes, type, argt, global::get_implicit_function(), corr);
-        })
-        .def("__init__", [](buffer &b,
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt,
-                std::shared_ptr<function> & fct) {
-            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), "");
-        })
-        .def("allocate_at", [](buffer &b,
-                computation & C,
-                var level) {
-            std::shared_ptr<computation> cptr{};
-            cptr.reset(b.allocate_at(C, level));
-            return cptr;
-        })
-        .def("allocate_at", [](buffer &b,
-                computation & C,
-                int level) {
-            std::shared_ptr<computation> cptr{};
-            cptr.reset(b.allocate_at(C, level));
-            return cptr;
-        })
-        .def("dump", [](buffer &b,
-                bool exhaustive) {
-            b.dump(exhaustive);
-        })
-        .def("get_argument_type", [](buffer &b) {
-            return b.get_argument_type();
-        })
-        .def("get_location", [](buffer &b) {
-            return b.get_location();
-        })
-        .def("get_name", [](buffer &b) {
-            return b.get_name();
-        })
-        .def("get_n_dims", [](buffer &b) {
-            return b.get_n_dims();
-        })
-        .def("get_elements_type", [](buffer &b) {
-            return b.get_elements_type();
-        })
-        .def("get_dim_sizes", [](buffer &b) {
-            return b.get_dim_sizes();
-        })
-        .def("set_auto_allocate", [](buffer &b,
-                bool auto_allocation) {
-            return b.set_auto_allocate(auto_allocation);
-        })
-        .def("set_automatic_gpu_copy", [](buffer &b,
-                bool auto_gpu_copy) {
-            return b.set_automatic_gpu_copy(auto_gpu_copy);
-        })
-        .def("has_constant_extents", [](buffer &b) {
-            return b.has_constant_extents();
-        })
-        .def("is_allocated", [](buffer &b) {
-            return b.is_allocated();
-        })
-        .def("mark_as_allocated", [](buffer &b) {
-            b.mark_as_allocated();
-        })
-        .def("tag_gpu_global", [](buffer &b) {
-            b.tag_gpu_global();
-        })
-        .def("tag_gpu_register", [](buffer &b) {
-            b.tag_gpu_register();
-        })
-        .def("tag_gpu_shared", [](buffer &b) {
-            b.tag_gpu_shared();
-        })
-        .def("tag_gpu_local", [](buffer &b) {
-            b.tag_gpu_local();
-        })
-        .def("tag_gpu_constant", [](buffer &b) {
-            b.tag_gpu_constant();
-        });
-
-    py::class_<constant>(m, "constant")
-        .def("__init__", [](constant &c,
-            std::string param_name,
-            expr &param_expr,
-            primitive_t t,
-            bool function_wide,
-            std::shared_ptr<computation> &with_computation,
-            int at_loop_level,
-            std::shared_ptr<function> & func) {
-                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, func.get());
-        })
-        .def("__init__", [](constant &c,
-            std::string param_name,
-            expr &param_expr,
-            primitive_t t,
-            bool function_wide,
-            std::shared_ptr<computation> &with_computation,
-            int at_loop_level) {
-                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, global::get_implicit_function());
-        })
-        .def("__init__", [](constant &c,
-            std::string param_name,
-            expr &param_expr,
-            primitive_t t,
-            std::shared_ptr<function> &func) {
-                new(&c) constant(param_name, param_expr, t, func.get());
-        })
-        .def("__init__", [](constant &c,
-            std::string param_name,
-            expr &param_expr,
-            primitive_t t) {
-                new(&c) constant(param_name, param_expr, t, global::get_implicit_function());
-        })
-        .def("__init__", [](constant &c,
-            std::string param_name,
-            expr &param_expr) {
-                new(&c) constant(param_name, param_expr);
-        })
-        .def("get_computation_with_whom_this_is_computed", [](constant &c) {
-                std::shared_ptr<computation> cptr{nullptr};
-                cptr.reset(c.get_computation_with_whom_this_is_computed());
-                return cptr;
-        })
-        .def("dump", [](constant &c,
-            bool exhaustive) {
-                c.dump(exhaustive);
-        })
-        .def("__call__", [](constant &c) {
-                return c();
-        });
-
-    py::class_<input>(m, "input")
-        .def("__int__", [](input &i,
-            std::string name, std::vector<var> & iterator_variables, primitive_t t) {
-            new(&i) input(name, iterator_variables, t);
-        })
-        .def("__int__", [](input &i,
-            std::vector<var> & iterator_variables, primitive_t t) {
-            new(&i) input(iterator_variables, t);
-        })
-        .def("__int__", [](input &i,
-            std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
-            new(&i) input(name, dimension_names, dimension_sizes, t);
-        });
-
-    py::class_<Input>(m, "Input")
-        .def("__int__", [](Input &i,
-            std::string name, std::vector<expr> & sizes, primitive_t t) {
-            new(&i) Input(name, sizes, t);
-        })
-        .def("iterators_from_size_expressions", [](Input &i,
-            std::vector<expr> & sizes) {
-            return i.iterators_from_size_expressions(sizes);
-        });
 
     py::class_<var>(m, "var")
-        .def("__init__", [](var &v,
+        .def(py::init( [](
             primitive_t type_, std::string name) {
-            new(&v) var(type_, name);
-        })
-        .def("__init__", [](var &v,
+            return var{type_, name};
+        }))
+        .def(py::init( [](
             std::string name) {
-            new(&v) var(name);
-        })
-        .def("__init__", [](var &v,
+            return var{name};
+        }))
+        .def(py::init( [](
             std::string name, expr upper, expr lower) {
-            new(&v) var(name, upper, lower);
-        })
-        .def("__init__", [](var &v) {
-            new(&v) var();
-        })
+            return var{name, upper, lower};
+        }))
+        .def(py::init( []() {
+            return var{};
+        }))
         .def("get_upper", [](var &v) { return v.get_upper(); })
         .def("get_lower", [](var &v) { return v.get_lower(); });
 
-    py::class_<isl_set_t>(m, "isl_set")
-        .def("__init__", [](isl_set_t &d) {
-            new(&d) isl_set_t();
-        });
-
-    py::class_<isl_map_t>(m, "isl_map")
-        .def("__init__", [](isl_map_t &d) {
-            new(&d) isl_map_t();
-        });
-
-    py::class_<computation>(m, "computation")
-        .def("__init__", [](computation &c,
+    py::class_<tiramisu::computation>(m, "computation")
+        .def(py::init( [](
             std::string iteration_domain,
             expr e,
             bool schedule_this_computation,
             primitive_t t,
             std::shared_ptr<function> func) {
-                new(&c) computation(iteration_domain, e, schedule_this_computation, t, func.get());
-        })
-        .def("__init__", [](computation &c,
+                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iteration_domain, e, schedule_this_computation, t, func.get()));
+        }))
+;
+/*
+        .def(py::init( [](
             std::string iteration_domain,
             std::vector<var> iterator_variables,
             expr e,
             bool schedule_this_computation) {
-                new(&c) computation(iteration_domain, iterator_variables, e, schedule_this_computation);
-        })
-        .def("__init__", [](computation &c,
+                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iteration_domain, iterator_variables, e, schedule_this_computation));
+        }))
+        .def(py::init( [](
             std::vector<var> iterator_variables,
             expr e) {
-                new(&c) computation(iterator_variables, e);
-        })
-        .def("__init__", [](computation &c,
-            std::vector<var> iterator_variables,
-            expr predicate,
-            expr e) {
-                new(&c) computation(iterator_variables, predicate, e);
-        })
-        .def("__init__", [](computation &c,
-            std::string name,
-            std::vector<var> iterator_variables,
-            expr e) {
-                new(&c) computation(name, iterator_variables, e);
-        })
-        .def("__init__", [](computation &c,
-            std::string name,
+                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iterator_variables, e));
+        }))
+        .def(py::init( [](
             std::vector<var> iterator_variables,
             expr predicate,
             expr e) {
-                new(&c) computation(name, iterator_variables, predicate, e);
-        })
-        .def("__init__", [](computation &c,
+                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iterator_variables, predicate, e));
+        }))
+        .def(py::init( [](
+            std::string name,
+            std::vector<var> iterator_variables,
+            expr e) {
+                return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, e));
+        }))
+        .def(py::init( [](
+            std::string name,
+            std::vector<var> iterator_variables,
+            expr predicate,
+            expr e) {
+                 return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, predicate, e));
+        }))
+        .def(py::init( [](
             std::vector<var> iterator_variables,
             expr e,
             bool schedule_this_operation) {
-                new(&c) computation(iterator_variables, e, schedule_this_operation);
-        })
-        .def("__init__", [](computation &c,
+                 return std::unique_ptr<tiramisu::computation>(new computation(iterator_variables, e, schedule_this_operation));
+        }))
+        .def(py::init( [](
             std::string name,
             std::vector<var> iterator_variables,
             primitive_t t) {
-                new(&c) computation(name, iterator_variables, t);
-        })
-        .def("__init__", [](computation &c,
+                 return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, t));
+        }))
+        .def(py::init( [](
             std::vector<var> iterator_variables,
             primitive_t t) {
-                new(&c) computation(iterator_variables, t);
-        })
+                 return std::unique_ptr<tiramisu::computation>(new computation(iterator_variables, t));
+        }))
         .def("is_send", [](computation &c) { return c.is_send(); })
         .def("is_recv", [](computation &c) { return c.is_recv(); })
         .def("is_send_recv", [](computation &c) { return c.is_send_recv(); })
@@ -518,7 +448,7 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::vector<int> buffer_shape,
             std::vector<expr> copy_offsets,
             bool pad_buffer) {
-                std::shared_ptr<computation> cptr{};
+                std::shared_ptr<tiramisu::computation> cptr{};
                 cptr.reset(c.cache_shared(inp, level, buffer_shape, copy_offsets, pad_buffer));
                 return cptr;
         })
@@ -527,7 +457,7 @@ PYBIND11_MODULE(pytiramisu, m) {
             const var & level,
             std::vector<int> buffer_shape,
             std::vector<expr> copy_offsets) {
-                std::shared_ptr<computation> cptr{};
+                std::shared_ptr<tiramisu::computation> cptr{};
                 cptr.reset(c.cache_shared(inp, level, buffer_shape, copy_offsets));
                 return cptr;
         })
@@ -591,12 +521,12 @@ PYBIND11_MODULE(pytiramisu, m) {
                 return c.get_name();
         })
         .def("get_predecessor", [](computation &c) {
-                std::shared_ptr<computation> cptr{};
+                std::shared_ptr<tiramisu::computation> cptr{};
                 cptr.reset(c.get_predecessor());
                 return cptr;
         })
         .def("get_successor", [](computation &c) {
-                std::shared_ptr<computation> cptr{};
+                std::shared_ptr<tiramisu::computation> cptr{};
                 cptr.reset(c.get_successor());
                 return cptr;
         })
@@ -893,17 +823,200 @@ PYBIND11_MODULE(pytiramisu, m) {
             new (&g) generator();
         })
         .def_static("update_producer_expr_name", [](generator &g,
-                std::shared_ptr<computation> comp, std::string name_to_replace, std::string replace_with) {
+                std::shared_ptr<tiramisu::computation> comp, std::string name_to_replace, std::string replace_with) {
             g.update_producer_expr_name(comp.get(), name_to_replace, replace_with);
         });
 
+
+    py::class_<buffer>(m, "buffer")
+        .def("__init__", [](buffer &b,
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt,
+                std::shared_ptr<function> & fct, // = global::get_implicit_function(),
+                std::string corr) {
+            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), corr);
+        })
+        .def("__init__", [](buffer &b,
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt,
+                std::string corr) {
+            new (&b) buffer(name, dim_sizes, type, argt, global::get_implicit_function(), corr);
+        })
+        .def("__init__", [](buffer &b,
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt,
+                std::shared_ptr<function> & fct) {
+            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), "");
+        })
+        .def("allocate_at", [](buffer &b,
+                computation & C,
+                var level) {
+            std::shared_ptr<tiramisu::computation> cptr{};
+            cptr.reset(b.allocate_at(C, level));
+            return cptr;
+        })
+        .def("allocate_at", [](buffer &b,
+                computation & C,
+                int level) {
+            std::shared_ptr<tiramisu::computation> cptr{};
+            cptr.reset(b.allocate_at(C, level));
+            return cptr;
+        })
+        .def("dump", [](buffer &b,
+                bool exhaustive) {
+            b.dump(exhaustive);
+        })
+        .def("get_argument_type", [](buffer &b) {
+            return b.get_argument_type();
+        })
+        .def("get_location", [](buffer &b) {
+            return b.get_location();
+        })
+        .def("get_name", [](buffer &b) {
+            return b.get_name();
+        })
+        .def("get_n_dims", [](buffer &b) {
+            return b.get_n_dims();
+        })
+        .def("get_elements_type", [](buffer &b) {
+            return b.get_elements_type();
+        })
+        .def("get_dim_sizes", [](buffer &b) {
+            return b.get_dim_sizes();
+        })
+        .def("set_auto_allocate", [](buffer &b,
+                bool auto_allocation) {
+            return b.set_auto_allocate(auto_allocation);
+        })
+        .def("set_automatic_gpu_copy", [](buffer &b,
+                bool auto_gpu_copy) {
+            return b.set_automatic_gpu_copy(auto_gpu_copy);
+        })
+        .def("has_constant_extents", [](buffer &b) {
+            return b.has_constant_extents();
+        })
+        .def("is_allocated", [](buffer &b) {
+            return b.is_allocated();
+        })
+        .def("mark_as_allocated", [](buffer &b) {
+            b.mark_as_allocated();
+        })
+        .def("tag_gpu_global", [](buffer &b) {
+            b.tag_gpu_global();
+        })
+        .def("tag_gpu_register", [](buffer &b) {
+            b.tag_gpu_register();
+        })
+        .def("tag_gpu_shared", [](buffer &b) {
+            b.tag_gpu_shared();
+        })
+        .def("tag_gpu_local", [](buffer &b) {
+            b.tag_gpu_local();
+        })
+        .def("tag_gpu_constant", [](buffer &b) {
+            b.tag_gpu_constant();
+        });
+
+    py::class_<constant>(m, "constant")
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t,
+            bool function_wide,
+            std::shared_ptr<tiramisu::computation> &with_computation,
+            int at_loop_level,
+            std::shared_ptr<function> & func) {
+                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, func.get());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t,
+            bool function_wide,
+            std::shared_ptr<tiramisu::computation> &with_computation,
+            int at_loop_level) {
+                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, global::get_implicit_function());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t,
+            std::shared_ptr<function> &func) {
+                new(&c) constant(param_name, param_expr, t, func.get());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr,
+            primitive_t t) {
+                new(&c) constant(param_name, param_expr, t, global::get_implicit_function());
+        })
+        .def("__init__", [](constant &c,
+            std::string param_name,
+            expr &param_expr) {
+                new(&c) constant(param_name, param_expr);
+        })
+        .def("get_computation_with_whom_this_is_computed", [](constant &c) {
+                std::shared_ptr<tiramisu::computation> cptr{nullptr};
+                cptr.reset(c.get_computation_with_whom_this_is_computed());
+                return cptr;
+        })
+        .def("dump", [](constant &c,
+            bool exhaustive) {
+                c.dump(exhaustive);
+        })
+        .def("__call__", [](constant &c) {
+                return c();
+        });
+
+    py::class_<input>(m, "input")
+        .def("__int__", [](input &i,
+            std::string name, std::vector<var> & iterator_variables, primitive_t t) {
+            new(&i) input(name, iterator_variables, t);
+        })
+        .def("__int__", [](input &i,
+            std::vector<var> & iterator_variables, primitive_t t) {
+            new(&i) input(iterator_variables, t);
+        })
+        .def("__int__", [](input &i,
+            std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
+            new(&i) input(name, dimension_names, dimension_sizes, t);
+        });
+
+    py::class_<Input>(m, "Input")
+        .def("__int__", [](Input &i,
+            std::string name, std::vector<expr> & sizes, primitive_t t) {
+            new(&i) Input(name, sizes, t);
+        })
+        .def("iterators_from_size_expressions", [](Input &i,
+            std::vector<expr> & sizes) {
+            return i.iterators_from_size_expressions(sizes);
+        });
+
+
+    py::class_<isl_set_t>(m, "isl_set")
+        .def("__init__", [](isl_set_t &d) {
+            new(&d) isl_set_t();
+        });
+
+    py::class_<isl_map_t>(m, "isl_map")
+        .def("__init__", [](isl_map_t &d) {
+            new(&d) isl_map_t();
+        });
+*/
     // init
     //
-    m.def("init", [](pybind11::module &m) { tiramisu::init(); });
-    m.def("init", [](pybind11::module &m, std::string name) { tiramisu::init(name); });
+    m.def("init", []() { tiramisu::init(); });
+    m.def("init", [](std::string name) { tiramisu::init(name); });
 
     // codegen
     //
+/*
     m.def("codegen", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string obj_filename) {
        std::vector<buffer *> bufs;
        bufs.reserve(arguments.size());
@@ -917,9 +1030,10 @@ PYBIND11_MODULE(pytiramisu, m) {
        std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
        tiramisu::codegen(bufs, obj_filename, gen_cuda_stmt);
     });
-
+*/
+/*
     m.def("codegen_physl", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string & code_buffer) {
        physl::tiramisu::codegen(arguments, code_buffer);
     });
-
+*/
 } // end pyisl module
