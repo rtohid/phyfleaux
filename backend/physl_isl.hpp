@@ -12,6 +12,8 @@
 #include <memory>
 #include <ostream>
 
+#include <isl/ast_type.h>
+
 namespace physl { namespace codegen {
 
 int generate_physl(const std::shared_ptr<isl_ast_node> & node);

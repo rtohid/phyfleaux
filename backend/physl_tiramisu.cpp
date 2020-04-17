@@ -20,7 +20,6 @@
 
 #include "physl_isl.hpp"
 
-#include <Halide.h>
 #include <tiramisu/debug.h>
 #include <tiramisu/expr.h>
 #include <tiramisu/type.h>
@@ -46,7 +45,7 @@ class PhyslFunction : public function, public generator {
     auto get_mapping() { return mapping; }
     void lift_dist() { lift_dist_comps(); }
 
-    void generate_code(std::string physlstr) {
+    void generate_code(std::string &physlstr) {
 
         // Check that time_processor representation has already been computed,
         //
@@ -130,9 +129,12 @@ class PhyslFunction : public function, public generator {
 //
 int codegen(const std::vector< std::shared_ptr<buffer> > &arguments, std::string & physlstr)
 {
-    std::vector<buffer *> bufs;
-    bufs.reserve(arguments.size());
-    std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+    std::vector<buffer *> bufs{};
+
+    if(arguments.size()) {
+        bufs.reserve(arguments.size());
+        std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+    }
 
     PhyslFunction fct{}; // = global::get_implicit_function();
 

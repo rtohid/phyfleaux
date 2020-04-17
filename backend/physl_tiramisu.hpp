@@ -11,7 +11,7 @@
 #include <string>
 #include <memory>
 
-#include <tiramisu/core.h>
+#include <tiramisu/tiramisu.h>
 
 using namespace tiramisu;
 
