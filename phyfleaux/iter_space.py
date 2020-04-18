@@ -8,7 +8,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 from typing import Callable
 from ast import AST
 import ast
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from phyfleaux.task import Task
 from phyfleaux.util import Stack
@@ -20,8 +20,8 @@ class Polytope(Task):
     
         :arg fn: python function.
 
-        reads:
-        -----
+        related resources:
+        ------------------
         https://polyhedral.info/
 
         https://en.wikipedia.org/wiki/Polytope_model
@@ -30,22 +30,39 @@ class Polytope(Task):
 
         Task.__init__(self, fn)
 
-        self.loops = OrderedDict()
-        self.visit(self.ast)
+        # maps hash of node of :function:fn`'s Python AST to deep copy of the
+        # same AST.
+        self.visit(self.tree)
 
-        last_depth = 0
-        for k, v in self.loops.items():
-            if v[1] == 0 or v[1] < last_depth:
-                last_depth = 0
-            if v[1] > last_depth:
-                last_depth = v[1]
-            print('last_depth', last_depth)
-            print('key', k)
-            print('value', v)
-            print()
+    def visit_For(self, node) -> None:
+        if isinstance(node.iter, ast.Call) and 'range' == node.iter.func.id:
+            for arg in node.iter.args:
+                try:
+                    if arg.id in self.args:
+                        print(f"{arg.id} is already discovered.")
+                except AttributeError:
+                    raise AttributeError(
+                        f"Expected '<class ast.Name>' received {type(arg)}")
+        if isinstance(node.iter, ast.List):
+            raise NotImplementedError(
+                "List as an iteration space is not supported.)")
 
-    def visit_For(self, ast_) -> None:
-        self.loops[hash(ast_)] = (ast_, Stack.get_depth())
-        with Stack():
-            for statement in ast_.body:
-                self.visit(statement)
+        # print(self.ir[hash(node)]['tiramisu'].target)
+        # print(self.ir[hash(node)]['tiramisu'].body)
+
+    def visit_FunctionDef(self, node):
+        # print(node)
+        for arg in node.args.args:
+            self.visit(arg)
+
+        for statement in node.body:
+            self.visit(statement)
+
+    #     print()
+    #     with Stack():
+    #         for statement in self.ir[hash(ast_)]:
+    #             self.visit_(statement)
+    #     print()
+
+    # def __iter__(self):
+    #     return self
