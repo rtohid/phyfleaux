@@ -1,6 +1,44 @@
+#  Copyright (c) 2019-2020 Christopher Taylor
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
 from pytiramisu import init, var, expr, computation
 
 if __name__ == "__main__":
+
+    '''
+    the goal of pytiramisu is to make the following c++ sample code function in python
+
+    // C++ code with a Tiramisu expression.
+    #include "tiramisu/tiramisu.h"
+    using namespace tiramisu;
+
+    void generate_code()
+    {
+        // Specify the name of the function that you want to create.
+        tiramisu::init("foo");
+
+        // Declare two iterator variables (i and j) such that 0<=i<100 and 0<=j<100.
+        var i("i", 0, 100), j("j", 0, 100);
+
+        // Declare a Tiramisu expression (algorithm) that is equivalent to the following C code
+        // for (i=0; i<100; i++)
+        //   for (j=0; j<100; j++)
+        //     C(i,j) = 0;
+        computation C({i,j}, 0);
+    
+        // Specify optimizations
+        C.parallelize(i);
+        C.vectorize(j, 4);
+    
+        buffer b_C("b_C", {100, 100}, p_int32, a_output);
+        C.store_in(&b_C);
+
+        // Generate code
+        C.codegen({&b_C}, "generated_code.o");
+    }
+    '''
 
     init("foo")
     srange_expr = expr(0) 
