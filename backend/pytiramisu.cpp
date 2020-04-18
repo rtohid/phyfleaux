@@ -35,6 +35,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/functional.h>
+#include <pybind11/stl.h>
 
 //#include "physl_tiramisu.hpp"
 #include "pytiramisu.hpp"
@@ -60,6 +61,12 @@ public:
     isl_set_t() :
         value(nullptr) {
     } 
+};
+
+class buffer_t {
+public:
+    tiramisu::buffer * value;
+    buffer_t() : value(nullptr) {}
 };
 
 PYBIND11_MODULE(pytiramisu, m) {
@@ -298,7 +305,7 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("substitute_access", [](expr &e, std::string orig, std::string sub) { return e.substitute_access(orig, sub); });
         //.def("apply_to_operands", [](expr &e, std::function<expr () { return e.substitute_access(orig, sub); })
 
-    py::class_<var>(m, "var")
+    py::class_<tiramisu::var>(m, "var")
         .def(py::init( [](
             primitive_t type_, std::string name) {
             return var{type_, name};
@@ -413,11 +420,12 @@ PYBIND11_MODULE(pytiramisu, m) {
              int level) {
                 c.after_low_level(comp, level);
         })
-        .def("after_low_level", [](computation &c,
+/*        .def("after_low_level", [](computation &c,
              computation & comp,
              std::vector<int> levels) {
                 c.after_low_level(comp, levels);
         })
+*/
         .def("allocate_and_map_buffer_automatically", [](computation &c,
              argument_t type) {
                 c.allocate_and_map_buffer_automatically(type);
@@ -426,9 +434,12 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::string map_str) {
                 c.apply_transformation_on_schedule(map_str);
         })
-        .def("auto_buffer", [](computation &c) {
-                return c.auto_buffer();
-        }, py::return_value_policy::reference)
+/*        .def("auto_buffer", [](computation &c) {
+            buffer_t ret {};
+            ret.value = c.auto_buffer();
+            return ret;
+        })
+*/
         .def("before", [](computation &c,
             computation &consumer,
             var L) {
@@ -449,8 +460,8 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.between(before_comp, before_l, after_comp, after_l);
         })
         .def("store_in", [](computation &c,
-            std::shared_ptr<buffer> & buff) {
-                c.store_in(buff.get());
+            buffer_t & buff) {
+                c.store_in(buff.value);
         })
         .def("store_in", [](computation &c,
             std::shared_ptr<buffer> & buff,
@@ -598,16 +609,16 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.set_access(access_str);
         })
         .def("set_access", [](computation &c,
-            std::shared_ptr<isl_map_t> &access) {
-                c.set_access(access->value);
+            isl_map_t &access) {
+                c.set_access(access.value);
         })
         .def("set_wait_access", [](computation &c,
             std::string access_str) {
                 c.set_wait_access(access_str);
         })
         .def("set_wait_access", [](computation &c,
-            std::shared_ptr<isl_map_t> &access) {
-                c.set_wait_access(access->value);
+            isl_map_t &access) {
+                c.set_wait_access(access.value);
         })
         .def("set_expression", [](computation &c,
             expr e) {
@@ -624,8 +635,8 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.is_inline_computation();
         })
         .def("set_low_level_schedule", [](computation &c,
-            std::shared_ptr<isl_map_t> map) {
-                c.set_low_level_schedule(map->value);
+            isl_map_t map) {
+                c.set_low_level_schedule(map.value);
         })
         .def("set_low_level_schedule", [](computation &c,
             std::string map_str) {
@@ -800,7 +811,7 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.vectorize(L, fac, L_outer, L_inner);
         })
         .def("gen_communication", [](computation &c) { c.gen_communication(); })
-        .def("gen_communication", [](computation &c, var L) { c.gen_communication(L); })
+        //.def("gen_communication", [](computation &c, var L) { c.gen_communication(L); })
         .def("__call__", [](computation &c, var i) {
             return c(i);
         })
