@@ -20,6 +20,8 @@
 //#include <pybind11/stl.h>
 
 #include <tiramisu/tiramisu.h>
+#include <tiramisu/expr.h>
+
 /*
  *
  *  tiramisu/include/tiramisu/macros.h:4:9: note: macro 'cast' defined here
@@ -160,6 +162,32 @@ PYBIND11_MODULE(pytiramisu, m) {
         .value("r_receiver", rank_t::r_receiver)
         .export_values();
 
+    py::class_<global>(m, "global")
+        .def(py::init( []() {
+            return tiramisu::global{};
+        }))
+        .def_static("generate_new_buffer_name", []() {
+            return global::generate_new_buffer_name();
+        })
+        .def_static("get_implicit_function", []() {
+            return global::get_implicit_function();
+        }, py::return_value_policy::reference)
+        .def_static("set_implicit_function", [](std::shared_ptr<function> fct) {
+            global::set_implicit_function(fct.get());
+        })
+        .def_static("set_auto_data_mapping", [](bool v) {
+            return global::set_auto_data_mapping(v);
+        })
+        .def_static("is_auto_data_mapping_set", []() {
+            return global::is_auto_data_mapping_set();
+        })
+        .def_static("set_default_tiramisu_options", []() {
+            return global::set_default_tiramisu_options();
+        })
+        .def_static("set_loop_iterator_type", [](primitive_t t) {
+            return global::set_loop_iterator_type(t);
+        });
+
     py::class_<expr>(m, "expr")
         .def(py::init( []() {
             return expr{};
@@ -270,7 +298,6 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("substitute_access", [](expr &e, std::string orig, std::string sub) { return e.substitute_access(orig, sub); });
         //.def("apply_to_operands", [](expr &e, std::function<expr () { return e.substitute_access(orig, sub); })
 
-
     py::class_<var>(m, "var")
         .def(py::init( [](
             primitive_t type_, std::string name) {
@@ -299,8 +326,6 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::shared_ptr<function> func) {
                 return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iteration_domain, e, schedule_this_computation, t, func.get()));
         }))
-;
-/*
         .def(py::init( [](
             std::string iteration_domain,
             std::vector<var> iterator_variables,
@@ -397,18 +422,13 @@ PYBIND11_MODULE(pytiramisu, m) {
              argument_t type) {
                 c.allocate_and_map_buffer_automatically(type);
         })
-        .def("allocate_and_map_buffer_automatically", [](computation &c) {
-                c.allocate_and_map_buffer_automatically(a_temporary);
-        })
         .def("apply_transformation_on_schedule", [](computation &c,
             std::string map_str) {
                 c.apply_transformation_on_schedule(map_str);
         })
         .def("auto_buffer", [](computation &c) {
-                std::shared_ptr<buffer> bptr{};
-                bptr.reset(c.auto_buffer());
-                return bptr;
-        })
+                return c.auto_buffer();
+        }, py::return_value_policy::reference)
         .def("before", [](computation &c,
             computation &consumer,
             var L) {
@@ -448,19 +468,15 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::vector<int> buffer_shape,
             std::vector<expr> copy_offsets,
             bool pad_buffer) {
-                std::shared_ptr<tiramisu::computation> cptr{};
-                cptr.reset(c.cache_shared(inp, level, buffer_shape, copy_offsets, pad_buffer));
-                return cptr;
-        })
+                return c.cache_shared(inp, level, buffer_shape, copy_offsets, pad_buffer);
+        }, py::return_value_policy::reference)
         .def("cache_shared", [](computation &c,
             computation & inp,
             const var & level,
             std::vector<int> buffer_shape,
             std::vector<expr> copy_offsets) {
-                std::shared_ptr<tiramisu::computation> cptr{};
-                cptr.reset(c.cache_shared(inp, level, buffer_shape, copy_offsets));
-                return cptr;
-        })
+                return c.cache_shared(inp, level, buffer_shape, copy_offsets);
+        }, py::return_value_policy::reference)
         .def("compute_at", [](computation &c,
             computation &consumer,
             var L) {
@@ -495,20 +511,18 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.drop_rank_iter(level);
         })
         .def("get_buffer", [](computation &c) {
-                std::shared_ptr<buffer> bptr{};
-                bptr.reset(c.get_buffer());
-                return bptr;
-        })
-        .def("get_datatype", [](computation &c) {
+                return c.get_buffer();
+        }, py::return_value_policy::reference)
+        .def("get_data_type", [](computation &c) {
                 return c.get_data_type();
         })
         .def("get_expr", [](computation &c) {
                 return c.get_expr();
         })
         .def("get_iteration_domain", [](computation &c) {
-                std::shared_ptr<isl_set_t> rptr{};
-                rptr->value = c.get_iteration_domain();
-                return rptr;
+                isl_set_t ret{};
+                ret.value = c.get_iteration_domain();
+                return ret;
         })
         .def("get_last_update", [](computation &c) {
                 return c.get_last_update();
@@ -521,22 +535,18 @@ PYBIND11_MODULE(pytiramisu, m) {
                 return c.get_name();
         })
         .def("get_predecessor", [](computation &c) {
-                std::shared_ptr<tiramisu::computation> cptr{};
-                cptr.reset(c.get_predecessor());
-                return cptr;
-        })
+                return c.get_predecessor();
+        }, py::return_value_policy::reference)
         .def("get_successor", [](computation &c) {
-                std::shared_ptr<tiramisu::computation> cptr{};
-                cptr.reset(c.get_successor());
-                return cptr;
-        })
+                return c.get_successor();
+        }, py::return_value_policy::reference)
         .def("get_update", [](computation &c, int index) {
                 return c.get_update(index);
         })
         .def("get_schedule", [](computation &c) {
-                std::shared_ptr<isl_map_t> rptr{};
-                rptr->value = c.get_schedule();
-                return rptr;
+                isl_map_t ret{};
+                ret.value = c.get_schedule();
+                return ret;
         })
         .def("gpu_tile", [](computation &c,
             var L0, var L1,
@@ -563,10 +573,8 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.gpu_tile(L0, L1, L2, sizeX, sizeY, sizeZ, L0_outer, L1_outer, L2_outer, L0_inner, L1_inner, L2_inner);
         })
         .def("get_automatically_allocated_buffer", [](computation &c) {
-                std::shared_ptr<buffer> bptr{};
-                bptr.reset(c.get_automatically_allocated_buffer());
-                return bptr;
-        })
+                return c.get_automatically_allocated_buffer();
+        }, py::return_value_policy::reference)
         .def("interchange", [](computation &c,
             var L0, var L1) {
                 c.interchange(L0, L1);
@@ -616,11 +624,11 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.is_inline_computation();
         })
         .def("set_low_level_schedule", [](computation &c,
-            std::shared_ptr<isl_map_t> &map) {
+            std::shared_ptr<isl_map_t> map) {
                 c.set_low_level_schedule(map->value);
         })
         .def("set_low_level_schedule", [](computation &c,
-             std::string map_str) {
+            std::string map_str) {
                 c.set_low_level_schedule(map_str);
         })
         .def("shift", [](computation &c,
@@ -806,54 +814,53 @@ PYBIND11_MODULE(pytiramisu, m) {
             return c(i, j, k, l);
         })
         .def("__call__", [](computation &c) { c(); })
-        .def("create_xfer", [](computation &c,
+        .def_static("create_xfer", [](computation &c,
             std::string send_iter_domain, std::string recv_iter_domain,
             expr send_dest, expr recv_src, xfer_prop send_prop, xfer_prop recv_prop,
             expr send_expr, std::shared_ptr<function> & fct) {
                 return c.create_xfer(send_iter_domain, recv_iter_domain,
                     send_dest, recv_src, send_prop, recv_prop, send_expr, fct.get());
         })
-        .def("create_xfer", [](computation &c,
+        .def_static("create_xfer", [](computation &c,
             std::string iter_domain, xfer_prop prop, expr exper, std::shared_ptr<function> & fct) {
                 return c.create_xfer(iter_domain, prop, exper, fct.get());
         });
-       
-    py::class_<generator>(m, "generator")
-        .def("__init__", [](generator &g) {
-            new (&g) generator();
-        })
-        .def_static("update_producer_expr_name", [](generator &g,
-                std::shared_ptr<tiramisu::computation> comp, std::string name_to_replace, std::string replace_with) {
-            g.update_producer_expr_name(comp.get(), name_to_replace, replace_with);
-        });
 
+    py::class_<generator>(m, "generator")
+        .def(py::init([](generator &g) {
+            return generator{g};
+        }));
+        //.def_static("update_producer_expr_name", [](generator &g,
+        //        std::shared_ptr<tiramisu::computation> comp, std::string name_to_replace, std::string replace_with) {
+        //    g.update_producer_expr_name(comp.get(), name_to_replace, replace_with);
+        //});
 
     py::class_<buffer>(m, "buffer")
-        .def("__init__", [](buffer &b,
+        .def(py::init( [](
                 std::string name,
                 std::vector<expr> & dim_sizes,
                 primitive_t type,
                 argument_t argt,
                 std::shared_ptr<function> & fct, // = global::get_implicit_function(),
                 std::string corr) {
-            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), corr);
-        })
-        .def("__init__", [](buffer &b,
+            return buffer{name, dim_sizes, type, argt, fct.get(), corr};
+        }))
+        .def(py::init( [](
                 std::string name,
                 std::vector<expr> & dim_sizes,
                 primitive_t type,
                 argument_t argt,
                 std::string corr) {
-            new (&b) buffer(name, dim_sizes, type, argt, global::get_implicit_function(), corr);
-        })
-        .def("__init__", [](buffer &b,
+            return buffer{name, dim_sizes, type, argt, global::get_implicit_function(), corr};
+        }))
+        .def(py::init( [](
                 std::string name,
                 std::vector<expr> & dim_sizes,
                 primitive_t type,
                 argument_t argt,
                 std::shared_ptr<function> & fct) {
-            new (&b) buffer(name, dim_sizes, type, argt, fct.get(), "");
-        })
+            return buffer{name, dim_sizes, type, argt, fct.get(), ""};
+        }))
         .def("allocate_at", [](buffer &b,
                 computation & C,
                 var level) {
@@ -924,7 +931,7 @@ PYBIND11_MODULE(pytiramisu, m) {
         });
 
     py::class_<constant>(m, "constant")
-        .def("__init__", [](constant &c,
+        .def(py::init( [](
             std::string param_name,
             expr &param_expr,
             primitive_t t,
@@ -932,35 +939,35 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::shared_ptr<tiramisu::computation> &with_computation,
             int at_loop_level,
             std::shared_ptr<function> & func) {
-                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, func.get());
-        })
-        .def("__init__", [](constant &c,
+                return constant{param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, func.get()};
+        }))
+        .def(py::init( [](
             std::string param_name,
             expr &param_expr,
             primitive_t t,
             bool function_wide,
             std::shared_ptr<tiramisu::computation> &with_computation,
             int at_loop_level) {
-                new(&c) constant(param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, global::get_implicit_function());
-        })
-        .def("__init__", [](constant &c,
+                return constant{param_name, param_expr, t, function_wide, with_computation.get(), at_loop_level, global::get_implicit_function()};
+        }))
+        .def(py::init( [](
             std::string param_name,
             expr &param_expr,
             primitive_t t,
             std::shared_ptr<function> &func) {
-                new(&c) constant(param_name, param_expr, t, func.get());
-        })
-        .def("__init__", [](constant &c,
+                return constant{param_name, param_expr, t, func.get()};
+        }))
+        .def(py::init( [](
             std::string param_name,
             expr &param_expr,
             primitive_t t) {
-                new(&c) constant(param_name, param_expr, t, global::get_implicit_function());
-        })
-        .def("__init__", [](constant &c,
+                return constant{param_name, param_expr, t, global::get_implicit_function()};
+        }))
+        .def(py::init( [](
             std::string param_name,
             expr &param_expr) {
-                new(&c) constant(param_name, param_expr);
-        })
+                return constant{param_name, param_expr};
+        }))
         .def("get_computation_with_whom_this_is_computed", [](constant &c) {
                 std::shared_ptr<tiramisu::computation> cptr{nullptr};
                 cptr.reset(c.get_computation_with_whom_this_is_computed());
@@ -975,24 +982,24 @@ PYBIND11_MODULE(pytiramisu, m) {
         });
 
     py::class_<input>(m, "input")
-        .def("__int__", [](input &i,
+        .def(py::init( [](
             std::string name, std::vector<var> & iterator_variables, primitive_t t) {
-            new(&i) input(name, iterator_variables, t);
-        })
-        .def("__int__", [](input &i,
+            return input{name, iterator_variables, t};
+        }))
+        .def(py::init( [](
             std::vector<var> & iterator_variables, primitive_t t) {
-            new(&i) input(iterator_variables, t);
-        })
-        .def("__int__", [](input &i,
+            return input{iterator_variables, t};
+        }))
+        .def(py::init( [](
             std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
-            new(&i) input(name, dimension_names, dimension_sizes, t);
-        });
+            return input{name, dimension_names, dimension_sizes, t};
+        }));
 
     py::class_<Input>(m, "Input")
-        .def("__int__", [](Input &i,
+        .def(py::init( [](
             std::string name, std::vector<expr> & sizes, primitive_t t) {
-            new(&i) Input(name, sizes, t);
-        })
+            return Input{name, sizes, t};
+        }))
         .def("iterators_from_size_expressions", [](Input &i,
             std::vector<expr> & sizes) {
             return i.iterators_from_size_expressions(sizes);
@@ -1000,15 +1007,15 @@ PYBIND11_MODULE(pytiramisu, m) {
 
 
     py::class_<isl_set_t>(m, "isl_set")
-        .def("__init__", [](isl_set_t &d) {
-            new(&d) isl_set_t();
-        });
+        .def(py::init( []() {
+            return isl_set_t{};
+        }));
 
     py::class_<isl_map_t>(m, "isl_map")
-        .def("__init__", [](isl_map_t &d) {
-            new(&d) isl_map_t();
-        });
-*/
+        .def(py::init( []() {
+            return isl_map_t{};
+        }));
+
     // init
     //
     m.def("init", []() { tiramisu::init(); });
