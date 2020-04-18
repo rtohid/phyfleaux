@@ -7,18 +7,18 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
 class Stack:
-    depth = 0
+    head = 0
 
     def __init__(self):
-        self.depth = Stack.depth
+        self.head = Stack.head
 
     def __enter__(self):
-        Stack.depth += 1
+        Stack.head += 1
 
     def __exit__(self, type, value, traceback):
-        Stack.depth -= 1
+        Stack.head -= 1
 
     @staticmethod
     def get_depth():
-        return Stack.depth
+        return Stack.head
 
