@@ -1087,14 +1087,14 @@ PYBIND11_MODULE(pytiramisu, m) {
 
     // codegen
     //
-/*
-    m.def("codegen", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string obj_filename) {
+    m.def("codegen", [](std::vector< buffer > &arguments, std::string obj_filename) {
        std::vector<buffer *> bufs;
        bufs.reserve(arguments.size());
-       std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+       std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return std::move(&arg); });
        tiramisu::codegen(bufs, obj_filename, false);
     });
 
+/*
     m.def("codegen", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string obj_filename, bool gen_cuda_stmt) {
        std::vector<buffer *> bufs;
        bufs.reserve(arguments.size());
@@ -1107,4 +1107,5 @@ PYBIND11_MODULE(pytiramisu, m) {
        physl::tiramisu::codegen(arguments, code_buffer);
     });
 */
+
 } // end pyisl module
