@@ -10,5 +10,5 @@ if __name__ == "__main__":
     iter_range = [i, j]
     crange_expr = expr(0)
     C = computation(iter_range, crange_expr)
-    #C.parallelize()
-    #C.vectorize(j, 4)
+    C.parallelize(i)
+    C.vectorize(j, 4)
