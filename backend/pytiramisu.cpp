@@ -922,6 +922,13 @@ PYBIND11_MODULE(pytiramisu, m) {
                 std::shared_ptr<function> & fct) {
             return buffer{name, dim_sizes, type, argt, fct.get()};
         }))
+        .def(py::init( [](
+                std::string name,
+                std::vector<expr> & dim_sizes,
+                primitive_t type,
+                argument_t argt) {
+            return buffer{name, dim_sizes, type, argt, tiramisu::global::get_implicit_function()};
+        }))
         .def("allocate_at", [](buffer &b,
                 computation & C,
                 var level) {

@@ -3,7 +3,7 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-from pytiramisu import init, var, expr, computation
+from pytiramisu import init, var, expr, primitive_t, argument_t, buffer, computation
 
 if __name__ == "__main__":
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         C.store_in(&b_C);
 
         // Generate code
-        C.codegen({&b_C}, "generated_code.o");
+        C.codegen({&b_C}, "generated_code.o"); // NOTE: this is no longer correct
     }
     '''
 
@@ -50,3 +50,7 @@ if __name__ == "__main__":
     C = computation(iter_range, crange_expr)
     C.parallelize(i)
     C.vectorize(j, 4)
+
+    buffer_ranges = [ erange_expr, erange_expr ]
+    b_C = buffer("b_C", buffer_ranges, primitive_t.p_int32, argument_t.a_output)
+    #C.codegen(b_C, "generated_code.o");
