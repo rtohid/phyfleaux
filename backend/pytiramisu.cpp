@@ -63,12 +63,6 @@ public:
     } 
 };
 
-class buffer_t {
-public:
-    tiramisu::buffer * value;
-    buffer_t() : value(nullptr) {}
-};
-
 PYBIND11_MODULE(pytiramisu, m) {
     m.doc() = "pybind11 bindings for isl";
 
@@ -195,6 +189,79 @@ PYBIND11_MODULE(pytiramisu, m) {
             return global::set_loop_iterator_type(t);
         });
 
+    py::class_<function>(m, "function")
+        .def(py::init([](std::string name) {
+            return function{name};
+        }))
+        .def("add_context_constraints", [](function &f,
+            std::string new_context) {
+            f.add_context_constraints(new_context);
+        })
+        .def("align_schedules", [](function &f) {
+            f.align_schedules();
+        })
+        .def("allocate_and_map_buffers_automatically", [](function &f) {
+            f.allocate_and_map_buffers_automatically();
+        })
+        .def("compute_bounds", [](function &f) {
+            f.compute_bounds();
+        })
+        .def("dump", [](function &f, bool exhaustive) {
+            f.dump(exhaustive);
+        })
+        .def("dump_dep_graph", [](function &f) {
+            f.dump_dep_graph();
+        })
+        .def("dump_iteration_domain", [](function &f) {
+            f.dump_iteration_domain();
+        })
+        .def("dump_schedule", [](function &f) {
+            f.dump_schedule();
+        })
+        .def("dump_sched_graph", [](function &f) {
+            f.dump_sched_graph();
+        })
+        .def("dump_time_processor_domain", [](function &f) {
+            f.dump_time_processor_domain();
+        })
+        .def("dump_trimmed_time_processor_domain", [](function &f) {
+            f.dump_trimmed_time_processor_domain();
+        })
+        .def("gen_c_code", [](function &f) {
+            f.gen_c_code();
+        })
+        .def("gen_isl_ast", [](function &f) {
+            f.gen_isl_ast();
+        })
+        .def("gen_time_space_domain", [](function &f) {
+            f.gen_time_space_domain();
+        })
+        .def("set_arguments", [](function &f,
+            std::vector<std::shared_ptr<buffer>> &buffer_vec) {
+
+            std::vector<buffer *> buffer_vec_{};
+            buffer_vec_.resize(buffer_vec.size());
+            std::transform(buffer_vec.begin(), buffer_vec.end(), buffer_vec_.begin(), [](auto b) { return b.get(); });
+            f.set_arguments(buffer_vec_);
+        })
+        .def("codegen", [](function &f,
+            std::vector<std::shared_ptr<buffer>> &buffer_vec,
+            std::string obj_filename,
+            bool gen_cuda_stmt) {
+
+            std::vector<buffer *> buffer_vec_{};
+            buffer_vec_.resize(buffer_vec.size());
+            std::transform(buffer_vec.begin(), buffer_vec.end(), buffer_vec_.begin(), [](auto b) { return b.get(); });
+      
+            f.codegen(buffer_vec_, obj_filename, gen_cuda_stmt);
+        })
+        .def("set_context_set", [](function &f, std::string context) {
+            f.set_context_set(context);
+        })
+        .def("set_context_set", [](function &f, isl_set_t context) {
+            f.set_context_set(context.value);
+        });
+
     py::class_<expr>(m, "expr")
         .def(py::init( []() {
             return expr{};
@@ -305,7 +372,7 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("substitute_access", [](expr &e, std::string orig, std::string sub) { return e.substitute_access(orig, sub); });
         //.def("apply_to_operands", [](expr &e, std::function<expr () { return e.substitute_access(orig, sub); })
 
-    py::class_<tiramisu::var>(m, "var")
+    py::class_<var>(m, "var")
         .def(py::init( [](
             primitive_t type_, std::string name) {
             return var{type_, name};
@@ -324,7 +391,7 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("get_upper", [](var &v) { return v.get_upper(); })
         .def("get_lower", [](var &v) { return v.get_lower(); });
 
-    py::class_<tiramisu::computation>(m, "computation")
+    py::class_<computation>(m, "computation")
         .def(py::init( [](
             std::string iteration_domain,
             expr e,
@@ -460,8 +527,8 @@ PYBIND11_MODULE(pytiramisu, m) {
                 c.between(before_comp, before_l, after_comp, after_l);
         })
         .def("store_in", [](computation &c,
-            buffer_t & buff) {
-                c.store_in(buff.value);
+            buffer & buff) {
+                c.store_in(&buff);
         })
         .def("store_in", [](computation &c,
             std::shared_ptr<buffer> & buff,
@@ -852,40 +919,19 @@ PYBIND11_MODULE(pytiramisu, m) {
                 std::vector<expr> & dim_sizes,
                 primitive_t type,
                 argument_t argt,
-                std::shared_ptr<function> & fct, // = global::get_implicit_function(),
-                std::string corr) {
-            return buffer{name, dim_sizes, type, argt, fct.get(), corr};
-        }))
-        .def(py::init( [](
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt,
-                std::string corr) {
-            return buffer{name, dim_sizes, type, argt, global::get_implicit_function(), corr};
-        }))
-        .def(py::init( [](
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt,
                 std::shared_ptr<function> & fct) {
-            return buffer{name, dim_sizes, type, argt, fct.get(), ""};
+            return buffer{name, dim_sizes, type, argt, fct.get()};
         }))
         .def("allocate_at", [](buffer &b,
                 computation & C,
                 var level) {
-            std::shared_ptr<tiramisu::computation> cptr{};
-            cptr.reset(b.allocate_at(C, level));
-            return cptr;
-        })
+            return b.allocate_at(C, level);
+        }, py::return_value_policy::reference)
         .def("allocate_at", [](buffer &b,
                 computation & C,
                 int level) {
-            std::shared_ptr<tiramisu::computation> cptr{};
-            cptr.reset(b.allocate_at(C, level));
-            return cptr;
-        })
+            return b.allocate_at(C, level);
+        }, py::return_value_policy::reference)
         .def("dump", [](buffer &b,
                 bool exhaustive) {
             b.dump(exhaustive);
