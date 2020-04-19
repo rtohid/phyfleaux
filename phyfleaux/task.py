@@ -35,7 +35,8 @@ class Task(ast.NodeVisitor):
             self.args.append(arg.arg)
             # self.args[arg.arg] = arg
 
-        self.ir = defaultdict(lambda: defaultdict(lambda: None))
+        # it should become self.ir = backend.ir(self.tree)
+        self.ir = defaultdict(lambda: defaultdict())
         for node in ast.walk(self.tree):
             self.ir[hash(node)]['tiramisu'] = deepcopy(node)
 

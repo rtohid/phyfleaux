@@ -20,7 +20,7 @@ def polyhedral(fn: Callable) -> Callable:
     :arg fn: python function.
 
     Directs Phyfleaux to apply polyhedral transformations on affine iteration 
-    spaces of :func:`fn`.
+    spaces in :func:`fn`.
 
     reads:
     -----
