@@ -23,22 +23,20 @@ CXX_EXT=$(INC_FLAGS) $(LIB_FLAGS)
 CXX=clang++
 #CXX=g++
 
-#all: $(PYTIRAMISU_OBJ)
-#	@echo "pytiramisu build complete"
+all: $(PYTIRAMISU_OBJ)
+	@echo "pytiramisu build complete"
 
-#test
-#physl_isl.o: physl_isl.cpp
-#	$(CXX) -O3 -std=c++17 -fPIC $(INC_FLAGS) -c physl_isl.cpp
+physl_isl.o: physl_isl.cpp
+	$(CXX) -O3 -std=c++17 -fPIC $(INC_FLAGS) -c physl_isl.cpp
 
-#physl_tiramisu.o: physl_isl.o physl_tiramisu.cpp
-#	$(CXX) -O3 -std=c++17 -fPIC $(INC_FLAGS) -c physl_tiramisu.cpp
+physl_tiramisu.o: physl_isl.o physl_tiramisu.cpp
+	$(CXX) -O3 -std=c++17 -fPIC $(INC_FLAGS) -c physl_tiramisu.cpp
 
-#$(PYTIRAMISU_OBJ): physl_isl.o physl_tiramisu.o pytiramisu.cpp
 #	$(CXX) $(CXX_FLAGS) -fPIC `python3.8 -m pybind11 --includes` pytiramisu.cpp -o $(PYTIRAMISU_OBJ) physl_isl.o physl_tiramisu.o $(CXX_EXT)
 
-#$(PYTIRAMISU_OBJ):
-all:
-	$(CXX) $(CXX_FLAGS) pytiramisu.cpp  -o $(PYTIRAMISU_OBJ) `python3.8 -m pybind11 --includes` $(LIBS)
+$(PYTIRAMISU_OBJ): physl_isl.o physl_tiramisu.o pytiramisu.cpp
+	$(CXX) $(CXX_FLAGS) physl_isl.o physl_tiramisu.o pytiramisu.cpp -o $(PYTIRAMISU_OBJ) `python3.8 -m pybind11 --includes` $(LIBS)
+
 #test: physl_tiramisu.o physl_isl.o
 #	$(CXX) $(CXX_FLAGS) -g $(INC_FLAGS) $(LIB_FLAGS) test.cpp -o test physl_isl.o physl_tiramisu.o $(LIBS)
 #	g++ $(CXX_FLAGS) -g $(INC_FLAGS) $(LIB_FLAGS) test.cpp -o test physl_isl.o physl_tiramisu.o $(LIBS)

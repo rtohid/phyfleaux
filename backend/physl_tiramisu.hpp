@@ -17,7 +17,7 @@ using namespace tiramisu;
 
 namespace physl { namespace tiramisu {
 
-int codegen(const std::vector< std::shared_ptr<buffer> > &arguments, std::string & physlstr);
+int codegen(std::vector< buffer > &arguments, std::string & physlstr);
 
 } /* end namespace tiramisu */ } // end namespace physl
 

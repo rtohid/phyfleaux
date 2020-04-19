@@ -17,8 +17,6 @@
 #include <isl/space.h>
 #include <isl/constraint.h>
 
-//#include <pybind11/stl.h>
-
 #include <tiramisu/tiramisu.h>
 #include <tiramisu/expr.h>
 
@@ -37,7 +35,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
 
-//#include "physl_tiramisu.hpp"
+#include "physl_tiramisu.hpp"
 #include "pytiramisu.hpp"
 
 namespace py = pybind11;
@@ -501,12 +499,6 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::string map_str) {
                 c.apply_transformation_on_schedule(map_str);
         })
-/*        .def("auto_buffer", [](computation &c) {
-            buffer_t ret {};
-            ret.value = c.auto_buffer();
-            return ret;
-        })
-*/
         .def("before", [](computation &c,
             computation &consumer,
             var L) {
@@ -1094,18 +1086,15 @@ PYBIND11_MODULE(pytiramisu, m) {
        tiramisu::codegen(bufs, obj_filename, false);
     });
 
-/*
-    m.def("codegen", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string obj_filename, bool gen_cuda_stmt) {
+    m.def("codegen", [](std::vector< buffer > &arguments, std::string obj_filename, bool gen_cuda_stmt) {
        std::vector<buffer *> bufs;
        bufs.reserve(arguments.size());
-       std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+       std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return std::move(&arg); });
        tiramisu::codegen(bufs, obj_filename, gen_cuda_stmt);
     });
-*/
-/*
-    m.def("codegen_physl", [](pybind11::module &m, std::vector< std::shared_ptr<buffer> > &arguments, std::string & code_buffer) {
+
+    m.def("codegen_physl", [](std::vector< buffer > &arguments, std::string & code_buffer) {
        physl::tiramisu::codegen(arguments, code_buffer);
     });
-*/
 
 } // end pyisl module

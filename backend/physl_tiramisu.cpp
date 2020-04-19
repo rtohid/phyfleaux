@@ -127,13 +127,13 @@ class PhyslFunction : public function, public generator {
 
 //int codegen(const std::vector< std::shared_ptr<buffer> > &arguments, const bool gen_cuda_stmt, std::string & physlstr)
 //
-int codegen(const std::vector< std::shared_ptr<buffer> > &arguments, std::string & physlstr)
+int codegen(std::vector< buffer > &arguments, std::string & physlstr)
 {
     std::vector<buffer *> bufs{};
 
     if(arguments.size()) {
         bufs.reserve(arguments.size());
-        std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return arg.get(); });
+        std::transform(arguments.begin(), arguments.end(), bufs.begin(), [](auto arg) { return std::move(&arg); });
     }
 
     PhyslFunction fct{}; // = global::get_implicit_function();
