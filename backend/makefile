@@ -6,7 +6,10 @@
 BASE_DIR=$(HOME)/git
 
 # this is a variable referencing the
-# source tree for isl
+# source tree for isl where the file
+# 'isl_ast_private.h' is located.
+# this file is not part of the isl
+# install manifest.
 #
 ISL_SOURCE_BASE_DIR=$(BASE_DIR)/isl
 
