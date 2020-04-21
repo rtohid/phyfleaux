@@ -15,7 +15,14 @@
 #include <isl/id.h>
 #include <isl/val.h>
 #include <isl/ast_type.h>
-#include <isl_ast_private.h>
+
+// this is required and can only be found in
+// the source tree for isl
+//
+// this file is not installed as part of
+// the isl build
+//
+#include "isl_ast_private.h"
 
 #include "physl_isl.hpp"
 #include <string>

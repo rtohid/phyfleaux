@@ -4,11 +4,19 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 BASE_DIR=$(HOME)/git
-ISL_BASE_DIR=$(BASE_DIR)/isl
-ISL_ROOT_DIR=$(HOME)/git/install
+
+# this is a variable referencing the
+# source tree for isl
+#
+ISL_SOURCE_BASE_DIR=$(BASE_DIR)/isl
+
+# this is a variable referencing the
+# installed build of isl
+#
+ISL_INSTALLED_ROOT_DIR=$(HOME)/git/install
 TIRAMISU_ROOT_DIR=$(BASE_DIR)/tiramisu
 
-INC_FLAGS=-I$(HOME)/git/install/include -I$(ISL_ROOT_DIR)/include -I$(TIRAMISU_ROOT_DIR)/include -I$(ISL_BASE_DIR)
+INC_FLAGS=-I$(HOME)/git/install/include -I$(ISL_INSTALLED_ROOT_DIR)/include -I$(TIRAMISU_ROOT_DIR)/include -I$(ISL_SOURCE_BASE_DIR)
 LIB_FLAGS=-L$(HOME)/git/install/lib -L$(ISL_ROOT_DIR)/lib -L$(TIRAMISU_ROOT_DIR)/build
 LIBS=-lisl -ltiramisu
 CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
