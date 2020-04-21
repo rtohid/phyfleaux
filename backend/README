@@ -10,3 +10,5 @@
 	* run through the following semicolon delimited commands: mkdir build; cd build; cmake ..; make -j tiramisu
 
 The physl_2019 branch in the tiramisu repository is significantly modified. Halide will not be a dependency used, C code export support is enabled (code edit), along with g++ being the default compiler used (check the scripts directory for details).
+
+This backend modifies tiramisu and isl to support exporting physl and it provides python bindings for tiramisu and modifications to tiramisu that support physl. Unless otherwise indicated, the source code in this tree is Boost licensed. The Boost license is added in the source tree for review. The Boost license can be found here -> https://www.boost.org/users/license.html
