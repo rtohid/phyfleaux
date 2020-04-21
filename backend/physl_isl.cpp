@@ -179,8 +179,22 @@ static __isl_give isl_printer *print_body_physl(__isl_take isl_printer *p,
 	if (!force_block && !else_node && !need_block(node)) {
 		p = isl_printer_end_line(p);
 		p = isl_printer_indent(p, 2);
-		p = isl_ast_node_print(node, p,
-					isl_ast_print_options_copy(options));
+                // TODO
+                {
+                    isl_ast_print_options * opt = isl_ast_print_options_copy(options);
+                    if (!options || !node)
+                        goto error;
+                    p = print_ast_node_physl(p, node, options, 0, 0);
+                    isl_ast_print_options_free(options);
+                    return p;
+
+error:
+                    isl_ast_print_options_free(options);
+                    isl_printer_free(p);
+                    return nullptr;
+                }
+		//p = isl_ast_node_print(node, p,
+		//			isl_ast_print_options_copy(options));
 		p = isl_printer_indent(p, -2);
 		return p;
 	}
@@ -243,7 +257,10 @@ static __isl_give isl_printer *print_for_physl(
 		p = isl_printer_print_str(p, " + ");
 		p = isl_printer_print_ast_expr_physl(p, node->u.f.inc);
 		p = isl_printer_print_str(p, "), ");
+		p = isl_printer_print_str(p, " block( ");
 		p = print_body_physl(p, node->u.f.body, NULL, options, 0);
+		p = isl_printer_print_str(p, " )"); // end block
+		p = isl_printer_print_str(p, " )"); // end for
 	} else {
 		id = isl_ast_expr_get_id(node->u.f.iterator);
 		name = isl_id_get_name(id);
@@ -653,10 +670,11 @@ static __isl_give isl_printer *print_ast_node_physl(__isl_take isl_printer *p,
 {
 	switch (node->type) {
 	case isl_ast_node_for:
-		if (options->print_for)
+		if (options->print_for) {
 			return options->print_for(p,
 					isl_ast_print_options_copy(options),
 					node, options->print_for_user);
+                }
 		p = print_for_physl(p, node, options, in_block, in_list);
 		break;
 	case isl_ast_node_if:
@@ -677,13 +695,14 @@ static __isl_give isl_printer *print_ast_node_physl(__isl_take isl_printer *p,
 		p = print_ast_node_physl(p, node->u.m.node, options, 0, in_list);
 		break;
 	case isl_ast_node_user:
-		if (options->print_user)
+		if (options->print_user) {
 			return options->print_user(p,
 					isl_ast_print_options_copy(options),
 					node, options->print_user_user);
+                }
 		p = isl_printer_start_line(p);
-		p = isl_printer_print_ast_expr(p, node->u.e.expr);
-		p = isl_printer_print_str(p, ";");
+		p = isl_printer_print_ast_expr_physl(p, node->u.e.expr);
+		//p = isl_printer_print_str(p, ")");
 		p = isl_printer_end_line(p);
 		break;
 	case isl_ast_node_error:
