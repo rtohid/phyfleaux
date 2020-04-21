@@ -2,12 +2,16 @@
 
 + Dependencies & Instructions
 
-	* install clang-8, pthreads, libdl, pybind11, python3.6+
+	* install clang-8, pthreads, libdl, zlib1g-dev (ubuntu), pybind11, python3.6+
 	* git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
-	* cp ./install_submodules.sh $(TIRAMISU_ROOT)/utils/scripts/ (this script installs isl, Halide)
-	* modify: $(TIRAMISU_ROOT)/configure.cmake
-	* read $(TIRAMISU_ROOT)/INSTALL.md or use the following script `./utils/scripts/install_submodules.sh $(TIRAMISU_ROOT)`
-	* run through the following semicolon delimited commands: mkdir build; cd build; cmake ..; make -j tiramisu
+	* modify as necessary `$(TIRAMISU_ROOT)/configure.cmake`
+    * run `mkdir $(TIRAMISU_ROOT)/build`
+    * change directory into `cd $(TIRAMISU_ROOT)/build`
+    * run `cmake ..` in `$(TIRAMISU_ROOT)/build`
+    * build tiramisu with `make -j tiramisu`
+    * check `$(TIRAMISU_ROOT)/build` for 'libtiramisu.so'
+    * symlink `ln -s $(TIRAMISU_ROOT)/build/libtiramisu.so .` into this directory
+    * execute `make` in the phyflow/backend directory
 
 + Notes
 
