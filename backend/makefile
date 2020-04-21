@@ -26,11 +26,12 @@ CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
 #-stdlib=libc++
 #-D_GLIBCXX_USE_CXX11_ABI=1
 
+# this variable should resolve to something like...
+# pytiramisu.cpython-36m-x86_64-linux-gnu.so
+#
 PYTIRAMISU_OBJ=pytiramisu`python3.8-config --extension-suffix`
-#pytiramisu.cpython-36m-x86_64-linux-gnu.so
 
 CXX_EXT=$(INC_FLAGS) $(LIB_FLAGS)
-# $(LIBS)
 CXX=clang++
 #CXX=g++
 
@@ -42,8 +43,6 @@ physl_isl.o: physl_isl.cpp
 
 physl_tiramisu.o: physl_isl.o physl_tiramisu.cpp
 	$(CXX) -O3 -std=c++17 -fPIC $(INC_FLAGS) -c physl_tiramisu.cpp
-
-#	$(CXX) $(CXX_FLAGS) -fPIC `python3.8 -m pybind11 --includes` pytiramisu.cpp -o $(PYTIRAMISU_OBJ) physl_isl.o physl_tiramisu.o $(CXX_EXT)
 
 $(PYTIRAMISU_OBJ): physl_isl.o physl_tiramisu.o pytiramisu.cpp
 	$(CXX) $(CXX_FLAGS) physl_isl.o physl_tiramisu.o pytiramisu.cpp -o $(PYTIRAMISU_OBJ) `python3.8 -m pybind11 --includes` $(LIBS)
