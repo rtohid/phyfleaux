@@ -23,7 +23,7 @@ from phyfleaux.api.directives import polyhedral
 #     for i in range(N):
 #         for j in range(N):
 #             for k in range(N):
-#                 c[i][j] += a[i][k] * b[k][j]
+#                 c[i][j] = c[i][j] + a[i][k] * b[k][j]
 #     #     for j in range(N):
 #     #             c[j] = a[i]
 #     # for j in range(N):
@@ -35,17 +35,17 @@ from phyfleaux.api.directives import polyhedral
 
 
 @polyhedral
-def example_0(N):
-    c = numpy.zeros((N, N), dtype=int)
+def example_0(N, M):
+    c = numpy.zeros((N, M), dtype=int)
     for i in range(N):
-        for j in range(N):
-            c[i][j] = i * N + j
-            # c[i][j] = 42
+        for j in range(M):
+            # c[i][j] = i * N + j
+            c[i][j] = 42
 
     return c
 
 
-print(example_0(4))
+print(example_0(4, 4))
 
 # def test_kmeans(*args, **kwargs):
 #     """Test all kmeans functionalities in scipy."""
