@@ -399,22 +399,16 @@ PYBIND11_MODULE(pytiramisu, m) {
                 return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iteration_domain, e, schedule_this_computation, t, func.get()));
         }))
         .def(py::init( [](
-            std::string iteration_domain,
+            std::string name,
             std::vector<var> iterator_variables,
             expr e,
             bool schedule_this_computation) {
-                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iteration_domain, iterator_variables, e, schedule_this_computation));
+                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(name, iterator_variables, e, schedule_this_computation));
         }))
         .def(py::init( [](
             std::vector<var> iterator_variables,
             expr e) {
                 return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iterator_variables, e));
-        }))
-        .def(py::init( [](
-            std::vector<var> iterator_variables,
-            expr predicate,
-            expr e) {
-                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iterator_variables, predicate, e));
         }))
         .def(py::init( [](
             std::string name,
@@ -423,17 +417,10 @@ PYBIND11_MODULE(pytiramisu, m) {
                 return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, e));
         }))
         .def(py::init( [](
-            std::string name,
-            std::vector<var> iterator_variables,
-            expr predicate,
-            expr e) {
-                 return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, predicate, e));
-        }))
-        .def(py::init( [](
             std::vector<var> iterator_variables,
             expr e,
-            bool schedule_this_operation) {
-                 return std::unique_ptr<tiramisu::computation>(new computation(iterator_variables, e, schedule_this_operation));
+            bool schedule_this_computation) {
+                 return std::unique_ptr<tiramisu::computation>(new computation(iterator_variables, e, schedule_this_computation));
         }))
         .def(py::init( [](
             std::string name,
@@ -1076,6 +1063,13 @@ PYBIND11_MODULE(pytiramisu, m) {
     //
     m.def("init", []() { tiramisu::init(); });
     m.def("init", [](std::string name) { tiramisu::init(name); });
+    m.def("init_physl", [](std::string name) {
+        physl::tiramisu::PhyslFunction * fct = new physl::tiramisu::PhyslFunction(name);
+        global::set_implicit_function(fct);
+
+        // Do all the rest of the initialization.
+        init();
+    });
 
     // codegen
     //
@@ -1093,8 +1087,9 @@ PYBIND11_MODULE(pytiramisu, m) {
        tiramisu::codegen(bufs, obj_filename, gen_cuda_stmt);
     });
 
-    m.def("codegen_physl", [](std::vector< buffer > &arguments, std::string & code_buffer) {
-       physl::tiramisu::codegen(arguments, code_buffer);
+    m.def("codegen_physl", [](std::vector< buffer > &arguments) {
+       std::string code = codegen_physl(arguments);
+       return py::str(code);
     });
 
 } // end pyisl module

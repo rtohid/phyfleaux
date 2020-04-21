@@ -14,13 +14,23 @@
 
 #include <isl/id.h>
 #include <isl/val.h>
+#include <isl/ast_type.h>
 #include <isl_ast_private.h>
 
 #include "physl_isl.hpp"
+#include <string>
+#include <cstring>
+#include <vector>
+#include <algorithm>
+#include <iostream>
 
 #define isl_ast_op_last	isl_ast_op_address_of
 
 namespace physl { namespace codegen {
+
+__isl_give isl_printer *isl_ast_node_list_print__(
+        __isl_keep isl_ast_node_list *list, __isl_take isl_printer *p,
+        __isl_keep isl_ast_print_options *options);
 
 /* Print the start of a compound statement.
  */
@@ -655,7 +665,7 @@ static __isl_give isl_printer *print_ast_node_physl(__isl_take isl_printer *p,
 	case isl_ast_node_block:
 		if (!in_block)
 			p = start_block(p);
-		p = isl_ast_node_list_print(node->u.b.children, p, options);
+		p = isl_ast_node_list_print__(node->u.b.children, p, options);
 		if (!in_block)
 			p = end_block(p);
 		break;
@@ -682,7 +692,7 @@ static __isl_give isl_printer *print_ast_node_physl(__isl_take isl_printer *p,
 	return p;
 }
 
-static __isl_give char *isl_ast_node_to_physl_str(__isl_keep isl_ast_node *node)
+static __isl_give char *isl_ast_node_to_physl_str(isl_ctx* ctx, isl_ast_node* node)
 {
 	isl_printer *p = nullptr;
 	char *str = nullptr;
@@ -691,7 +701,7 @@ static __isl_give char *isl_ast_node_to_physl_str(__isl_keep isl_ast_node *node)
 	    return nullptr;
         }
 
-	p = isl_printer_to_str(isl_ast_node_get_ctx(node));
+	p = isl_printer_to_str(ctx); //isl_ast_node_get_ctx(node));
 
         isl_ast_print_options *options = isl_ast_print_options_alloc(isl_printer_get_ctx(p));
 	p = print_ast_node_physl(p, node, options, 0, 0);
@@ -703,31 +713,46 @@ static __isl_give char *isl_ast_node_to_physl_str(__isl_keep isl_ast_node *node)
 	return str;
 }
 
-int generate_physl(const std::shared_ptr<isl_ast_node> & node) {
-    isl_printer *p = isl_printer_to_file(isl_ast_node_get_ctx(node.get()), stdout);
+__isl_give isl_printer *isl_ast_node_list_print__(
+        __isl_keep isl_ast_node_list *list, __isl_take isl_printer *p,
+        __isl_keep isl_ast_print_options *options)
+{
+        int i;
+
+        if (!p || !list || !options)
+                return isl_printer_free(p);
+
+        for (i = 0; i < list->n; ++i)
+                p = print_ast_node_physl(p, list->p[i], options, 1, 1);
+
+        return p;
+}
+
+int generate_physl(isl_ctx * ctx, isl_ast_node * node) {
+    isl_printer *p = isl_printer_to_file(ctx, stdout); //isl_ast_node_get_ctx(node.get()), stdout);
     isl_ast_print_options *options = isl_ast_print_options_alloc(isl_printer_get_ctx(p));
 
-    p = print_ast_node_physl(p, node.get(), options, 0, 0);
+    p = print_ast_node_physl(p, node, options, 0, 0);
 
     isl_ast_print_options_free(options);
     isl_printer_free(p);
+
     return 1;
 }
 
 
-int generate_physl(const std::shared_ptr<isl_ast_node> & node, std::ostream & fstr) {
-    char *c_str = isl_ast_node_to_physl_str(node.get());
-    std::string cstr{c_str};
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::ostream & fstr) {
+    char *c_str = isl_ast_node_to_physl_str(ctx, node);
+    std::string cstr{(c_str == nullptr) ? "" : c_str };
     fstr << cstr; //(cstr.c_str(), cstr.size());
 
     return 1;
 }
 
-int generate_physl(const std::shared_ptr<isl_ast_node> & node, std::string & physlstr) {
-    char * c_str = isl_ast_node_to_physl_str(node.get());
-    std::string cstr{c_str};
-    //physlstr.copy(cstr.c_str(), cstr.size(), 0);
-    std::copy(cstr.begin(), cstr.end(), physlstr.begin());
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::string & physlstr) {
+    char * c_str = isl_ast_node_to_physl_str(ctx, node);
+    std::string cstr{(c_str == nullptr) ? "" : c_str };
+    physlstr.assign(cstr);
 
     return 1;
 }

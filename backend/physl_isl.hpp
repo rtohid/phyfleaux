@@ -16,9 +16,9 @@
 
 namespace physl { namespace codegen {
 
-int generate_physl(const std::shared_ptr<isl_ast_node> & node);
-int generate_physl(const std::shared_ptr<isl_ast_node> & node, std::ostream & fstr);
-int generate_physl(const std::shared_ptr<isl_ast_node> & node, std::string & physlstr);
+int generate_physl(isl_ctx * ctx, isl_ast_node * node);
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::ostream & fstr);
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::string & physlstr);
 
 } /* end namespace codegen */ } // end namespace physl
 

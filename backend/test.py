@@ -3,7 +3,7 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-from pytiramisu import init, var, expr, primitive_t, argument_t, buffer, computation, codegen
+from pytiramisu import init_physl, var, expr, function, primitive_t, argument_t, buffer, computation, codegen_physl
 
 if __name__ == "__main__":
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     }
     '''
 
-    init("foo")
+    init_physl("foo")
     srange_expr = expr(0) 
     erange_expr = expr(100) 
     i = var("i", srange_expr, erange_expr)
@@ -55,4 +55,5 @@ if __name__ == "__main__":
     #b_C = buffer("b_C", buffer_ranges, primitive_t.p_int32, argument_t.a_output)
     #C.codegen(b_C, "generated_code.o");
     buffers = [ C.get_buffer(), ]
-    codegen(buffers, "generated_code.c")
+    physl_str = codegen_physl(buffers)
+    print(physl_str)
