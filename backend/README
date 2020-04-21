@@ -2,9 +2,9 @@
 
 + Dependencies & Instructions
 
-	* install clang-8, pthreads, libdl, zlib1g-dev (ubuntu), pybind11, python3.6+
-	* git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
-	* modify as necessary `$(TIRAMISU_ROOT)/configure.cmake`
+    * install clang-8, pthreads, libdl, zlib1g-dev (ubuntu), pybind11, python3.6+
+    * git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
+    * modify as necessary `$(TIRAMISU_ROOT)/configure.cmake`
     * run `mkdir $(TIRAMISU_ROOT)/build`
     * change directory into `cd $(TIRAMISU_ROOT)/build`
     * run `cmake ..` in `$(TIRAMISU_ROOT)/build`
