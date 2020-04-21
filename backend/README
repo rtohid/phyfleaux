@@ -9,7 +9,7 @@
 	* read $(TIRAMISU_ROOT)/INSTALL.md or use the following script `./utils/scripts/install_submodules.sh $(TIRAMISU_ROOT)`
 	* run through the following semicolon delimited commands: mkdir build; cd build; cmake ..; make -j tiramisu
 
-The physl_2019 branch in the tiramisu repository is significantly modified. Halide will not be a dependency used, C code export support is enabled (code edit), along with g++ being the default compiler used (check the scripts directory for details).
+The physl_2019 branch in the tiramisu repository is significantly modified. Halide will not be a dependency used, C code export support is enabled (code edit), along with g++ being the default compiler used (check all '*.sh' files in the tiramisu/utils/code_generator/ directory for details or if you need to use clang++ instead).
 
 Building this backend requires referencing the source tree for isl. Extending isl to support physl requires referencing isl_ast_private.h which is not part of the isl install manifest. isl_ast_private.h can only be found in the source tree isl.
 
