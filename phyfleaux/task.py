@@ -35,11 +35,6 @@ class Task(ast.NodeVisitor):
             self.args.append(arg.arg)
             # self.args[arg.arg] = arg
 
-        # it should become self.ir = backend.ir(self.tree)
-        self.ir = defaultdict(lambda: defaultdict())
-        for node in ast.walk(self.tree):
-            self.ir[hash(node)]['tiramisu'] = deepcopy(node)
-
         # user provides the cost function to be minimized.
         self.cost = cost_function
 

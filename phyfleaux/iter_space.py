@@ -5,15 +5,17 @@ Distributed under the Boost Software License, Version 1.0. (See accompanying
 file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Callable
-from ast import AST
 import ast
+from ast import AST
 from collections import OrderedDict, defaultdict
+from copy import deepcopy
+from typing import Callable
 
 # from phyfleaux.api.plugins.tiramisu import argument_t, primitive_t
 # from phyfleaux.api.plugins.tiramisu import buffer, computation, expr, init, var
 # from phyfleaux.api.plugins.tiramisu import codegen
-from phyfleaux.api.plugins.tiramisu import init
+from phyfleaux.api.plugins.tiramisu import expr, init, var
+from phyfleaux.api.plugins.tiramisu import Array
 from phyfleaux.task import Task
 from phyfleaux.util import Stack
 
@@ -32,33 +34,36 @@ class Polytope(Task):
         https://en.wikipedia.org/wiki/Affine_space
         """
 
-        Task.__init__(self, fn)
+        super().__init__(fn)
+
+        self.ir = defaultdict(lambda: defaultdict())
+        self.loops = OrderedDict()
+
+        for node in ast.walk(self.tree):
+            self.ir[hash(node)] = deepcopy(node)
 
         # maps hashes of nodes in :function:fn`'s Python AST to their copy.
         self.visit(self.tree)
 
-    """
-    init("foo")
-    srange_expr = expr(0) 
-    erange_expr = expr(100) 
-    i = var("i", srange_expr, erange_expr)
-    j = var("j", srange_expr, erange_expr)
-    iter_range = [i, j]
-    crange_expr = expr(0)
-    C = computation(iter_range, crange_expr)
-    C.parallelize(i)
-    C.vectorize(j, 4)
+    def visit_Assign(self, node):
 
-    #buffer_ranges = [ erange_expr, erange_expr ]
-    #b_C = buffer("b_C", buffer_ranges, primitive_t.p_int32, argument_t.a_output)
-    #C.codegen(b_C, "generated_code.o");
-    buffers = [ C.get_buffer(), ]
-    codegen(buffers, "generated_code.c")
-    """
+        self.visit(node.value)
+        for target in node.targets:
+            self.visit(target)
 
     def visit_For(self, node: ast.For) -> None:
-        if isinstance(node.iter, ast.Call) and 'range' == node.iter.func.id:
+        ir_index = hash(node)
+        ir_node = self.ir[ir_index]
+
+        try:
+            id_ = node.target.id
+        except:
+            NotImplementedError
+
+        if isinstance(ir_node.iter,
+                      ast.Call) and 'range' == ir_node.iter.func.id:
             bounds = []
+            # print(ir_node._fields)
             for arg in node.iter.args:
                 try:
                     if arg.id in self.args:
@@ -69,38 +74,60 @@ class Polytope(Task):
                 except AttributeError:
                     raise AttributeError(
                         f"Expected '<class ast.Name>' received {type(arg)}")
+
             if 1 == len(bounds):
                 bounds = [0] + bounds
-            print(bounds)
-            
+
+            setattr(ir_node, "bound", bounds)
+            ir_node.bound = bounds
         if isinstance(node.iter, ast.List):
             raise NotImplementedError(
                 "List as an iteration space is not supported.)")
 
-        lower = bounds[0]
-        upper = bounds[1]
-        print(f"(lower: {lower}, upper: {upper})")
-        
-        try:
-            id_ = node.target.id
-            print(node.target.id.__name__)
-        except:
-            NotImplementedError
-        
-        from astpretty import pprint
-        pprint(node)
-        # print(self.ir[hash(node)]['tiramisu'].body)
+        var(id_, bounds[0], bounds[1])
+        loop_nest = deepcopy(Stack)
+        with loop_nest():
+            for statement in node.body:
+                self.visit(statement)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+
+        # tiramisu::init("foo");
         init(node.name)
+
         for arg in node.args.args:
             self.visit(arg)
 
         for statement in node.body:
             self.visit(statement)
 
-    def visit_Subscript(self, node: ast.Subscript) -> None:
-        print("hello sub", node.value.id)
+    def visit_Subscript(self, node: ast.Subscript) -> tuple:
 
-    # def __iter__(self):
-    #     return self
+        ir_index = hash(node)
+        ir_node = self.ir[ir_index]
+
+        indices = []
+
+        value = ir_node
+        while isinstance(value, ast.Subscript):
+            slice_ = value.slice
+            if isinstance(slice_, ast.Index):
+                if isinstance(slice_.value, ast.Name):
+                    indices.insert(0, slice_.value.id)
+                elif isinstance(slice_.value, ast.Constant):
+                    indices.insert(0, slice_.value.n)
+                else:
+                    raise NotImplementedError
+            value = value.value
+
+        if isinstance(value, ast.Name):
+            var_name = value.id
+        else:
+            raise NotImplementedError
+
+        setattr(ir_node, "mem_access", defaultdict(lambda: None))
+        print (("var_name", var_name), ("indices", indices))
+
+    def visit_Call(self, node: ast.Call) -> None:
+        self.visit(node.func)
+        print(node.func)
