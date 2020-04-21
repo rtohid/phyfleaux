@@ -1,6 +1,6 @@
 ===Building Tiramisu===
 
-+ Dependencies
++ Dependencies & Instructions
 
 	* install clang-8, pthreads, libdl, pybind11, python3.6+
 	* git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
@@ -8,6 +8,8 @@
 	* modify: $(TIRAMISU_ROOT)/configure.cmake
 	* read $(TIRAMISU_ROOT)/INSTALL.md or use the following script `./utils/scripts/install_submodules.sh $(TIRAMISU_ROOT)`
 	* run through the following semicolon delimited commands: mkdir build; cd build; cmake ..; make -j tiramisu
+
++ Notes
 
 The physl_2019 branch in the tiramisu repository is significantly modified. Halide will not be a dependency used, C code export support is enabled (code edit), along with g++ being the default compiler used (check all '*.sh' files in the tiramisu/utils/code_generator/ directory for details or if you need to use clang++ instead).
 
