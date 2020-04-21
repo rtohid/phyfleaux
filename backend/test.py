@@ -51,9 +51,6 @@ if __name__ == "__main__":
     C.parallelize(i)
     C.vectorize(j, 4)
 
-    #buffer_ranges = [ erange_expr, erange_expr ]
-    #b_C = buffer("b_C", buffer_ranges, primitive_t.p_int32, argument_t.a_output)
-    #C.codegen(b_C, "generated_code.o");
     buffers = [ C.get_buffer(), ]
     physl_str = codegen_physl(buffers)
     print(physl_str)
