@@ -3,6 +3,7 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+/*
 #include <isl/aff.h>
 #include <isl/set.h>
 #include <isl/map.h>
@@ -13,9 +14,9 @@
 #include <isl/schedule_node.h>
 #include <isl/space.h>
 #include <isl/constraint.h>
-
 #include <isl/id.h>
 #include <isl/val.h>
+*/
 #include <isl/ast_type.h>
 
 #include "physl_tiramisu.hpp"

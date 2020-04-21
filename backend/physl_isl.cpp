@@ -27,9 +27,7 @@
 #include "physl_isl.hpp"
 #include <string>
 #include <cstring>
-#include <vector>
-#include <algorithm>
-#include <iostream>
+//#include <algorithm>
 
 #define isl_ast_op_last	isl_ast_op_address_of
 
