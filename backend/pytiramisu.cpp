@@ -1071,6 +1071,50 @@ PYBIND11_MODULE(pytiramisu, m) {
         init();
     });
 
+    m.def("cast", [](primitive_t tT, expr & e) {
+        return cast(tT, e);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::int8_t val) {
+        return value_cast<std::int8_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::uint8_t val) {
+        return value_cast<std::uint8_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::int16_t val) {
+        return value_cast<std::int16_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::uint16_t val) {
+        return value_cast<std::uint16_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::int32_t val) {
+        return value_cast<std::int32_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::uint32_t val) {
+        return value_cast<std::uint32_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::int64_t val) {
+        return value_cast<std::int64_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, std::uint64_t val) {
+        return value_cast<std::uint64_t>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, float val) {
+        return value_cast<float>(tT, val);
+    });
+
+    m.def("value_cast", [](primitive_t tT, double val) {
+        return value_cast<double>(tT, val);
+    });
+
     // codegen
     //
     m.def("codegen", [](std::vector< buffer > &arguments, std::string obj_filename) {
