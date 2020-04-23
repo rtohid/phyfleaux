@@ -870,6 +870,9 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("__call__", [](computation &c, var i, var j, var k, var l) {
             return c(i, j, k, l);
         })
+        .def("__call__", [](input & i, std::vector<expr> & args) {
+            return i(args);
+        });
         .def("__call__", [](computation &c) { c(); })
         .def_static("create_xfer", [](computation &c,
             std::string send_iter_domain, std::string recv_iter_domain,
@@ -1036,7 +1039,22 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def(py::init( [](
             std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
             return input{name, dimension_names, dimension_sizes, t};
-        }));
+        }))
+        .def("__call__", [](computation &c, var i) {
+            return c(i);
+        })
+        .def("__call__", [](computation &c, var i, var j) {
+            return c(i, j);
+        })
+        .def("__call__", [](computation &c, var i, var j, var k) {
+            return c(i, j, k);
+        })
+        .def("__call__", [](computation &c, var i, var j, var k, var l) {
+            return c(i, j, k, l);
+        })
+        .def("__call__", [](input & i, std::vector<expr> & args) {
+            return i(args);
+        });
 
     py::class_<Input>(m, "Input")
         .def(py::init( [](
