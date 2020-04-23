@@ -370,6 +370,47 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("substitute_access", [](expr &e, std::string orig, std::string sub) { return e.substitute_access(orig, sub); });
         //.def("apply_to_operands", [](expr &e, std::function<expr () { return e.substitute_access(orig, sub); })
 
+    m.def("uint8_expr", [](uint8_t val) {
+            return expr{static_cast<uint8_t>(val)};
+        });
+
+    m.def("int8_expr", [](int8_t val) {
+            return expr{static_cast<int8_t>(val)};
+        });
+
+    m.def("uint16_expr", [](uint16_t val) {
+            return expr{static_cast<uint16_t>(val)};
+        });
+
+    m.def("int16_expr", [](int16_t val) {
+            return expr{static_cast<int16_t>(val)};
+        });
+
+    m.def("uint32_expr", [](uint32_t val) {
+            return expr{static_cast<uint32_t>(val)};
+        });
+
+    m.def("int32_expr", [](int32_t val) {
+            return expr{static_cast<int32_t>(val)};
+        });
+
+    m.def("uint64_expr", [](uint64_t val) {
+            return expr{static_cast<uint64_t>(val)};
+        });
+
+    m.def("int64_expr", [](int64_t val) {
+            return expr{static_cast<int64_t>(val)};
+        });
+
+    m.def("float_expr", [](float val) {
+            return expr{static_cast<float>(val)};
+        });
+
+    m.def("double_expr", [](double val) {
+            return expr{static_cast<double>(val)};
+        });
+
+
     py::class_<var>(m, "var")
         .def(py::init( [](
             primitive_t type_, std::string name) {
@@ -507,12 +548,12 @@ PYBIND11_MODULE(pytiramisu, m) {
         })
         .def("store_in", [](computation &c,
             buffer & buff) {
-                c.store_in(&buff);
+                c.store_in( std::addressof(buff) );
         })
         .def("store_in", [](computation &c,
-            std::shared_ptr<buffer> & buff,
+            buffer & buff,
             std::vector<expr> iterators) {
-                c.store_in(buff.get(), iterators);
+                c.store_in( std::addressof(buff), iterators);
         })
         .def("store_in", [](computation &c,
             std::vector<expr> mapping,
@@ -870,6 +911,9 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def("__call__", [](computation &c, var i, var j, var k, var l) {
             return c(i, j, k, l);
         })
+        .def("__call__", [](input & i, std::vector<expr> & args) {
+            return i(args);
+        })
         .def("__call__", [](computation &c) { c(); })
         .def_static("create_xfer", [](computation &c,
             std::string send_iter_domain, std::string recv_iter_domain,
@@ -1036,7 +1080,474 @@ PYBIND11_MODULE(pytiramisu, m) {
         .def(py::init( [](
             std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
             return input{name, dimension_names, dimension_sizes, t};
-        }));
+        }))
+        .def("is_send", [](input &c) { return c.is_send(); })
+        .def("is_recv", [](input &c) { return c.is_recv(); })
+        .def("is_send_recv", [](input &c) { return c.is_send_recv(); })
+        .def("is_wait", [](input &c) { return c.is_wait(); })
+        .def("add_associated_let_stmt", [](input &c,
+            std::string access_name,
+            expr e) {
+                return c.add_associated_let_stmt(access_name, e);
+        })
+        .def("unschedule_this_computation", [](input &c) {
+                c.unschedule_this_computation();
+        })
+        .def("add_definitions", [](input &c,
+            std::string iteration_domain_str,
+            expr e,
+            bool schedule_this_computation,
+            primitive_t t,
+            std::shared_ptr<function> & fct) {
+                c.add_definitions(iteration_domain_str, e, schedule_this_computation, t, fct.get());
+        })
+        .def("add_predicate", [](input &c,
+             expr e) {
+                c.add_predicate(e);
+        })
+        .def("after", [](input &c,
+             computation & comp,
+             var iterator) {
+                c.after(comp, iterator);
+        })
+        .def("after", [](input &c,
+             computation & comp,
+             int level) {
+                c.after(comp, level);
+        })
+        .def("after", [](input &c,
+             input & comp,
+             var iterator) {
+                c.after(comp, iterator);
+        })
+        .def("after", [](input &c,
+             input & comp,
+             int level) {
+                c.after(comp, level);
+        })
+        .def("after_low_level", [](input &c,
+             computation & comp,
+             int level) {
+                c.after_low_level(comp, level);
+        })
+        .def("after_low_level", [](input &c,
+             input & comp,
+             int level) {
+                c.after_low_level(comp, level);
+        })
+/*        .def("after_low_level", [](computation &c,
+             computation & comp,
+             std::vector<int> levels) {
+                c.after_low_level(comp, levels);
+        })
+*/
+        .def("allocate_and_map_buffer_automatically", [](input &c,
+             argument_t type) {
+                c.allocate_and_map_buffer_automatically(type);
+        })
+        .def("apply_transformation_on_schedule", [](input &c,
+            std::string map_str) {
+                c.apply_transformation_on_schedule(map_str);
+        })
+        .def("before", [](input &c,
+            computation &consumer,
+            var L) {
+                c.before(consumer, L);
+        })
+        .def("between", [](input &c,
+            computation &before_comp,
+            var before_l,
+            computation &after_comp,
+            var after_l) {
+                c.between(before_comp, before_l, after_comp, after_l);
+        })
+        .def("between", [](input &c,
+            computation &before_comp,
+            int before_l,
+            computation &after_comp,
+            int after_l) {
+                c.between(before_comp, before_l, after_comp, after_l);
+        })
+        .def("store_in", [](input &c,
+            buffer & buff) {
+                c.store_in( std::addressof(buff) );
+        })
+        .def("store_in", [](input &c,
+            buffer & buff,
+            std::vector<expr> iterators) {
+                c.store_in( std::addressof(buff), iterators);
+        })
+        .def("store_in", [](input &c,
+            std::vector<expr> mapping,
+            std::vector<expr> sizes) {
+                c.store_in(mapping, sizes);
+        })
+        .def("cache_shared", [](input &c,
+            computation & inp,
+            const var & level,
+            std::vector<int> buffer_shape,
+            std::vector<expr> copy_offsets,
+            bool pad_buffer) {
+                return c.cache_shared(inp, level, buffer_shape, copy_offsets, pad_buffer);
+        }, py::return_value_policy::reference)
+        .def("cache_shared", [](input &c,
+            computation & inp,
+            const var & level,
+            std::vector<int> buffer_shape,
+            std::vector<expr> copy_offsets) {
+                return c.cache_shared(inp, level, buffer_shape, copy_offsets);
+        }, py::return_value_policy::reference)
+        .def("compute_at", [](input &c,
+            computation &consumer,
+            var L) {
+                c.compute_at(consumer, L);
+        })
+        .def("compute_at", [](input &c,
+            computation &consumer,
+            int L) {
+                c.compute_at(consumer, L);
+        })
+        .def("compute_maximal_AST_depth", [](input &c) {
+            return c.compute_maximal_AST_depth();
+        })
+        .def("dump_iteration_domain", [](input &c) {
+            c.dump_iteration_domain();
+        })
+        .def("dump_schedule", [](input &c) {
+            c.dump_schedule();
+        })
+        .def("dump", [](input &c) {
+            c.dump();
+        })
+        .def("fuse_after", [](input &c,
+            var lev, computation & comp) {
+            c.after(comp, lev);
+        })
+        .def("gen_time_space_domain", [](input &c) {
+            c.gen_time_space_domain();
+        })
+        .def("drop_rank_iter", [](input &c,
+            var level) {
+                c.drop_rank_iter(level);
+        })
+        .def("get_buffer", [](input &c) {
+                return c.get_buffer();
+        }, py::return_value_policy::reference)
+        .def("get_data_type", [](input &c) {
+                return c.get_data_type();
+        })
+        .def("get_expr", [](input &c) {
+                return c.get_expr();
+        })
+        .def("get_iteration_domain", [](input &c) {
+                isl_set_t ret{};
+                ret.value = c.get_iteration_domain();
+                return ret;
+        })
+        .def("get_last_update", [](input &c) {
+                return c.get_last_update();
+        })
+        .def("get_loop_level_number_from_dimension_name", [](input &c,
+            std::string dim_name) {
+                return c.get_loop_level_number_from_dimension_name(dim_name);
+        })
+        .def("get_name", [](input &c) {
+                return c.get_name();
+        })
+        .def("get_predecessor", [](input &c) {
+                return c.get_predecessor();
+        }, py::return_value_policy::reference)
+        .def("get_successor", [](input &c) {
+                return c.get_successor();
+        }, py::return_value_policy::reference)
+        .def("get_update", [](input &c, int index) {
+                return c.get_update(index);
+        })
+        .def("get_schedule", [](input &c) {
+                isl_map_t ret{};
+                ret.value = c.get_schedule();
+                return ret;
+        })
+        .def("gpu_tile", [](input &c,
+            var L0, var L1,
+            int sizeX, int sizeY) {
+                c.gpu_tile(L0, L1, sizeX, sizeY);
+        })
+        .def("gpu_tile", [](input &c,
+            var L0, var L1,
+            int sizeX, int sizeY,
+            var L0_outer, var L1_outer,
+            var L0_inner, var L1_inner) {
+                c.gpu_tile(L0, L1, sizeX, sizeY, L0_outer, L1_outer, L0_inner, L1_inner);
+        })
+        .def("gpu_tile", [](input &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ) {
+                c.gpu_tile(L0, L1, L2, sizeX, sizeY, sizeZ);
+        })
+        .def("gpu_tile", [](input &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ,
+            var L0_outer, var L1_outer, var L2_outer,
+            var L0_inner, var L1_inner, var L2_inner) {
+                c.gpu_tile(L0, L1, L2, sizeX, sizeY, sizeZ, L0_outer, L1_outer, L2_outer, L0_inner, L1_inner, L2_inner);
+        })
+        .def("get_automatically_allocated_buffer", [](input &c) {
+                return c.get_automatically_allocated_buffer();
+        }, py::return_value_policy::reference)
+        .def("interchange", [](input &c,
+            var L0, var L1) {
+                c.interchange(L0, L1);
+        })
+        .def("interchange", [](input &c,
+            int L0, int L1) {
+                c.interchange(L0, L1);
+        })
+        .def("mark_as_let_statement", [](input &c) {
+                c.mark_as_let_statement();
+        })
+        .def("mark_as_library_call", [](input &c) {
+                c.mark_as_library_call();
+        })
+        .def("parallelize", [](input &c,
+            var L) {
+                c.parallelize(L);
+        })
+        .def("set_access", [](input &c,
+            std::string access_str) {
+                c.set_access(access_str);
+        })
+        .def("set_access", [](input &c,
+            isl_map_t &access) {
+                c.set_access(access.value);
+        })
+        .def("set_wait_access", [](input &c,
+            std::string access_str) {
+                c.set_wait_access(access_str);
+        })
+        .def("set_wait_access", [](input &c,
+            isl_map_t &access) {
+                c.set_wait_access(access.value);
+        })
+        .def("set_expression", [](input &c,
+            expr e) {
+                c.set_expression(e);
+        })
+        .def("set_inline", [](input &c,
+            bool is_inline) {
+                c.set_inline(is_inline);
+        })
+        .def("set_inline", [](input &c) {
+                c.set_inline(true);
+        })
+        .def("is_inline_computation", [](input &c) {
+                c.is_inline_computation();
+        })
+        .def("set_low_level_schedule", [](input &c,
+            isl_map_t map) {
+                c.set_low_level_schedule(map.value);
+        })
+        .def("set_low_level_schedule", [](input &c,
+            std::string map_str) {
+                c.set_low_level_schedule(map_str);
+        })
+        .def("shift", [](input &c,
+            var L0, int n) {
+                c.shift(L0, n);
+        })
+        .def("skew", [](input &c,
+            var i, var j, int f, var ni, var nj) {
+                c.skew(i, j, f, ni, nj);
+        })
+        .def("skew", [](input &c,
+            var i, var j, var k, int factor, var ni, var nj, var nk) {
+                c.skew(i, j, k, factor, ni, nj, nk);
+        })
+        .def("skew", [](input &c,
+            var i, var j, var k, var l, int factor, var ni, var nj, var nk, var nl) {
+                c.skew(i, j, k, l, factor, ni, nj, nk, nl);
+        })
+        .def("skew", [](input &c,
+            var i, var j, int f) {
+                c.skew(i, j, f);
+        })
+        .def("skew", [](input &c,
+            var i, var j, var k, int f) {
+                c.skew(i, j, k, f);
+        })
+        .def("skew", [](input &c,
+            var i, var j, var k, var l, int f) {
+                c.skew(i, j, k, l, f);
+        })
+        .def("skew", [](input &c,
+            int i, int j, int f) {
+                c.skew(i, j, f);
+        })
+        .def("skew", [](input &c,
+            int i, int j, int k, int f) {
+                c.skew(i, j, k, f);
+        })
+        .def("skew", [](input &c,
+            int i, int j, int k, int l, int f) {
+                c.skew(i, j, k, l, f);
+        })
+        .def("split", [](input &c,
+            var L0, int sizeX) {
+                c.split(L0, sizeX);
+        })
+        .def("split", [](input &c,
+            var L0, int sizeX, var L0_outer, var L0_inner) {
+                c.split(L0, sizeX, L0_outer, L0_inner);
+        })
+        .def("split", [](input &c,
+            int L0, int sizeX) {
+                c.split(L0, sizeX);
+        })
+        .def("storage_fold", [](input &c,
+            var dim, int f) {
+                c.storage_fold(dim, f);
+        })
+        .def("tag_gpu_level", [](input &c,
+            var L0, var L1) {
+                c.tag_gpu_level(L0, L1);
+        })
+        .def("tag_gpu_level", [](input &c,
+            var L0, var L1, var L2, var L3) {
+                c.tag_gpu_level(L0, L1, L2, L3);
+        })
+        .def("tag_gpu_level", [](input &c,
+            var L0, var L1, var L2, var L3, var L4, var L5) {
+                c.tag_gpu_level(L0, L1, L2, L3, L4, L5);
+        })
+        .def("tag_parallel_level", [](input &c,
+            var L) {
+                c.tag_parallel_level(L);
+        })
+        .def("tag_parallel_level", [](input &c,
+            int L) {
+                c.tag_parallel_level(L);
+        })
+        .def("tag_vector_level", [](input &c,
+            var L,
+            int len) {
+                c.tag_vector_level(L, len);
+        })
+        .def("tag_vector_level", [](input &c,
+            int L,
+            int len) {
+                c.tag_vector_level(L, len);
+        })
+        .def("tag_distribute_level", [](input &c,
+            var L) {
+                c.tag_distribute_level(L);
+        })
+        .def("tag_distribute_level", [](input &c,
+            int L) {
+                c.tag_distribute_level(L);
+        })
+        .def("tag_unroll_level", [](input &c,
+            var L) {
+                c.tag_unroll_level(L);
+        })
+        .def("tag_unroll_level", [](input &c,
+            int L) {
+                c.tag_unroll_level(L);
+        })
+        .def("tag_unroll_level", [](input &c,
+            var L, int F) {
+                c.tag_unroll_level(L, F);
+        })
+        .def("tag_unroll_level", [](input &c,
+            int L, int F) {
+                c.tag_unroll_level(L, F);
+        })
+        .def("then", [](input &c,
+            computation & next, var L) {
+                return c.then(next, L);
+        })
+        .def("then", [](input &c,
+            computation & next, int L) {
+                return c.then(next, L);
+        })
+        .def("tile", [](input &c,
+            var L0, var L1,
+            int sizeX, int sizeY) {
+                c.tile(L0, L1, sizeX, sizeY);
+        })
+        .def("tile", [](input &c,
+            int L0, int L1,
+            int sizeX, int sizeY) {
+                c.tile(L0, L1, sizeX, sizeY);
+        })
+        .def("tile", [](input &c,
+            var L0, var L1,
+            int sizeX, int sizeY,
+            var L0_outer, var L1_outer,
+            var L0_inner, var L1_inner) {
+                c.tile(L0, L1, sizeX, sizeY, L0_outer, L1_outer, L0_inner, L1_inner);
+        })
+        .def("tile", [](input &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ) {
+                c.tile(L0, L1, L2, sizeX, sizeY, sizeZ);
+        })
+        .def("tile", [](input &c,
+            int L0, int L1, int L2,
+            int sizeX, int sizeY, int sizeZ) {
+                c.tile(L0, L1, L2, sizeX, sizeY, sizeZ);
+        })
+        .def("tile", [](input &c,
+            var L0, var L1, var L2,
+            int sizeX, int sizeY, int sizeZ,
+            var L0_outer, var L1_outer, var L2_outer,
+            var L0_inner, var L1_inner, var L2_inner) {
+                c.tile(L0, L1, L2, sizeX, sizeY, sizeZ, L0_outer, L1_outer, L2_outer, L0_inner, L1_inner, L2_inner);
+        })
+        .def("unroll", [](input &c,
+            var L, int fac) {
+                c.unroll(L, fac);
+        })
+        .def("unroll", [](input &c,
+            var L, int fac, var L_outer, var L_inner) {
+                c.unroll(L, fac, L_outer, L_inner);
+        })
+        .def("vectorize", [](input &c,
+            var L, int fac) {
+                c.vectorize(L, fac);
+        })
+        .def("vectorize", [](input &c,
+            var L, int fac, var L_outer, var L_inner) {
+                c.vectorize(L, fac, L_outer, L_inner);
+        })
+        .def("gen_communication", [](input &c) { c.gen_communication(); })
+        //.def("gen_communication", [](computation &c, var L) { c.gen_communication(L); })
+        .def_static("create_xfer", [](input &c,
+            std::string send_iter_domain, std::string recv_iter_domain,
+            expr send_dest, expr recv_src, xfer_prop send_prop, xfer_prop recv_prop,
+            expr send_expr, std::shared_ptr<function> & fct) {
+                return c.create_xfer(send_iter_domain, recv_iter_domain,
+                    send_dest, recv_src, send_prop, recv_prop, send_expr, fct.get());
+        })
+        .def_static("create_xfer", [](input &c,
+            std::string iter_domain, xfer_prop prop, expr exper, std::shared_ptr<function> & fct) {
+                return c.create_xfer(iter_domain, prop, exper, fct.get());
+        })
+        .def("__call__", [](input &c, var i) {
+            return c(i);
+        })
+        .def("__call__", [](input &c, var i, var j) {
+            return c(i, j);
+        })
+        .def("__call__", [](input &c, var i, var j, var k) {
+            return c(i, j, k);
+        })
+        .def("__call__", [](input &c, var i, var j, var k, var l) {
+            return c(i, j, k, l);
+        })
+        .def("__call__", [](input & i, std::vector<expr> & args) {
+            return i(args);
+        })
+        .def("__call__", [](input &c) { c(); });
 
     py::class_<Input>(m, "Input")
         .def(py::init( [](
@@ -1073,6 +1584,10 @@ PYBIND11_MODULE(pytiramisu, m) {
 
     m.def("cast", [](primitive_t tT, expr & e) {
         return cast(tT, e);
+    });
+
+    m.def("cast", [](primitive_t tT, var & v) {
+        return cast(tT, v);
     });
 
     m.def("value_cast", [](primitive_t tT, std::int8_t val) {

@@ -17,6 +17,5 @@ if __name__ == "__main__":
     buf0 = buffer("buf0", list([expr(10),]), p_uint8, a_output)
     S0.store_in(buf0)
 
-    buffers = [ buf0, ]
-    physl_str = codegen_physl(buffers)
+    physl_str = codegen_physl([buf0, ])
     print(physl_str)

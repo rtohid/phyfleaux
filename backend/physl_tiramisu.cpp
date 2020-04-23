@@ -3,20 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-/*
-#include <isl/aff.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/union_set.h>
-#include <isl/ast_build.h>
-#include <isl/schedule.h>
-#include <isl/schedule_node.h>
-#include <isl/space.h>
-#include <isl/constraint.h>
-#include <isl/id.h>
-#include <isl/val.h>
-*/
+#include <memory>
+
 #include <isl/ast_type.h>
 
 #include "physl_tiramisu.hpp"
@@ -42,16 +30,16 @@ namespace physl { namespace tiramisu {
 int codegen(std::vector< buffer > &arguments, std::string & physlstr)
 {
 
-    std::vector<buffer *> bufs{};
+    std::vector< buffer * > bufs{};
 
     if(arguments.size()) {
         bufs.reserve(arguments.size());
 
         for(auto & arg : arguments) {
-            bufs.push_back(&arg);
+            //bufs.push_back(&arg);
+            bufs.emplace_back( std::addressof(arg) );
         }
     }
-
 
     { // begin scope
 
