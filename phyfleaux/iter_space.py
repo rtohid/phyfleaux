@@ -84,7 +84,7 @@ class Polytope(Task):
             raise NotImplementedError(
                 "List as an iteration space is not supported.)")
 
-        var(id_, bounds[0], bounds[1])
+        # var(id_, bounds[0], bounds[1])
         loop_nest = deepcopy(Stack)
         with loop_nest():
             for statement in node.body:
@@ -126,7 +126,7 @@ class Polytope(Task):
             raise NotImplementedError
 
         setattr(ir_node, "mem_access", defaultdict(lambda: None))
-        print (("var_name", var_name), ("indices", indices))
+        print(("var_name", var_name), ("indices", indices))
 
     def visit_Call(self, node: ast.Call) -> None:
         self.visit(node.func)
