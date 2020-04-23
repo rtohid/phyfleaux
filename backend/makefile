@@ -3,7 +3,7 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-BASE_DIR=$(HOME)/src/
+BASE_DIR=/home/stellar/src/
 
 # this is a variable referencing the
 # source tree for isl where the file
