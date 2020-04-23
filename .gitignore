@@ -8,3 +8,5 @@ __pycache__/
 *.pyc
 __phy_copy*
 _scratchpad.py
+*.o
+*.so
