@@ -1,0 +1,27 @@
+===Building Tiramisu===
+
++ Dependencies & Instructions
+
+    * install clang-8, pthreads, libdl, zlib1g-dev (ubuntu), pybind11, python3.6+
+    * git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
+    * modify as necessary `$(TIRAMISU_ROOT)/configure.cmake`
+    * run `mkdir $(TIRAMISU_ROOT)/build`
+    * change directory into `cd $(TIRAMISU_ROOT)/build`
+    * run `cmake ..` in `$(TIRAMISU_ROOT)/build`
+    * build tiramisu with `make -j tiramisu`
+    * check `$(TIRAMISU_ROOT)/build` for 'libtiramisu.so'
+    * symlink `ln -s $(TIRAMISU_ROOT)/build/libtiramisu.so .` into the `phyflow/backend' directory
+    * change directory to the `phyflow/backend` directory
+    * open the makefile in `phyflow/backend`
+    * modify these variables in the makefile ISL_SOURCE_BASE_DIR, ISL_INSTALLED_ROOT_DIR, TIRAMISU_ROOT_DIR
+    * execute `make` in the phyflow/backend directory
+
++ Notes
+
+The physl_2019 branch in the tiramisu repository is significantly modified. Halide will not be a dependency used, C code export support is enabled (code edit), along with g++ being the default compiler used (check all '*.sh' files in the tiramisu/utils/code_generator/ directory for details or if you need to use clang++ instead).
+
+Building this backend requires referencing the source tree for isl. Extending isl to support physl requires referencing isl_ast_private.h which is not part of the isl install manifest. isl_ast_private.h can only be found in the source tree isl.
+
+This backend modifies tiramisu and isl to support exporting physl and it provides python bindings for tiramisu and modifications to tiramisu that support physl. This source tree may serve as a resource for learning how to extend isl support for other languages and how to modify tiramisu for the same purpose. Tiramisu can be found here -> https://github.com/Tiramisu-Compiler/tiramisu
+
+Unless otherwise indicated, the source code in this tree is Boost licensed. The Boost license is added in the source tree for review. The Boost license can be found here -> https://www.boost.org/users/license.html
