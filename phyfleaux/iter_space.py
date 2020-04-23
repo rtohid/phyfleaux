@@ -84,7 +84,7 @@ class Polytope(Task):
             raise NotImplementedError(
                 "List as an iteration space is not supported.)")
 
-        var(id_, bounds[0], bounds[1])
+        # var(id_, bounds[0], bounds[1])
         loop_nest = deepcopy(Stack)
         with loop_nest():
             for statement in node.body:

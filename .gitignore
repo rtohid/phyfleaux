@@ -6,3 +6,5 @@ __pycache__/
 *.swp
 *.pyc
 _scratchpad.py
+*.o
+*.so

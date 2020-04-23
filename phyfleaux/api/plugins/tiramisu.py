@@ -5,9 +5,10 @@ Distributed under the Boost Software License, Version 1.0. (See accompanying
 file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
+from phyfleaux.backend.pytiramisu import *
 
-class ISL:
-    pass
+# class ISL:
+#     pass
 
 
 class Array:
@@ -25,18 +26,3 @@ class Array:
 
     def vectorize(self):
         pass
-
-
-def init(fn_name: str) -> None:
-    print(f"init({fn_name})")
-    print()
-
-
-def expr(constant: int) -> None:
-    print(f"exp({constant}")
-    print()
-
-
-def var(target_name: str, lower_bound: int, upper_bound: int) -> None:
-    print(f"var({target_name}, {lower_bound}, {upper_bound})")
-    print()
