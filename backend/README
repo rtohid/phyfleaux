@@ -10,7 +10,10 @@
     * run `cmake ..` in `$(TIRAMISU_ROOT)/build`
     * build tiramisu with `make -j tiramisu`
     * check `$(TIRAMISU_ROOT)/build` for 'libtiramisu.so'
-    * symlink `ln -s $(TIRAMISU_ROOT)/build/libtiramisu.so .` into this directory
+    * symlink `ln -s $(TIRAMISU_ROOT)/build/libtiramisu.so .` into the `phyflow/backend' directory
+    * change directory to the `phyflow/backend` directory
+    * open the makefile in `phyflow/backend`
+    * modify these variables in the makefile ISL_SOURCE_BASE_DIR, ISL_INSTALLED_ROOT_DIR, TIRAMISU_ROOT_DIR
     * execute `make` in the phyflow/backend directory
 
 + Notes

@@ -16,11 +16,14 @@ ISL_SOURCE_BASE_DIR=$(BASE_DIR)/isl
 # this is a variable referencing the
 # installed build of isl
 #
-ISL_INSTALLED_ROOT_DIR=$(HOME)/git/install
+ISL_INSTALLED_ROOT_DIR=$(BASE_DIR)/install
+ISL_LIB_DIR=$(ISL_ROOT_DIR)/lib
+
 TIRAMISU_ROOT_DIR=$(BASE_DIR)/tiramisu
+TIRAMISU_LIB_DIR=$(TIRAMISU_ROOT_DIR)/build
 
 INC_FLAGS=-I$(HOME)/git/install/include -I$(ISL_INSTALLED_ROOT_DIR)/include -I$(TIRAMISU_ROOT_DIR)/include -I$(ISL_SOURCE_BASE_DIR)
-LIB_FLAGS=-L$(HOME)/git/install/lib -L$(ISL_ROOT_DIR)/lib -L$(TIRAMISU_ROOT_DIR)/build
+LIB_FLAGS=-L$(HOME)/git/install/lib -L$(ISL_LIB_DIR) -L$(TIRAMISU_LIB_DIR)
 LIBS=-lisl -ltiramisu
 CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
 #-stdlib=libc++
