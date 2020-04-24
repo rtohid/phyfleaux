@@ -187,10 +187,8 @@ PYBIND11_MODULE(pytiramisu, m) {
             return global::set_loop_iterator_type(t);
         });
 
-    py::class_<function>(m, "function")
-        .def(py::init([](std::string name) {
-            return function{name};
-        }))
+    py::class_<function> func(m, "function");
+        func.def(py::init<std::string>())
         .def("add_context_constraints", [](function &f,
             std::string new_context) {
             f.add_context_constraints(new_context);
@@ -261,60 +259,24 @@ PYBIND11_MODULE(pytiramisu, m) {
         });
 
     py::class_<expr>(m, "expr")
-        .def(py::init( []() {
-            return expr{};
-        }))
-        .def(py::init( [](primitive_t dtype) {
-            return expr{dtype};
-        }))
-        .def(py::init( [](op_t o, primitive_t dtype, expr expr0) {
-            return expr{o, dtype, expr0};
-        }))
-        .def(py::init( [](op_t o, expr expr0) {
-            return expr{o, expr0};
-        }))
-        .def(py::init( [](op_t o, std::string name) {
-            return expr{o, name};
-        }))
-        .def(py::init( [](op_t o, expr expr0, expr expr1) {
-            return expr{o, expr0, expr1};
-        }))
-        .def(py::init( [](op_t o, expr expr0, expr expr1, expr expr2) {
-            return expr{o, expr0, expr1, expr2};
-        }))
-        .def(py::init( [](op_t o, std::string name, std::vector<expr> vec, primitive_t dtype) {
-            return expr{o, name, vec, dtype};
-        }))
-        .def(py::init( [](uint8_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](int8_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](uint16_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](int16_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](uint32_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](int32_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](uint64_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](int64_t val) {
-            return expr{val};
-        }))
-        .def(py::init( [](float val) {
-            return expr{val};
-        }))
-        .def(py::init( [](double val) {
-            return expr{val};
-        }))
+        .def(py::init())
+        .def(py::init<primitive_t>())
+        .def(py::init<op_t, primitive_t, expr>())
+        .def(py::init<op_t, expr>())
+        .def(py::init<op_t, std::string>())
+        .def(py::init<op_t, expr, expr>())
+        .def(py::init<op_t, expr, expr, expr>())
+        .def(py::init<op_t, std::string, std::vector<expr>, primitive_t>())
+        .def(py::init<uint8_t>())
+        .def(py::init<int8_t>())
+        .def(py::init<uint16_t>())
+        .def(py::init<int16_t>())
+        .def(py::init<uint32_t>())
+        .def(py::init<int32_t>())
+        .def(py::init<uint64_t>())
+        .def(py::init<int64_t>())
+        .def(py::init<float>())
+        .def(py::init<double>())
         .def("copy", [](expr &e) { return e.copy(); })
         .def("get_uint8_value", [](expr &e) { return e.get_uint8_value(); })
         .def("get_int8_value", [](expr &e) { return e.get_int8_value(); })
@@ -412,68 +374,22 @@ PYBIND11_MODULE(pytiramisu, m) {
 
 
     py::class_<var>(m, "var")
-        .def(py::init( [](
-            primitive_t type_, std::string name) {
-            return var{type_, name};
-        }))
-        .def(py::init( [](
-            std::string name) {
-            return var{name};
-        }))
-        .def(py::init( [](
-            std::string name, expr upper, expr lower) {
-            return var{name, upper, lower};
-        }))
-        .def(py::init( []() {
-            return var{};
-        }))
+        .def(py::init<primitive_t, std::string>())
+        .def(py::init<std::string>())
+        .def(py::init<std::string, expr, expr>())
+        .def(py::init<>())
         .def("get_upper", [](var &v) { return v.get_upper(); })
         .def("get_lower", [](var &v) { return v.get_lower(); });
 
     py::class_<computation>(m, "computation")
-        .def(py::init( [](
-            std::string iteration_domain,
-            expr e,
-            bool schedule_this_computation,
-            primitive_t t,
-            std::shared_ptr<function> func) {
-                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iteration_domain, e, schedule_this_computation, t, func.get()));
-        }))
-        .def(py::init( [](
-            std::string name,
-            std::vector<var> iterator_variables,
-            expr e,
-            bool schedule_this_computation) {
-                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(name, iterator_variables, e, schedule_this_computation));
-        }))
-        .def(py::init( [](
-            std::vector<var> iterator_variables,
-            expr e) {
-                return std::unique_ptr<tiramisu::computation>(new tiramisu::computation(iterator_variables, e));
-        }))
-        .def(py::init( [](
-            std::string name,
-            std::vector<var> iterator_variables,
-            expr e) {
-                return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, e));
-        }))
-        .def(py::init( [](
-            std::vector<var> iterator_variables,
-            expr e,
-            bool schedule_this_computation) {
-                 return std::unique_ptr<tiramisu::computation>(new computation(iterator_variables, e, schedule_this_computation));
-        }))
-        .def(py::init( [](
-            std::string name,
-            std::vector<var> iterator_variables,
-            primitive_t t) {
-                 return std::unique_ptr<tiramisu::computation>(new computation(name, iterator_variables, t));
-        }))
-        .def(py::init( [](
-            std::vector<var> iterator_variables,
-            primitive_t t) {
-                 return std::unique_ptr<tiramisu::computation>(new computation(iterator_variables, t));
-        }))
+        //.def(py::init<std::string, expr, bool, primitive_t, shared_ptr<function>>())
+        .def(py::init<std::string, expr, bool, primitive_t, function>())
+        .def(py::init<std::string, std::vector<var>, expr, bool>())
+        .def(py::init<std::vector<var>, expr>())
+        .def(py::init<std::string, std::vector<var>, expr>())
+        .def(py::init<std::vector<var>, expr, bool>()) 
+        .def(py::init(std::string, std::vector<var>, primitive_t>())
+        .def(py::init<std::vector<var>, primitive_t>())
         .def("is_send", [](computation &c) { return c.is_send(); })
         .def("is_recv", [](computation &c) { return c.is_recv(); })
         .def("is_send_recv", [](computation &c) { return c.is_send_recv(); })
@@ -928,30 +844,15 @@ PYBIND11_MODULE(pytiramisu, m) {
         });
 
     py::class_<generator>(m, "generator")
-        .def(py::init([](generator &g) {
-            return generator{g};
-        }));
+        .def(py::init<generator>());
         //.def_static("update_producer_expr_name", [](generator &g,
         //        std::shared_ptr<tiramisu::computation> comp, std::string name_to_replace, std::string replace_with) {
         //    g.update_producer_expr_name(comp.get(), name_to_replace, replace_with);
         //});
 
     py::class_<buffer>(m, "buffer")
-        .def(py::init( [](
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt,
-                std::shared_ptr<function> & fct) {
-            return buffer{name, dim_sizes, type, argt, fct.get()};
-        }))
-        .def(py::init( [](
-                std::string name,
-                std::vector<expr> & dim_sizes,
-                primitive_t type,
-                argument_t argt) {
-            return buffer{name, dim_sizes, type, argt, tiramisu::global::get_implicit_function()};
-        }))
+        .def(py::init<std::string, std::vector<expr> &, primitive_t, argument_t, function &>())
+        .def(py::init<std::string, std::vector<expr> &, primitive_t, argument_t>())
         .def("allocate_at", [](buffer &b,
                 computation & C,
                 var level) {
@@ -1068,7 +969,11 @@ PYBIND11_MODULE(pytiramisu, m) {
                 return c();
         });
 
-    py::class_<input>(m, "input")
+    py::class_<tiramisu::input>(m, "input", func)
+        .def(py::init<std::string, std::vector<var> &, primitive_t>())
+        .def(py::init<std::vector<var> &, primitive_t>())
+        .def(py::init<std::string, std::vector<std::string> &, std::vector<expr> &, primitive_t>())
+/*
         .def(py::init( [](
             std::string name, std::vector<var> & iterator_variables, primitive_t t) {
             return input{name, iterator_variables, t};
@@ -1081,6 +986,7 @@ PYBIND11_MODULE(pytiramisu, m) {
             std::string name, std::vector<std::string> & dimension_names, std::vector<expr> & dimension_sizes, primitive_t t) {
             return input{name, dimension_names, dimension_sizes, t};
         }))
+*/
         .def("is_send", [](input &c) { return c.is_send(); })
         .def("is_recv", [](input &c) { return c.is_recv(); })
         .def("is_send_recv", [](input &c) { return c.is_send_recv(); })
