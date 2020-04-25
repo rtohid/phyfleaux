@@ -11,16 +11,17 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <sstream>
 
 #include <tiramisu/tiramisu.h>
 
 #include "physl_isl.hpp"
 
-using namespace tiramisu;
-
 namespace physl { namespace tiramisu {
 
-class PhyslFunction : public function, generator {
+using namespace tiramisu;
+
+class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
 
     public:
     PhyslFunction() : function("physl_codegen"), generator() {
@@ -33,12 +34,17 @@ class PhyslFunction : public function, generator {
         lift_dist_comps();
     }
 
-    void generate_code(std::vector< buffer* > & bufs, std::string &physlstr) {
+    void gen_physl_from_tiramisu_expr(const ::tiramisu::expr & e, std::string & strstrm);
+
+    void generate_code(std::vector< ::tiramisu::buffer* > & bufs, std::string &physlstr) {
 
         set_arguments(bufs);
         lift_dist_computations();
         gen_time_space_domain();
         gen_isl_ast();
+
+        std::stringstream strstrm{};
+        //gen_physl_from_tiramisu_expr(e, strstrm);
 
         physl::codegen::generate_physl(
             this->get_isl_ctx(),
@@ -48,11 +54,11 @@ class PhyslFunction : public function, generator {
     }
 };
 
-int codegen(std::vector< buffer > &arguments, std::string & physlstr);
+int codegen(std::vector< ::tiramisu::buffer > &arguments, std::string & physlstr);
 
 } /* end namespace tiramisu */ } // end namespace physl
 
-static inline std::string codegen_physl(std::vector< buffer > &arguments) {
+static inline std::string codegen_physl(std::vector< tiramisu::buffer > &arguments) {
     std::string output{};
     physl::tiramisu::codegen(arguments, output);
     return output;
