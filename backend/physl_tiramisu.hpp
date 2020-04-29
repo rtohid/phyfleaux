@@ -24,6 +24,7 @@ using namespace tiramisu;
 class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
 
     public:
+
     PhyslFunction() : function("physl_codegen"), generator() {
     }
 
@@ -44,13 +45,25 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
         gen_isl_ast();
 
         std::stringstream strstrm{};
-        //gen_physl_from_tiramisu_expr(e, strstrm);
 
-        physl::codegen::generate_physl(
-            this->get_isl_ctx(),
-            this->get_isl_ast(),
-            physlstr
-        );
+        const auto comp = this->get_computation_by_name(this->get_name());
+
+        for(const auto& c : comp) {
+
+            auto e = c->get_expr();
+
+            gen_physl_from_tiramisu_expr(e, strstrm);
+
+            const auto kernel_str = strstrm.str();
+
+            physl::codegen::generate_physl(
+                this->get_isl_ctx(),
+                this->get_isl_ast(),
+                e,
+                kernel_str,
+                physlstr
+            );
+        }
     }
 };
 
