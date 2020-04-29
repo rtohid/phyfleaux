@@ -25,3 +25,16 @@ Building this backend requires referencing the source tree for isl. Extending is
 This backend modifies tiramisu and isl to support exporting physl and it provides python bindings for tiramisu and modifications to tiramisu that support physl. This source tree may serve as a resource for learning how to extend isl support for other languages and how to modify tiramisu for the same purpose. Tiramisu can be found here -> https://github.com/Tiramisu-Compiler/tiramisu
 
 Unless otherwise indicated, the source code in this tree is Boost licensed. The Boost license is added in the source tree for review. The Boost license can be found here -> https://www.boost.org/users/license.html
+
+
+phyfleaux uses and extends the Tiramisu software library/compiler
+
+"Tiramisu: A Polyhedral Compiler for Expressing Fast and Portable Code"
+
+Riyadh Baghdadi, Jessica Ray, Malek Ben Romdhane, Emanuele Del Sozzo,
+Abdurrahman Akkas, Yunming Zhang, Patricia Suriana, Shoaib Kamil,
+Saman Amarasinghe
+
+http://tiramisu-compiler.org/
+https://github.com/Tiramisu-Compiler/tiramisu
+https://arxiv.org/abs/1804.10694
