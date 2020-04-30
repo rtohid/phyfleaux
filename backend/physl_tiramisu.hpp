@@ -44,20 +44,31 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
 
         const auto comp = this->get_computation_by_name(this->get_name());
 
-        for(const auto& c : comp) {
+        if(comp.size() > 0) {
+            for(const auto& c : comp) {
+                auto e = c->get_expr();
 
-            auto e = c->get_expr();
+                std::string str{};
+                physl::codegen::generate_physl(
+                    this->get_isl_ctx(),
+                    this->get_isl_ast(),
+                    e,
+                    str,
+                    physlstr
+                );
 
-            std::string str{};
+                physlstr += str;
+            }
+        }
+        else {
+
+            std::string strout = 
             physl::codegen::generate_physl(
                 this->get_isl_ctx(),
-                this->get_isl_ast(),
-                e,
-                str,
-                physlstr
+                this->get_isl_ast()
             );
 
-            physlstr += str;
+            physlstr.assign(strout);
         }
     }
 };

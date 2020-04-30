@@ -1513,7 +1513,6 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
 
     std::string str{};
     physl_from_tiramisu_expr(e, str);
-    std::cout << str << std::endl;
 
     return 1;
 }
@@ -1524,9 +1523,9 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     std::string cstr{(c_str == nullptr) ? "" : c_str };
     fstr << cstr; //(cstr.c_str(), cstr.size());
 
-    std::string str{};
-    physl_from_tiramisu_expr(e, str);
-    fstr << str;
+    //std::string str{};
+    //physl_from_tiramisu_expr(e, str);
+    //fstr << str;
 
     return 1;
 }
@@ -1540,6 +1539,35 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     physlstr.assign(cstr + str);
 
     return 1;
+}
+
+/*
+int generate_physl(isl_ctx * ctx, isl_ast_node * node) {
+    isl_printer *p = isl_printer_to_file(ctx, stdout); //isl_ast_node_get_ctx(node.get()), stdout);
+    isl_ast_print_options *options = isl_ast_print_options_alloc(isl_printer_get_ctx(p));
+
+    p = print_ast_node_physl(p, node, options, 0, 0);
+
+    isl_ast_print_options_free(options);
+    isl_printer_free(p);
+
+    return 1;
+}
+*/
+
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::ostream & fstr) {
+    char *c_str = isl_ast_node_to_physl_str(ctx, node);
+    std::string cstr{(c_str == nullptr) ? "" : c_str };
+    fstr << cstr; //(cstr.c_str(), cstr.size());
+
+    return 1;
+}
+
+std::string generate_physl(isl_ctx * ctx, isl_ast_node * node) {
+    char * c_str = isl_ast_node_to_physl_str(ctx, node);
+    std::string cstr{(c_str == nullptr) ? "" : c_str };
+    return cstr;
+    //physlstr.assign(cstr);
 }
 
 } /* end namespace codegen */ } // end namespace physl
