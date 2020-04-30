@@ -35,8 +35,6 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
         lift_dist_comps();
     }
 
-    void gen_physl_from_tiramisu_expr(const ::tiramisu::expr & e, std::string & strstrm);
-
     void generate_code(std::vector< ::tiramisu::buffer* > & bufs, std::string &physlstr) {
 
         set_arguments(bufs);
@@ -44,25 +42,22 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
         gen_time_space_domain();
         gen_isl_ast();
 
-        std::stringstream strstrm{};
-
         const auto comp = this->get_computation_by_name(this->get_name());
 
         for(const auto& c : comp) {
 
             auto e = c->get_expr();
 
-            gen_physl_from_tiramisu_expr(e, strstrm);
-
-            const auto kernel_str = strstrm.str();
-
+            std::string str{};
             physl::codegen::generate_physl(
                 this->get_isl_ctx(),
                 this->get_isl_ast(),
                 e,
-                kernel_str,
+                str,
                 physlstr
             );
+
+            physlstr += str;
         }
     }
 };

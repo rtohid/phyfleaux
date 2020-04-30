@@ -753,7 +753,7 @@ __isl_give isl_printer *isl_ast_node_list_print__(
         return p;
 }
 
-class physl_codegen {
+struct physl_codegen {
 
 static inline std::string bin_op(const std::string & op, const std::string & x, const std::string & y) {
     return op + "(" + x + ", " + y + ")";
@@ -828,8 +828,8 @@ static std::string gt_(const std::string & x, const std::string & y) {
     return bin_expr(">", x, y);
 }
 
-static std::string not_(const std::string & x, const std::string & y) {
-    return bin_expr("!", x, y);
+static std::string not_(const std::string & x) {
+    return uni_expr("!", x);
 }
 
 static std::string eq_(const std::string & x, const std::string & y) {
@@ -944,117 +944,117 @@ static std::string call_(const std::string & name, std::vector<std::string> cons
 //
 static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std::string & ret_result) {
 
-    std::stringstream result{};
-
     if (tiramisu_expr.get_expr_type() == ::tiramisu::e_val)
     {
         if (tiramisu_expr.get_data_type() == ::tiramisu::p_uint8)
         {
-            result << tiramisu_expr.get_uint8_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_uint8_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_int8)
         {
-            result << tiramisu_expr.get_int8_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_int8_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_uint16)
         {
-            result << tiramisu_expr.get_uint16_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_uint16_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_int16)
         {
-            result << tiramisu_expr.get_int16_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_int16_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_uint32)
         {
-            result << tiramisu_expr.get_uint32_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_uint32_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_int32)
         {
-            result << tiramisu_expr.get_int32_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_int32_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_uint64)
         {
-            result << tiramisu_expr.get_uint64_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_uint64_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_int64)
         {
-            result << tiramisu_expr.get_int64_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_int64_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_float32)
         {
-            result << tiramisu_expr.get_float32_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_float32_value()));
         }
         else if (tiramisu_expr.get_data_type() == ::tiramisu::p_float64)
         {
-            result << tiramisu_expr.get_float64_value();
+            ret_result.append(std::to_string(tiramisu_expr.get_float64_value()));
         }
     }
     else if (tiramisu_expr.get_expr_type() == tiramisu::e_op)
     {
         //Halide::Expr op0, op1, op2;
-        std::stringstream op0{}, op1{}, op2{};
+        std::string op0{}, op1{}, op2{};
 
         DEBUG(10, tiramisu::str_dump("tiramisu expression of type tiramisu::e_op"));
 
         if (tiramisu_expr.get_n_arg() > 0)
         {
             tiramisu::expr expr0 = tiramisu_expr.get_operand(0);
-            op0 << physl_from_tiramisu_expr(fct, index_expr, expr0, comp);
-            physl_from_tiramisu_expr();
+            //op0
+            physl_from_tiramisu_expr(expr0, op0); //comp);
         }
 
         if (tiramisu_expr.get_n_arg() > 1)
         {
             tiramisu::expr expr1 = tiramisu_expr.get_operand(1);
-            op1 << physl_from_tiramisu_expr(fct, index_expr, expr1, comp);
+            //op1
+            physl_from_tiramisu_expr(expr1, op1); //, comp);
         }
 
         if (tiramisu_expr.get_n_arg() > 2)
         {
             tiramisu::expr expr2 = tiramisu_expr.get_operand(2);
-            op2 << physl_from_tiramisu_expr(fct, index_expr, expr2, comp);
+            //op2
+            physl_from_tiramisu_expr(expr2, op2); //, comp);
         }
 
         switch (tiramisu_expr.get_op_type())
         {
             case tiramisu::o_logical_and:
-                result << physl_codegen::and_(op0, op1);
+                ret_result.append( physl_codegen::and_(op0, op1) );
                 DEBUG(10, tiramisu::str_dump("op type: o_logical_and"));
                 break;
             case tiramisu::o_logical_or:
-                result << physl_codegen::or_(op0, op1);
+                ret_result.append(physl_codegen::or_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_logical_or"));
                 break;
             case tiramisu::o_max:
-                result << physl_codegen::max_(op0, op1); //, true);
+                ret_result.append(physl_codegen::max_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_max"));
                 break;
             case tiramisu::o_min:
-                result << physl_codegen::min_(op0, op1); //, true);
+                ret_result.append(physl_codegen::min_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_min"));
                 break;
             case tiramisu::o_minus:
-                result << physl_codegen::minus_(op0); //, true);
+                ret_result.append(physl_codegen::minus_(op0)); //, true);
                 DEBUG(10, tiramisu::str_dump("op type: o_minus"));
                 break;
             case tiramisu::o_add:
-                result << physl_codegen::add_(op0, op1); //, true);
+                ret_result.append(physl_codegen::add_(op0, op1)); //, true);
                 DEBUG(10, tiramisu::str_dump("op type: o_add"));
                 break;
             case tiramisu::o_sub:
-                result << physl_codegen::sub_(op0, op1); //, true);
+                ret_result.append(physl_codegen::sub_(op0, op1)); //, true);
                 DEBUG(10, tiramisu::str_dump("op type: o_sub"));
                 break;
             case tiramisu::o_mul:
-                result << physl_codegen::mul_(op0, op1); //, true);
+                ret_result.append(physl_codegen::mul_(op0, op1)); //, true);
                 DEBUG(10, tiramisu::str_dump("op type: o_mul"));
                 break;
             case tiramisu::o_div:
-                result << physl_codegen::div_(op0, op1); //, true);
+                ret_result.append(physl_codegen::div_(op0, op1)); //, true);
                 DEBUG(10, tiramisu::str_dump("op type: o_div"));
                 break;
             case tiramisu::o_mod:
-                result << physl_codegen::mod_(op0, op1); //, true);
+                ret_result.append(physl_codegen::mod_(op0, op1)); //, true);
                 DEBUG(10, tiramisu::str_dump("op type: o_mod"));
                 break;
 /*
@@ -1071,31 +1071,31 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                 break;
 */
             case tiramisu::o_le:
-                result << physl_codegen::le_(op0, op1, true);
+                ret_result.append(physl_codegen::le_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_le"));
                 break;
             case tiramisu::o_lt:
-                result << physl_codegen::lt_(op0, op1, true);
+                ret_result.append(physl_codegen::lt_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_lt"));
                 break;
             case tiramisu::o_ge:
-                result << physl_codegen::ge_(op0, op1, true);
+                ret_result.append(physl_codegen::ge_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_ge"));
                 break;
             case tiramisu::o_gt:
-                result << physl_codgen::gt_(op0, op1, true);
+                ret_result.append(physl_codegen::gt_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_gt"));
                 break;
             case tiramisu::o_logical_not:
-                result = physl_codgen::not_(op0);
+                ret_result.append(physl_codegen::not_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_not"));
                 break;
             case tiramisu::o_eq:
-                result = physl_codegen::eq_(op0, op1, true);
+                ret_result.append(physl_codegen::eq_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_eq"));
                 break;
             case tiramisu::o_ne:
-                result = physl_codegen::ne_(op0, op1, true);
+                ret_result.append(physl_codegen::ne_(op0, op1));
                 DEBUG(10, tiramisu::str_dump("op type: o_ne"));
                 break;
 /*
@@ -1108,8 +1108,11 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
             case tiramisu::o_address:
             case tiramisu::o_address_of:
             {
-                DEBUG(10, tiramisu::str_dump("op type: o_access or o_address"));
 
+std::cout << "here" << std::endl;
+
+                DEBUG(10, tiramisu::str_dump("op type: o_access or o_address"));
+/*
                 const char *access_comp_name = NULL;
 
                 if (tiramisu_expr.get_op_type() == tiramisu::o_access ||
@@ -1176,14 +1179,17 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                 assert(buffer_entry != fct->get_buffers().end());
 
                 const auto &tiramisu_buffer = buffer_entry->second;
-
+//mod
                 Halide::Type type = halide_type_from_tiramisu_type(tiramisu_buffer->get_elements_type());
 
                 // Tiramisu buffer is from outermost to innermost, whereas Halide buffer is from innermost
                 // to outermost; thus, we need to reverse the order
+//mod
                 halide_dimension_t *shape = new halide_dimension_t[tiramisu_buffer->get_dim_sizes().size()];
                 int stride = 1;
+//mod
                 std::vector<Halide::Expr> strides_vector;
+                //std::vector<std::string> strides_vector;
 
                 if (tiramisu_buffer->has_constant_extents())
                 {
@@ -1201,7 +1207,9 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                 {
                     DEBUG(10, tiramisu::str_dump("Buffer has non-constant extents."));
                     std::vector<isl_ast_expr *> empty_index_expr;
-                    Halide::Expr stride_expr = Halide::Expr(1);
+//mod
+                    //Halide::Expr stride_expr = Halide::Expr(1);
+                    std::string stride_expr{"1"};
                     for (int i = 0; i < tiramisu_buffer->get_dim_sizes().size(); i++)
                     {
                         int dim_idx = tiramisu_buffer->get_dim_sizes().size() - i - 1;
@@ -1271,14 +1279,15 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                     if (tiramisu_expr.get_op_type() == tiramisu::o_lin_index) {
                         result = index;
                     }
+//mod
                     else if (tiramisu_buffer->get_argument_type() == tiramisu::a_input)
                     {
-                        /*Halide::Buffer<> buffer = Halide::Buffer<>(
-                                                      type,
-                                                      tiramisu_buffer->get_data(),
-                                                      tiramisu_buffer->get_dim_sizes().size(),
-                                                      shape,
-                                                      tiramisu_buffer->get_name());*/
+                        //Halide::Buffer<> buffer = Halide::Buffer<>(
+                        //                              type,
+                        //                              tiramisu_buffer->get_data(),
+                        //                              tiramisu_buffer->get_dim_sizes().size(),
+                        //                              shape,
+                        //                              tiramisu_buffer->get_name());
 
                         Halide::Internal::Parameter param =
                                 Halide::Internal::Parameter(halide_type_from_tiramisu_type(tiramisu_buffer->get_elements_type()),
@@ -1325,18 +1334,19 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                                                               tiramisu_buffer->get_name() + ".buffer");
                 }
                 delete[] shape;
+*/
             }
                 break;
             case tiramisu::o_right_shift:
-                result << physl_codgen::rshift_( op0 , op1 );
+                ret_result.append(physl_codegen::rshift_( op0 , op1 ));
                 DEBUG(10, tiramisu::str_dump("op type: o_right_shift"));
                 break;
             case tiramisu::o_left_shift:
-                result << physl_codgen::lshift_( op0 , op1 );
+                ret_result.append(physl_codegen::lshift_( op0 , op1 ));
                 DEBUG(10, tiramisu::str_dump("op type: o_left_shift"));
                 break;
             case tiramisu::o_floor:
-                result << physl_codgen::floor_(op0);
+                ret_result.append(physl_codegen::floor_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_floor"));
                 break;
 /*
@@ -1346,71 +1356,71 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                 break;
 */
             case tiramisu::o_sin:
-                result << physl_codegen::sin_(op0);
+                ret_result.append(physl_codegen::sin_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_sin"));
                 break;
             case tiramisu::o_cos:
-                result << physl_codgen::cos_(op0);
+                ret_result.append( physl_codegen::cos_(op0)); 
                 DEBUG(10, tiramisu::str_dump("op type: o_cos"));
                 break;
             case tiramisu::o_tan:
-                result << physl_codgen::tan_(op0);
+                ret_result.append(physl_codegen::tan_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_tan"));
                 break;
             case tiramisu::o_asin:
-                result << physl_codegen::asin_(op0);
+                ret_result.append(physl_codegen::asin_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_asin"));
                 break;
             case tiramisu::o_acos:
-                result << physl_codegen::acos_(op0);
+                ret_result.append(physl_codegen::acos_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_acos"));
                 break;
             case tiramisu::o_atan:
-                result << physl_codegen::atan_(op0);
+                ret_result.append(physl_codegen::atan_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_atan"));
                 break;
             case tiramisu::o_sinh:
-                result << physl_codegen::sinh_(op0);
+                ret_result.append(physl_codegen::sinh_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_sinh"));
                 break;
             case tiramisu::o_cosh:
-                result << physl_codegen::cosh_(op0);
+                ret_result.append(physl_codegen::cosh_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_cosh"));
                 break;
             case tiramisu::o_tanh:
-                result << physl_codegen::tanh_(op0);
+                ret_result.append(physl_codegen::tanh_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_tanh"));
                 break;
             case tiramisu::o_asinh:
-                result << physl_codegen::asinh_(op0);
+                ret_result.append(physl_codegen::asinh_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_asinh"));
                 break;
             case tiramisu::o_acosh:
-                result << physl_codegen::acosh_(op0);
+                ret_result.append(physl_codegen::acosh_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_acosh"));
                 break;
             case tiramisu::o_atanh:
-                result << physl_codegen::atanh_(op0);
+                ret_result.append(physl_codegen::atanh_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_atanh"));
                 break;
             case tiramisu::o_abs:
-                result << physl_codegen::abs_(op0);
+                ret_result.append(physl_codegen::abs_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_abs"));
                 break;
             case tiramisu::o_sqrt:
-                result << physl_codgen::sqrt_(op0);
+                ret_result.append(physl_codegen::sqrt_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_sqrt"));
                 break;
             case tiramisu::o_expo:
-                result << physl_codgen::exp_(op0);
+                ret_result.append(physl_codegen::exp_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_expo"));
                 break;
             case tiramisu::o_log:
-                result << physl_codgen::log_(op0);
+                ret_result.append(physl_codegen::log_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_log"));
                 break;
             case tiramisu::o_ceil:
-                result << physl_codegen::ceil_(op0);
+                ret_result.append(physl_codegen::ceil_(op0));
                 DEBUG(10, tiramisu::str_dump("op type: o_ceil"));
                 break;
 /*
@@ -1425,16 +1435,18 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
 */
             case tiramisu::o_call:
             {
-                auto args = tiramisu_expr.get_arguments()
+                auto args = tiramisu_expr.get_arguments();
                 std::vector<std::string> vec;
                 vec.resize(args.size());
 
                 std::transform(args.begin(), args.end(), vec.begin(),
-                    [&fct, &index_expr, &comp](auto & e) {
-                    return physl_from_tiramisu_expr(fct, index_expr, e, comp);
+                    [](auto & e) {
+                    std::string res{};
+                    physl_from_tiramisu_expr(e, res);
+                    return res;
                 });
 
-                result << phsyl_codegen::call_(tiramisu_expr.get_name(), vec);
+                ret_result.append(physl_codegen::call_(tiramisu_expr.get_name(), vec));
 
 /*
                 for (const auto &e : tiramisu_expr.get_arguments())
@@ -1465,7 +1477,7 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
     {
         DEBUG(3, tiramisu::str_dump("Generating a variable access expression."));
         DEBUG(3, tiramisu::str_dump("Expression is a variable of type: " + tiramisu::str_from_tiramisu_type_primitive(tiramisu_expr.get_data_type())));
-        result << physl_codege::var_(tirmaisu_expr.get_name());
+        ret_result.append(physl_codegen::var_(tiramisu_expr.get_name()));
 
         /* Halide::Internal::Variable::make(
                 halide_type_from_tiramisu_type(tiramisu_expr.get_data_type()),
@@ -1479,16 +1491,15 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
                            str_from_tiramisu_type_expr(tiramisu_expr.get_expr_type()).c_str());
         ERROR("\nTranslating an unsupported ISL expression in a Halide expression.", 1);
     }
-*/
+
     if (result.defined())
     {
         DEBUG(10, tiramisu::str_dump("Generated stmt: "); std::cout << result);
     }
+*/
 
     DEBUG_INDENT(-4);
     DEBUG_FCT_NAME(10);
-
-    return result;
 }
 
 int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e) {
@@ -1500,9 +1511,9 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     isl_ast_print_options_free(options);
     isl_printer_free(p);
 
-    std::stringstream sstr{};
-    physl_from_tiramisu_expr(e, sstr);
-    std::cout << sstr.str() << std::endl;
+    std::string str{};
+    physl_from_tiramisu_expr(e, str);
+    std::cout << str << std::endl;
 
     return 1;
 }
@@ -1513,7 +1524,9 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     std::string cstr{(c_str == nullptr) ? "" : c_str };
     fstr << cstr; //(cstr.c_str(), cstr.size());
 
-    physl_from_tiramisu_expr(e, fstr);
+    std::string str{};
+    physl_from_tiramisu_expr(e, str);
+    fstr << str;
 
     return 1;
 }
@@ -1522,10 +1535,9 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     char * c_str = isl_ast_node_to_physl_str(ctx, node);
     std::string cstr{(c_str == nullptr) ? "" : c_str };
 
-    std::stringstream sstr{};
-    physl_from_tiramisu_expr(e, sstr);
-
-    physlstr.assign(cstr + sstr.str());
+    std::string str{};
+    physl_from_tiramisu_expr(e, str);
+    physlstr.assign(cstr + str);
 
     return 1;
 }
