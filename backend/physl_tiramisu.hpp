@@ -145,13 +145,14 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
                         }
                     }
 
-//std::cout << str_ << "\t" << physl_str_ << std::endl;
+// buffer_indices -> tiramisu_codegen_halide.cpp -> std::map<std::string, isl_ast_expr *> generator::compute_iterators_map
 
                     std::stringstream code{};
                     code << "define(" << buffer_name << ", shape(" << dim_str << "))" << std::endl
                          << "define(" << comp->get_name() << ", " << buffer_indices << ", __tiramisu__schedule_index__, block(" << std::endl
                          << "    store(" << buffer_name << "(" << buffer_indices << "), " << str_ << ")" << std::endl
                          << "), " << buffer_name << ")" << std::endl
+                         << "//KERNEL_EXPR_ABOVE_SPLIT_BELOW_FOR_LOOP_PARAMS" << std::endl
                          << physl_str_ << std::endl;
                          
                     return code.str();
