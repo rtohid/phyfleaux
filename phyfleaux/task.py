@@ -7,8 +7,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
 
-from collections import defaultdict, OrderedDict
-from copy import deepcopy
 from inspect import getsource
 from typing import Callable
 
@@ -21,10 +19,12 @@ class Task(ast.NodeVisitor):
         """
         Phyfleaux callable.
 
-        :arg fn: Python callable
+        :arg fn: a Python callable
+        :arg backend: a particular implementation of the :func:`fn`.
+        :arg cost_function: cost associated to computation of the :func:`fn`.
         """
 
-        # function, it's tree representation, and an id (hash of tree).
+        # function, it's tree representation, and id (hash of tree).
         self.fn = fn
         self.tree = ast.parse((getsource(fn)))
         self.id = hash(self.tree)
