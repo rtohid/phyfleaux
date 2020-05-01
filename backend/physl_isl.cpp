@@ -1518,7 +1518,7 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
 }
 
 
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, const std::string kernel_str, std::ostream & fstr) {
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, std::string kernel_str, std::ostream & fstr) {
     char *c_str = isl_ast_node_to_physl_str(ctx, node);
     std::string cstr{(c_str == nullptr) ? "" : c_str };
     fstr << cstr; //(cstr.c_str(), cstr.size());
@@ -1530,13 +1530,14 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     return 1;
 }
 
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, const std::string& kernel_str, std::string & physlstr) {
+int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, std::string& kernel_str, std::string & physlstr) {
     char * c_str = isl_ast_node_to_physl_str(ctx, node);
     std::string cstr{(c_str == nullptr) ? "" : c_str };
 
     std::string str{};
     physl_from_tiramisu_expr(e, str);
-    physlstr.assign(cstr + str);
+    physlstr.assign(cstr);
+    kernel_str.assign(str);
 
     return 1;
 }
