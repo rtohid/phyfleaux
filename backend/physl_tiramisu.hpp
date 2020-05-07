@@ -123,8 +123,6 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
             generated_code.emplace_back(comp_code);
         }
         else {
-           generated_code.resize(computations.size());
-
            auto ctx = this->get_isl_ctx();
            auto ast = this->get_isl_ast();
 
@@ -153,7 +151,7 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
                     ++map_counter;
                 }
 
-std::cout << "c++ iter_mapping size\t" << iter_mapping.size() << std::endl;
+//std::cout << "c++ iter_mapping size\t" << iter_mapping.size() << std::endl;
 
                 comp_code["iterators"] = iter_mapping;
 

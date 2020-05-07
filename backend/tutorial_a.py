@@ -18,7 +18,8 @@ if __name__ == "__main__":
     S0.store_in(buf0)
 
     physl_computations = codegen_physl([buf0, ])
-    for computation in filter(lambda x: len(x) > 0, physl_computations):
+    #for computation in filter(lambda x: len(x) > 0, physl_computations):
+    for computation in physl_computations:
         if len(computation['iterators']) < 1:
             print("computation is an input variable")
         for k, v in computation.items():
