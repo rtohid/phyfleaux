@@ -34,7 +34,9 @@ if __name__ == "__main__":
     output.store_in(b_output)
 
     physl_computations = codegen_physl(list([b_A, b_output]))
-    for computations in physl_computations:
-        for k, v in computations.items():
-            print(k, v)
+    for computation in filter(lambda x: len(x.keys()) > 0, physl_computations):
+        if len(computation["iterators"]) < 1:
+            print("computation is an tiramisu::input")
+        for k, v in computation.items():
+            print("key\t", k, "\tvalue\t", v)
         print()

@@ -153,7 +153,7 @@ class PhyslFunction : public ::tiramisu::function, ::tiramisu::generator {
                     ++map_counter;
                 }
 
-                std::cout << iter_mapping << std::endl;
+std::cout << "c++ iter_mapping size\t" << iter_mapping.size() << std::endl;
 
                 comp_code["iterators"] = iter_mapping;
 
