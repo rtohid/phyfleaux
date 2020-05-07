@@ -33,5 +33,8 @@ if __name__ == "__main__":
     A.store_in(b_A)
     output.store_in(b_output)
 
-    physl_str = codegen_physl(list([b_A, b_output]))
-    print(physl_str)
+    physl_computations = codegen_physl(list([b_A, b_output]))
+    for computations in physl_computations:
+        for k, v in computations.items():
+            print(k, v)
+        print()

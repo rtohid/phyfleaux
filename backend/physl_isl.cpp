@@ -1107,9 +1107,8 @@ static void physl_from_tiramisu_expr(const ::tiramisu::expr & tiramisu_expr, std
             case tiramisu::o_lin_index:
             case tiramisu::o_address:
             case tiramisu::o_address_of:
-            {
 
-std::cout << "here" << std::endl;
+//std::cout << "here" << std::endl;
 
                 DEBUG(10, tiramisu::str_dump("op type: o_access or o_address"));
 /*
@@ -1335,7 +1334,6 @@ std::cout << "here" << std::endl;
                 }
                 delete[] shape;
 */
-            }
                 break;
             case tiramisu::o_right_shift:
                 ret_result.append(physl_codegen::rshift_( op0 , op1 ));
@@ -1470,6 +1468,10 @@ std::cout << "here" << std::endl;
                 break;
 */
             default:
+                std::cerr << tiramisu_expr.get_op_type() << ' '
+                    << (tiramisu_expr.get_op_type() == tiramisu::o_cast) << ' ' 
+                    << (tiramisu_expr.get_op_type() == tiramisu::o_address) << ' '
+                    << std::endl;
                 ERROR("Translating an unsupported ISL expression into a Halide expression.", 1);
         }
     }
@@ -1502,8 +1504,8 @@ std::cout << "here" << std::endl;
     DEBUG_FCT_NAME(10);
 }
 
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e) {
-    isl_printer *p = isl_printer_to_file(ctx, stdout); //isl_ast_node_get_ctx(node.get()), stdout);
+int generate_physl_print(isl_ctx * ctx, isl_ast_node * node) {
+    isl_printer *p = isl_printer_to_file(ctx, stdout);
     isl_ast_print_options *options = isl_ast_print_options_alloc(isl_printer_get_ctx(p));
 
     p = print_ast_node_physl(p, node, options, 0, 0);
@@ -1511,58 +1513,25 @@ int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & 
     isl_ast_print_options_free(options);
     isl_printer_free(p);
 
-    std::string str{};
-    physl_from_tiramisu_expr(e, str);
-
-    return 1;
-}
-
-
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, std::string kernel_str, std::ostream & fstr) {
-    char *c_str = isl_ast_node_to_physl_str(ctx, node);
-    std::string cstr{(c_str == nullptr) ? "" : c_str };
-    fstr << cstr; //(cstr.c_str(), cstr.size());
-
     //std::string str{};
     //physl_from_tiramisu_expr(e, str);
-    //fstr << str;
-
-    return 1;
-}
-
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, std::string& kernel_str, std::string & physlstr) {
-    char * c_str = isl_ast_node_to_physl_str(ctx, node);
-    std::string cstr{(c_str == nullptr) ? "" : c_str };
-
-    std::string str{};
-    physl_from_tiramisu_expr(e, str);
-    physlstr.assign(cstr);
-    kernel_str.assign(str);
 
     return 1;
 }
 
 /*
-int generate_physl(isl_ctx * ctx, isl_ast_node * node) {
-    isl_printer *p = isl_printer_to_file(ctx, stdout); //isl_ast_node_get_ctx(node.get()), stdout);
-    isl_ast_print_options *options = isl_ast_print_options_alloc(isl_printer_get_ctx(p));
+std::string generate_physl(isl_ctx * ctx, isl_ast_node * node) {
+    char * c_str = isl_ast_node_to_physl_str(ctx, node);
+    std::string cstr{(c_str == nullptr) ? "" : c_str };
 
-    p = print_ast_node_physl(p, node, options, 0, 0);
-
-    isl_ast_print_options_free(options);
-    isl_printer_free(p);
+    //std::string str{};
+    //physl_from_tiramisu_expr(e, str);
+    physlstr.assign(cstr);
+    //kernel_str.assign(str);
 
     return 1;
 }
 */
-
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::ostream & fstr) {
-    char *c_str = isl_ast_node_to_physl_str(ctx, node);
-    std::string cstr{(c_str == nullptr) ? "" : c_str };
-    fstr << cstr; //(cstr.c_str(), cstr.size());
-
-    return 1;
-}
 
 std::string generate_physl(isl_ctx * ctx, isl_ast_node * node) {
     char * c_str = isl_ast_node_to_physl_str(ctx, node);

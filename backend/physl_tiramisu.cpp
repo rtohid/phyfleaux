@@ -4,6 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <memory>
+#include <unordered_map>
 
 #include <isl/ast_type.h>
 
@@ -27,7 +28,7 @@ using namespace tiramisu;
 
 //int codegen(const std::vector< std::shared_ptr<buffer> > &arguments, const bool gen_cuda_stmt, std::string & physlstr)
 //
-int codegen(std::vector< ::tiramisu::buffer > &arguments, std::string & physlstr)
+std::vector< std::unordered_map<std::string, std::string> > codegen(std::vector< ::tiramisu::buffer > &arguments)
 {
 
     std::vector< ::tiramisu::buffer * > bufs{};
@@ -41,10 +42,8 @@ int codegen(std::vector< ::tiramisu::buffer > &arguments, std::string & physlstr
         }
     }
 
-    { // begin scope
-
-        PhyslFunction * fct = static_cast<PhyslFunction *>(::tiramisu::global::get_implicit_function());
-        /*
+    PhyslFunction * fct = static_cast<PhyslFunction *>(::tiramisu::global::get_implicit_function());
+    /*
         if(gen_cuda_stmt)
         {
             if(!fct.get_mapping().empty())
@@ -57,23 +56,20 @@ int codegen(std::vector< ::tiramisu::buffer > &arguments, std::string & physlstr
                 //DEBUG(3, ::tiramisu::str_dump("You must specify the corresponding CPU buffer to each GPU buffer else you should do the communication manually"));
             }
         }
-        */
+    */
 
-        fct->generate_code(bufs, physlstr);
+    auto map = fct->generate_code(bufs);
 
-        /*
+    /*
         if (gen_cuda_stmt) {
             fct.gen_cuda_stmt();
         }
 
         fct.gen_halide_stmt();
         fct->gen_halide_obj(obj_filename);
-        */
+    */
 
-    } // end scope
-
-    return 1;
-
+    return map;
 } // end codegen
 
 

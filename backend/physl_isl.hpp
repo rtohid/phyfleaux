@@ -17,13 +17,8 @@
 
 namespace physl { namespace codegen {
 
+int generate_physl_print(isl_ctx * ctx, isl_ast_node * node);
 std::string generate_physl(isl_ctx * ctx, isl_ast_node * node);
-//int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::ostream & fstr);
-//int generate_physl(isl_ctx * ctx, isl_ast_node * node, std::string & physlstr);
-
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e);
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, std::string & kernel_str, std::ostream & fstr);
-int generate_physl(isl_ctx * ctx, isl_ast_node * node, const ::tiramisu::expr & e, std::string & kernel_str, std::string & physlstr);
 
 } /* end namespace codegen */ } // end namespace physl
 

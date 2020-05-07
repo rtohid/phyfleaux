@@ -1523,8 +1523,7 @@ PYBIND11_MODULE(pytiramisu, m) {
     });
 
     m.def("codegen_physl", [](std::vector< buffer > &arguments) {
-       std::string code = codegen_physl(arguments);
-       return py::str(code);
+       return codegen_physl(arguments);
     });
 
 } // end pyisl module
