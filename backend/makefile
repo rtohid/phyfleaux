@@ -11,19 +11,24 @@ BASE_DIR=$(HOME)/git
 # this file is not part of the isl
 # install manifest.
 #
-ISL_SOURCE_BASE_DIR=$(BASE_DIR)/isl
+ISL_SOURCE_BASE_DIR=$(TIRAMISU_ROOT_DIR)/3rdParty/isl
 
 # this is a variable referencing the
 # installed build of isl
 #
-ISL_INSTALLED_ROOT_DIR=$(BASE_DIR)/install
+ISL_ROOT_DIR=$(ISL_SOURCE_BASE_DIR)/build
 ISL_LIB_DIR=$(ISL_ROOT_DIR)/lib
+ISL_INC_DIR=$(ISL_ROOT_DIR)/include
 
 TIRAMISU_ROOT_DIR=$(BASE_DIR)/tiramisu
 TIRAMISU_LIB_DIR=$(TIRAMISU_ROOT_DIR)/build
+TIRAMISU_INC_DIR=$(TIRAMISU_ROOT_DIR)/include
 
-INC_FLAGS=-I$(HOME)/git/install/include -I$(ISL_INSTALLED_ROOT_DIR)/include -I$(TIRAMISU_ROOT_DIR)/include -I$(ISL_SOURCE_BASE_DIR)
-LIB_FLAGS=-L$(HOME)/git/install/lib -L$(ISL_LIB_DIR) -L$(TIRAMISU_LIB_DIR)
+EXTRA_INC=$(HOME)/git/install/include 
+EXTRA_LIB=$(HOME)/git/install/lib
+
+INC_FLAGS=-I$(EXTRA_INC) -I$(ISL_INC_DIR) -I$(TIRAMISU_INC_DIR) -I$(ISL_SOURCE_BASE_DIR)
+LIB_FLAGS=-L$(EXTRA_LIB) -L$(ISL_LIB_DIR) -L$(TIRAMISU_LIB_DIR)
 LIBS=-lisl -ltiramisu
 CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
 #-stdlib=libc++

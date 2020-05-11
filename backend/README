@@ -4,6 +4,9 @@
 
     * install clang-8, pthreads, libdl, zlib1g-dev (ubuntu), pybind11, python3.6+
     * git clone -b physl_2019 --single-branch https://github.com/ct-clmsn/tiramisu.git
+    * compile and install libisl `$(TIRAMISU_ROOT)/3rdparty/isl`
+    * build libisl using the following configuration commands: `CC=<PATH_TO_CLANG>/clang CXX=<PATH_TO_CLANG>/clang++ ./configure --with-int=imath --prefix=$PWD/build`
+    * isl will build into $(TIRAMISU_ROOT)/3rdparty/isl/build/ (with 2 child directories 'include' and 'lib')
     * modify as necessary `$(TIRAMISU_ROOT)/configure.cmake`
     * run `mkdir $(TIRAMISU_ROOT)/build`
     * change directory into `cd $(TIRAMISU_ROOT)/build`
