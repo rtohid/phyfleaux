@@ -18,6 +18,7 @@
 #include <isl/constraint.h>
 
 #include <tiramisu/tiramisu.h>
+#include <tiramisu/core.h>
 #include <tiramisu/expr.h>
 
 /*

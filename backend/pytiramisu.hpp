@@ -7,4 +7,6 @@
 #ifndef __PYTIRAMISU_HPP__
 #define __PYTIRAMISU_HPP__
 
+#include <tiramisu/tiramisu.h>
+
 #endif
