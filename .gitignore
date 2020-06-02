@@ -1,0 +1,12 @@
+# deirectories
+.vscode/
+__pycache__/
+.pytest_cache/
+
+# files
+*.swp
+*.pyc
+__phy_copy*
+_scratchpad.py
+*.o
+*.so
