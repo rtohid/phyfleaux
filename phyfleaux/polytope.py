@@ -12,9 +12,9 @@ from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from typing import Callable
 
-from pytiramisu.task import Task
-from pytiramisu.data_structure import Buffer, Constant, Expr, Function
-from pytiramisu.data_structure import Input, Var, Computation, View
+from phyfleaux.task import Task
+from phyfleaux.data_structure import Buffer, Constant, Expr, Function
+from phyfleaux.data_structure import Input, Var, Computation, View
 
 
 class CALL:

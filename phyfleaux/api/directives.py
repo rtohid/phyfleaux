@@ -11,7 +11,12 @@ import ast
 
 from typing import Callable
 
-from pytiramisu.polytope import Polytope
+from phyfleaux.task import Task
+from phyfleaux.polytope import Polytope
+
+
+def task(fn: Callable) -> Callable:
+    return Task(fn)
 
 
 def polyhedral(fn: Callable) -> Callable:
@@ -30,5 +35,4 @@ def polyhedral(fn: Callable) -> Callable:
     https://en.wikipedia.org/wiki/Affine_space
     """
 
-    polytope = Polytope(fn)
-    return polytope
+    return Polytope(fn)

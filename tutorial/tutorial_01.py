@@ -9,7 +9,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 from numpy import ndarray
 
-from pytiramisu.api.directives import polyhedral
+from phyfleaux.api.directives import polyhedral
 
 
 def guard():
