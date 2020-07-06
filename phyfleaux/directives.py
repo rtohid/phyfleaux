@@ -7,12 +7,9 @@ Distributed under the Boost Software License, Version 1.0. (See accompanying
 file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
-import ast
-
-from typing import Callable
 from types import FunctionType
-from phyfleaux.task.task import Task
-# from phyfleaux.optimization.task import Polytope
+from phyfleaux.fleaux.task import Task
+from phyfleaux.fleaux.context import Polytope
 
 
 def task(__task_arg=None, **kwargs):
@@ -28,12 +25,9 @@ def task(__task_arg=None, **kwargs):
 
 
 def polyhedral(fn: [Task, FunctionType]) -> Task:
-    """Attempts to detect SCoPs and apply polyhedral transformations.
+    """Generate Polytope representation of the task.
 
-    :arg fn: python function.
-
-    Directs Phyfleaux to apply polyhedral transformations on affine iteration
-    spaces in :func:`fn`.
+    :arg fn: python function or :class:`phyfleaux.fleaux.task.Task`.
 
     reads:
     -----
@@ -45,4 +39,4 @@ def polyhedral(fn: [Task, FunctionType]) -> Task:
 
     task_ = task(fn)
 
-    return Polytope(fn)
+    return Polytope(task_)
