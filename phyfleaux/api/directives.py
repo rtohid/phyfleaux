@@ -45,4 +45,4 @@ def polyhedral(fn: [Task, FunctionType]) -> Task:
 
     task_ = task(fn)
 
-    return Polytope(fn)
+    return Polytope(task_)

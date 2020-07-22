@@ -47,3 +47,6 @@ class Task:
         # inspect.signature(fn).bind()
         self.called += 1
         return self.fn(*args, **kwargs)
+
+    def __hash__(self):
+        return self.id
