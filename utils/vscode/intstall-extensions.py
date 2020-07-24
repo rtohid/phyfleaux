@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3
 __license__ = """
 Copyright (c) 2020 R. Tohid
 
@@ -11,7 +11,10 @@ file found in the current directory (`phyfleaux/utils/vscode`)."""
 
 import subprocess
 
-with open('recommended-vscode-extensions.txt', 'r') as extensions:
-    for extension in extensions:
-        installation = subprocess.call(
-            ['code', '--install-extension', extension])
+try:
+    with open('recommended-vscode-extensions.txt', 'r') as extensions:
+        for extension in extensions:
+            installation = subprocess.call(
+                ['code', '--install-extension', extension])
+except:
+    print("Please run this script from `.../phyfleaux/utils/vscode/scripts/`")

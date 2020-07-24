@@ -12,7 +12,6 @@ import ast
 import dis
 import inspect
 
-from copy import deepcopy
 from types import FunctionType
 
 
@@ -21,7 +20,7 @@ class Task:
         if isinstance(fn, FunctionType):
 
             # Funtion
-            self.fn = deepcopy(fn)
+            self.fn = fn
             self.id = self.fn.__hash__()
 
             self.py_code = fn.__code__
@@ -39,7 +38,7 @@ class Task:
             self.src_file_name = inspect.getfile(fn).split('/')[-1]
 
         else:  # isinstance(fn, Task)
-            self = deepcopy(fn)
+            self = fn
 
         self.called = 0
 

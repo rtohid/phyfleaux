@@ -13,4 +13,4 @@ UI to:
 - direct the scheduling and code genration of tasks.
 """
 
-import phyfleaux.api._numpy as numpy
+import phyfleaux.plugins._numpy as numpy

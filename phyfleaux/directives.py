@@ -11,8 +11,8 @@ import ast
 
 from typing import Callable
 from types import FunctionType
-from phyfleaux.task.task import Task
-from phyfleaux.optimization.task import Polytope
+from phyfleaux.core import Task
+from phyfleaux.optimization.polyhedral import Polytope
 
 
 def task(__task_arg=None, **kwargs):

@@ -10,8 +10,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import numpy
 import time
 
-from phyfleaux.api.directives import polyhedral
-from phyfleaux.api import numpy as phynum
+from phyfleaux.directives import polyhedral
+from phyfleaux.plugins import numpy as phynum
 
 # test sizes
 small = [4, 16, 64]
@@ -21,7 +21,7 @@ xlarge = [4, 16, 64, 128, 256, 512]
 xxlarge = [4, 16, 64, 128, 256, 512, 1024]
 
 # run tests
-def run(func, inputs=medium):
+def run(func, inputs=small):
     print(f"Running {func} with {inputs}")
     for args in inputs:
         print(f'{args}:')
