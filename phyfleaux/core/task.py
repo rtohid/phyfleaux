@@ -19,10 +19,10 @@ class Task:
     def __init__(self, fn: [FunctionType, Task]) -> None:
         if isinstance(fn, FunctionType):
 
-            # Funtion
+            # Function
             self.fn = fn
             self.id = self.fn.__hash__()
-
+                      
             self.py_code = fn.__code__
             self.py_ast = ast.parse((inspect.getsource(fn)))
 

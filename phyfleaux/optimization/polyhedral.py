@@ -58,7 +58,7 @@ class Input:
 
 class Var:
     def __init__(self, iterator=None):
-        """Defines the range of the loop around the computation (its iteratio
+        """Defines the range of the loop around the computation (its iteration
         domain). When used to declare a buffer it defines the buffer size, and
         when used with an input it defines the input size."""
 
