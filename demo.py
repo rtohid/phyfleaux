@@ -11,7 +11,7 @@ import numpy
 import time
 
 from phyfleaux.directives import polyhedral
-from phyfleaux.plugins import numpy as phynum
+from phyfleaux.plugins import numpy as numphy
 
 # test sizes
 small = [4, 16, 64]
@@ -46,12 +46,12 @@ def matmul_naive(N):
 
 
 @polyhedral
-def matmul_naive_polyhedral(N):
+def matmul_naive_polyhedral(N: int) -> numphy.ndarray:
     """Apply polyhedral transformations to :fn:`matmul_naive`."""
 
-    a = phynum.ones((N, N), dtype=int)
-    b = phynum.ones((N, N), dtype=int)
-    c = phynum.zeros((N, N), dtype=int)
+    a = numphy.ones((N, N), dtype=int)
+    b = numphy.ones((N, N), dtype=int)
+    c = numphy.zeros((N, N), dtype=int)
 
     for i in range(N):
         for j in range(N):
@@ -61,44 +61,3 @@ def matmul_naive_polyhedral(N):
 
 run(matmul_naive)
 run(matmul_naive_polyhedral)
-
-# def matmul_numpy(N):
-#     """Naive Matrix Multiplication."""
-
-#     a = numpy.ones((N, N), dtype=int)
-#     b = numpy.ones((N, N), dtype=int)
-#     c = numpy.zeros((N, N), dtype=int)
-
-#     c = numpy.matmul(a, b)
-#     return c
-
-# @polyhedral
-# def matmul_numpy(N):
-#     """Naive Matrix Multiplication."""
-
-#     a = numpy.ones((N, N), dtype=int)
-#     b = numpy.ones((N, N), dtype=int)
-#     c = numpy.zeros((N, N), dtype=int)
-
-#     c = numpy.matmul(a, b)
-#     return c
-
-# run(matmul_numpy)
-# run(matmul_naive)
-
-# from numpy import ndarray
-# myarray = ndarray
-
-# # def hash_an_arr(self, )
-# A = ndarray((4,4))
-
-# # print(A.data.hex())
-
-
-# def test(arr, id):
-#     return arr.data.hex() == id
-
-
-# print(test(A, A.data.hex()))
-# print(A.ndim)
-# print(A.shape)

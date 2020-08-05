@@ -67,13 +67,9 @@ class Polytope(ast.NodeVisitor):
         return fn
 
     def visit_Call(self, node: ast.Call) -> Call:
-        if isinstance(node.func, ast.Name):
-            fn_name = node.func.id
-        else:
-            fn_name = node.func.attr
 
-        fn = Call(fn_name)
-        fn.args = self.task.args_spec
+        fn 
+        fn = Call(node)
 
         for attr in node.keywords:
             val = self.visit(attr.value)
@@ -119,14 +115,13 @@ class Polytope(ast.NodeVisitor):
         Expr.tree[hash(node)] = expr_value
         return expr_value
 
-    def visit_FunctionDef(self,
-                          node: ast.FunctionDef) -> Function:
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> Function:
 
         fn = Function(node.name, self.task)
+
         body = []
         for statement in node.body:
             body.append(self.visit(statement))
-        
         fn.body = body
 
         return fn

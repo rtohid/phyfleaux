@@ -15,7 +15,7 @@ from pytiramisu import init_physl, input, var  # , view
 
 class Buffer:
     def __init__(self, name):
-        """Represents mmory buffers"""
+        """Represents memory buffers"""
         self.name = name
         self.indices = list()
         self.context = None
@@ -51,15 +51,30 @@ class Computation:
     @rhs.setter
     def rhs(self, expr):
         self._rhs = expr
-    
-    def compile(self):
-        pass
 
+    def compile(self):
+        Computation.statements[self.name].rhs.compile()
 
 
 class Call:
-    def __init__(self, name):
-        pass
+    def __init__(self, node):
+        if isinstance(node.func, ast.Name):
+            fn_name = node.func.id
+        else:
+            fn_name = node.func.attr
+
+        fn.args = self.task.args_spec
+
+        self.args = None
+        self.name = name
+
+    def compile(self):
+        self.args = self.args.args
+        try:
+            Function.known[self.name].args = self.args
+        except:
+            pass
+        return self
 
 
 class Constant:
@@ -87,6 +102,7 @@ class Function:
         """Equivalent to a function in C; composed of multiple computations."""
 
         self.id = task.id
+        self.task = task
         self.name = name
         if task:
             self.args = task.args_spec
@@ -95,12 +111,18 @@ class Function:
 
         self.body = list()
         self.dtype = dtype
+        self.compiled = False
+
+        args = OrderedDict()
+        for arg in self.task.args_spec.args:
+            args[arg] = arg
+        self.args = args
 
         Function.known[self.id] = self
-    
+
     def compile(self):
 
-        # the first element might be a string containing docum
+        # the first element might be the documentation ==> str
         if isinstance(self.body[0], str):
             self.__doc__ = self.body[0]
             del self.body[0]
@@ -108,7 +130,7 @@ class Function:
         for statement in self.body:
             if not isinstance(statement, str):
                 statement.compile()
-        
+
         return self
 
 
