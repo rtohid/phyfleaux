@@ -37,9 +37,14 @@ class Polytope(ast.NodeVisitor):
         self.isl = self.visit_FunctionDef(self.task.py_ast.body[0])
 
     def __call__(self, *args, **kwargs):
-        self.isl.compile()
+        self.isl = self.isl.compile()
+        self.tiramisu = self.isl.build()
+        self.tiramisu.generate()
         self.task(*args, **kwargs)
         # self.loops = OrderedDict()
+
+    def visit_Add(self, node: ast.Add) -> str:
+        return '__Add__'
 
     def visit_Assign(self, node: ast.Assign) -> Computation:
         target = node.targets
@@ -64,12 +69,19 @@ class Polytope(ast.NodeVisitor):
         fn = Call(fn_name)
         fn.args = [lhs, rhs]
 
+        Function.known[fn_name] = fn
+
         return fn
 
     def visit_Call(self, node: ast.Call) -> Call:
 
-        fn 
         fn = Call(node)
+
+        if isinstance(node.args, list):
+            for arg in node.args:
+                fn.args = arg
+        else:
+            self.args = node.args
 
         for attr in node.keywords:
             val = self.visit(attr.value)
@@ -123,8 +135,12 @@ class Polytope(ast.NodeVisitor):
         for statement in node.body:
             body.append(self.visit(statement))
         fn.body = body
-
+        fn.args = self.task.args_spec
+        Function.known[fn.name] = fn
         return fn
+
+    def visit_Mult(self, node: ast.Mult) -> str:
+        return '__Mult__'
 
     def visit_Name(self, node: ast.Name) -> str:
         return node.id

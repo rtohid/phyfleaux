@@ -24,6 +24,31 @@ class Buffer:
         return len(self.indices)
 
 
+class Call:
+    def __init__(self, node):
+        if isinstance(node, str):
+            fn_name = node
+        elif isinstance(node.func, ast.Name):
+            fn_name = node.func.id
+        else:
+            fn_name = node.func.attr
+
+        self.name = fn_name
+
+    def compile(self):
+        fn = Function.known.get(self.name)
+        if not fn:
+            Function.known[self.name] = self
+
+        return self
+
+    def build(self):
+        pass
+
+    def generate(self):
+        pass
+
+
 class Computation:
     statements = OrderedDict()
 
@@ -55,26 +80,12 @@ class Computation:
     def compile(self):
         Computation.statements[self.name].rhs.compile()
 
+    def build(self):
+        Computation.statements[self.name].rhs.build()
 
-class Call:
-    def __init__(self, node):
-        if isinstance(node.func, ast.Name):
-            fn_name = node.func.id
-        else:
-            fn_name = node.func.attr
-
-        fn.args = self.task.args_spec
-
-        self.args = None
-        self.name = name
-
-    def compile(self):
-        self.args = self.args.args
-        try:
-            Function.known[self.name].args = self.args
-        except:
-            pass
-        return self
+    def generate(self):
+        init_physl(self.name)
+        self.rhs.generate()
 
 
 class Constant:
@@ -101,24 +112,30 @@ class Function:
     def __init__(self, name, task=None, dtype=None):
         """Equivalent to a function in C; composed of multiple computations."""
 
-        self.id = task.id
-        self.task = task
         self.name = name
+
+        self.args = None
         if task:
+            self.id = task.id
+            self.task = task
             self.args = task.args_spec
-        else:
-            self.args = None
+            args = OrderedDict()
+            for arg in self.task.args_spec.args:
+                args[arg] = arg
+            self.args = args
+        Function.known[name] = self
 
         self.body = list()
         self.dtype = dtype
         self.compiled = False
 
-        args = OrderedDict()
-        for arg in self.task.args_spec.args:
-            args[arg] = arg
-        self.args = args
+    def build(self):
 
-        Function.known[self.id] = self
+        for statement in self.body:
+            if not isinstance(statement, str):
+                statement.build()
+
+        return self
 
     def compile(self):
 
@@ -133,6 +150,13 @@ class Function:
 
         return self
 
+    def generate(self):
+        init_physl(self.name)
+        body = []
+        for statement in self.body:
+            if not isinstance(statement, str):
+                body.append(statement.generate())
+
 
 class Input:
     def __init__(self):
@@ -141,6 +165,8 @@ class Input:
 
 
 class Var:
+    iters = list()
+
     def __init__(self, iterator=None):
         """Defines the range of the loop around the computation (its iteration
         domain). When used to declare a buffer it defines the buffer size, and
@@ -158,8 +184,17 @@ class Var:
     def compile(self):
         pass
 
+    def build(self):
+        for statement in self.body:
+            if statement:
+                self.body.append(statement.build())
 
-class View:
-    def __init__(self):
-        """A view on a buffer."""
-        pass
+    def generate(self):
+        Var.iters.append(self.iterator)
+        print(Var.iters)
+
+
+# class View:
+#     def __init__(self):
+#         """A view on a buffer."""
+#         pass
