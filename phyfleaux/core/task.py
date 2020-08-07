@@ -12,17 +12,25 @@ import ast
 import dis
 import inspect
 
+from collections import OrderedDict
 from types import FunctionType
 
 
+class Cost:
+    def __init__(self):
+        pass
+
+
 class Task:
-    def __init__(self, fn: [FunctionType, Task]) -> None:
+    def __init__(self,
+                 fn: [FunctionType, Task],
+                 cost: FunctionType = None) -> None:
         if isinstance(fn, FunctionType):
 
             # Function
             self.fn = fn
             self.id = self.fn.__hash__()
-                      
+
             self.py_code = fn.__code__
             self.py_ast = ast.parse((inspect.getsource(fn)))
 
@@ -36,11 +44,29 @@ class Task:
             self.src_file = ''.join(map(str, self.src_file))
             self.src_file_dir = '/'.join(inspect.getfile(fn).split('/')[:-1])
             self.src_file_name = inspect.getfile(fn).split('/')[-1]
+            self.cost = OrderedDict()
+            self.new_cost(cost)
 
         else:  # isinstance(fn, Task)
             self = fn
+            self.new_cost(cost)
 
         self.called = 0
+
+    def new_cost(self, cost, reset: bool = False):
+        if reset:
+            self.cost = OrderedDict()
+            self.new_cost(cost)
+
+            return
+
+        if self.cost:
+            if self.cost.get(hash(cost)):
+                self.cost[hash(cost)] = [cost]
+            else:
+                self.cost[hash(cost)].append(cost)
+
+        return
 
     def __call__(self, *args, **kwargs):
         # inspect.signature(fn).bind()
