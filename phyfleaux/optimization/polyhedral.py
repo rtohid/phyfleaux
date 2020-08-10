@@ -9,14 +9,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
 import ast
-from collections import OrderedDict, defaultdict
 from copy import deepcopy
-from typing import Callable
+from typing import Union
 
 from phyfleaux.core.task import Task
-from phyfleaux.plugins.tiramisu import init_physl
-from phyfleaux.plugins.tiramisu import Buffer, Call, Computation, Constant
-from phyfleaux.plugins.tiramisu import Expr, Function, Input, Var
+from phyfleaux.plugins.tiramisu import Buffer, Call, Computation, Expr, Function
+from phyfleaux.plugins.tiramisu import Var
 
 
 class Polytope(ast.NodeVisitor):
@@ -34,14 +32,23 @@ class Polytope(ast.NodeVisitor):
         """
 
         self.task = task_
-        self.isl = self.visit_FunctionDef(self.task.py_ast.body[0])
+        self.build_isl()
 
     def __call__(self, *args, **kwargs):
-        self.isl = self.isl.compile()
-        self.tiramisu = self.isl.build()
-        self.tiramisu.generate()
-        self.task(*args, **kwargs)
+        self.isl_tree(*args, **kwargs)
+        # self.isl_tree = self.isl_tree.compile()
+        # self.tiramisu = self.isl_tree.build()
+        # self.tiramisu.generate()
+        # self.task(*args, **kwargs)
         # self.loops = OrderedDict()
+
+    def build_isl(self):
+        fn_body = self.task.py_ast.body[0]
+        # if isinstance(fn_body[0], str):
+        #     self.__doc__ = fn_body[0]
+        #     del fn_body[0]
+
+        self.isl_tree = self.visit_FunctionDef(fn_body)
 
     def visit_Add(self, node: ast.Add) -> str:
         return '__Add__'
@@ -69,8 +76,6 @@ class Polytope(ast.NodeVisitor):
         fn = Call(fn_name)
         fn.args = [lhs, rhs]
 
-        Function.known[fn_name] = fn
-
         return fn
 
     def visit_Call(self, node: ast.Call) -> Call:
@@ -89,8 +94,11 @@ class Polytope(ast.NodeVisitor):
 
         return fn
 
-    def visit_Constant(self, node: ast.Constant) -> [int, str]:
+    def visit_Constant(self, node: ast.Constant) -> Union[int, str]:
         return node.value
+
+    def visit_Expr(self, node: ast.Expr) -> Expr:
+        return Expr(self.visit(node.value))
 
     def visit_For(self, node: ast.For) -> Var:
         loop = Var(node.target.id)
@@ -121,22 +129,16 @@ class Polytope(ast.NodeVisitor):
 
         return loop
 
-    def visit_Expr(self, node: ast.Expr) -> Expr:
-        Expr(node)
-        expr_value = self.visit(node.value)
-        Expr.tree[hash(node)] = expr_value
-        return expr_value
-
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Function:
+        fn = Function(node.name, task=self.task)
 
-        fn = Function(node.name, self.task)
-
-        body = []
         for statement in node.body:
-            body.append(self.visit(statement))
-        fn.body = body
-        fn.args = self.task.args_spec
-        Function.known[fn.name] = fn
+            fn.add_statement(self.visit(statement))
+        fn.build()
+
+        for return_ in node.returns:
+            fn.add_return(self.visit(return_))
+
         return fn
 
     def visit_Mult(self, node: ast.Mult) -> str:

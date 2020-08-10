@@ -60,11 +60,10 @@ class Task:
 
             return
 
-        if self.cost:
-            if self.cost.get(hash(cost)):
-                self.cost[hash(cost)] = [cost]
-            else:
-                self.cost[hash(cost)].append(cost)
+        if self.cost.get(hash(cost)):
+            self.cost[hash(cost)].append(cost)
+        else:
+            self.cost[hash(cost)] = [cost]
 
         return
 

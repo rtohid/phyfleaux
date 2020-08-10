@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import annotations
 
 __license__ = """
 Copyright (c) 2020 R. Tohid
@@ -9,8 +10,11 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
 from collections import OrderedDict
+from typing import Union
+
 from pytiramisu import buffer, computation, constant, expr, function
-from pytiramisu import init_physl, input, var  # , view
+from pytiramisu import init_physl, input, var
+from phyfleaux.core.task import Task
 
 
 class Buffer:
@@ -25,20 +29,22 @@ class Buffer:
 
 
 class Call:
-    def __init__(self, node):
-        if isinstance(node, str):
-            fn_name = node
-        elif isinstance(node.func, ast.Name):
-            fn_name = node.func.id
-        else:
-            fn_name = node.func.attr
+    stack = OrderedDict()
 
+    def __init__(self, fn_name, dtype=None):
         self.name = fn_name
+        self.dtype = dtype
+
+        call_stack = Call.stack
+        if call_stack.get(fn_name):
+            call_stack[fn_name].append(self)
+        else:
+            call_stack[fn_name] = [self]
 
     def compile(self):
-        fn = Function.known.get(self.name)
+        fn = Call.stack.get(self.name)
         if not fn:
-            Function.known[self.name] = self
+            Function.defined[self.name] = self
 
         return self
 
@@ -50,6 +56,8 @@ class Call:
 
 
 class Computation:
+    # May not be needed, just a good spot to keep all info on all statements
+    # while developing.
     statements = OrderedDict()
 
     def __init__(self):
@@ -99,56 +107,74 @@ class Constant:
 class Expr:
     tree = OrderedDict()
 
-    def __init__(self, expr: ast):
+    def __init__(self, value: ast) -> None:
         """Represnets expressions, e.g., 4, 4 + 4, 4 * i, A[i, j], ..."""
-        self.id = hash(expr)
-        self.value = None
+        self.id = hash(value)
+        self.value = value
+        self.register()
+
+    def register(self) -> None:
         Expr.tree[self.id] = self
 
 
 class Function:
-    known = OrderedDict()
+    declared = OrderedDict()
+    defined = OrderedDict()
 
     def __init__(self, name, task=None, dtype=None):
-        """Equivalent to a function in C; composed of multiple computations."""
+        """Equivalent to a function in C; composed of multiple computations and
+        possibly Vars."""
 
         self.name = name
-
-        self.args = None
-        if task:
-            self.id = task.id
-            self.task = task
-            self.args = task.args_spec
-            args = OrderedDict()
-            for arg in self.task.args_spec.args:
-                args[arg] = arg
-            self.args = args
-        Function.known[name] = self
-
-        self.body = list()
         self.dtype = dtype
-        self.compiled = False
+        self.task = task
+
+        self.body = OrderedDict()
+
+        self.num_returns = 0
+        self.returns = OrderedDict()
+
+        if task:
+            self.define()
+
+    def __call__(self, *args, **kwargs):
+        for statement in self.body:
+            pass
+
+    def add_statement(self, statement):
+        # if isinstance(statement, Expr) and statement.value and not isinstance(
+        #         statement.value, str):
+        self.body[statement.id] = statement
+
+    def add_return(self, return_val):
+        self.num_returns += 1
+        self.returns[self.num_returns] = return_val
 
     def build(self):
-
         for statement in self.body:
             if not isinstance(statement, str):
                 statement.build()
+                self.add_statement(statement)
 
         return self
 
     def compile(self):
 
         # the first element might be the documentation ==> str
-        if isinstance(self.body[0], str):
-            self.__doc__ = self.body[0]
-            del self.body[0]
-
         for statement in self.body:
             if not isinstance(statement, str):
                 statement.compile()
 
         return self
+
+    def define(self):
+        self.id = self.task.id
+        self.args = self.task.args_spec.args
+
+        if self.is_defined(self.name):
+            Function.defined[self.name].append((self.name, self.id))
+        else:
+            Function.defined[self.name] = [(self.name, self.id)]
 
     def generate(self):
         init_physl(self.name)
@@ -156,6 +182,10 @@ class Function:
         for statement in self.body:
             if not isinstance(statement, str):
                 body.append(statement.generate())
+
+    @classmethod
+    def is_defined(self, fn_name):
+        return fn_name in Function.defined.keys()
 
 
 class Input:
@@ -192,9 +222,3 @@ class Var:
     def generate(self):
         Var.iters.append(self.iterator)
         print(Var.iters)
-
-
-# class View:
-#     def __init__(self):
-#         """A view on a buffer."""
-#         pass
