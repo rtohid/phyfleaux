@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import annotations
+from collections import OrderedDict
 
 __license__ = """
 Copyright (c) 2020 R. Tohid
@@ -14,7 +15,20 @@ from typing import Union
 
 from phyfleaux.core.task import Task
 from phyfleaux.plugins.tiramisu import Buffer, Call, Computation, Expr, Function
-from phyfleaux.plugins.tiramisu import Var
+from phyfleaux.plugins.tiramisu import Return, Var
+
+
+class Return_(Return):
+    returns = OrderedDict()
+
+    @classmethod
+    def reset(cls):
+        Return_.returns = OrderedDict()
+        Return.num_returns = 0
+
+    @classmethod
+    def add(cls, return_):
+        Return_.returns[return_.id] = return_
 
 
 class Polytope(ast.NodeVisitor):
@@ -49,24 +63,28 @@ class Polytope(ast.NodeVisitor):
         #     del fn_body[0]
 
         self.isl_tree = self.visit_FunctionDef(fn_body)
+        self.isl_tree.build()
 
     def visit_Add(self, node: ast.Add) -> str:
         return '__Add__'
 
     def visit_Assign(self, node: ast.Assign) -> Computation:
+        id = hash(node)
         target = node.targets
         value = node.value
 
-        s = Computation()
-
-        s.rhs = self.visit(value)
+        rhs = self.visit(value)
 
         if 1 < (len(target)):
             raise NotImplementedError(
                 "Multi-target assignments are not yet supported.")
-        s.lhs = self.visit(target[0])
+        lhs = self.visit(target[0])
+        s = Computation(lhs, rhs, id)
 
         return s
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        return node.attr
 
     def visit_BinOp(self, node) -> Function:
         fn_name = self.visit(node.op)
@@ -80,13 +98,12 @@ class Polytope(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> Call:
 
-        fn = Call(node)
-
+        fn_name = self.visit(node.func)
+        fn = Call(fn_name)
         if isinstance(node.args, list):
-            for arg in node.args:
-                fn.args = arg
+            fn.args = [self.visit(arg) for arg in node.args]
         else:
-            self.args = node.args
+            self.args = self.visit(node.args)
 
         for attr in node.keywords:
             val = self.visit(attr.value)
@@ -102,42 +119,40 @@ class Polytope(ast.NodeVisitor):
 
     def visit_For(self, node: ast.For) -> Var:
         loop = Var(node.target.id)
+        loop.iterator = self.visit(node.target)
 
         if isinstance(node.iter, ast.Call) and 'range' == node.iter.func.id:
-            bounds = []
-            for arg in node.iter.args:
-                try:
-                    if isinstance(arg, ast.Name):
-                        bounds.append(arg.id)
-                except AttributeError:
-                    if isinstance(arg, ast.Constant):
-                        bounds.append(arg.n)
-                except AttributeError:
-                    raise AttributeError(
-                        f"Expected '<class ast.Name>' received {type(arg)}")
-
-            if 1 == len(bounds):
-                bounds = [0] + bounds
-
-            loop.set_bounds(bounds[0], bounds[1])
+            iter_space = self.visit(node.iter)
+            if 1 == len(iter_space.args):
+                loop.set_bounds(upper=iter_space.args[0])
 
         if isinstance(node.iter, ast.List):
             raise TypeError("'list' is not an affine space.")
 
         for statement in node.body:
-            loop.body.append(self.visit(statement))
+            statement_isl = self.visit(statement)
+            if not isinstance(statement_isl, str):
+                loop.body[hash((statement))] = statement_isl
 
         return loop
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Function:
-        fn = Function(node.name, task=self.task)
+        
+        Return_.reset()
+        fn = Function(node.name, self.task, self.task.id)
+        fn.dtype = self.task.dtype
 
         for statement in node.body:
-            fn.add_statement(self.visit(statement))
-        fn.build()
+            if not isinstance(statement, str):
+                if isinstance(statement, ast.Expr):
+                    if isinstance(statement.value, ast.Constant):
+                        continue
+            else:
+                continue
 
-        for return_ in node.returns:
-            fn.add_return(self.visit(return_))
+            fn_isl = self.visit(statement)
+            if not isinstance(fn_isl, str):
+                fn.add_statement(fn_isl, fn.id)
 
         return fn
 
@@ -148,7 +163,10 @@ class Polytope(ast.NodeVisitor):
         return node.id
 
     def visit_Return(self, node):
-        return self.visit(node.value)
+        return_ = Return_(self.visit(node.value), id)
+        Return_.add(return_)
+
+        return return_
 
     def visit_Subscript(self, node: ast.Subscript) -> tuple:
 
@@ -169,3 +187,6 @@ class Polytope(ast.NodeVisitor):
         buffer.indices = indices
 
         return buffer
+
+    def visit_Tuple(self, node: ast.Tuple) -> None:
+        return tuple([self.visit(expr) for expr in node.elts])

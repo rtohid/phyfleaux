@@ -9,10 +9,10 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
 import ast
-import dis
 import inspect
 
 from collections import OrderedDict
+from typing import Union
 from types import FunctionType
 
 
@@ -23,13 +23,14 @@ class Cost:
 
 class Task:
     def __init__(self,
-                 fn: [FunctionType, Task],
+                 fn: Union[FunctionType, Task],
                  cost: FunctionType = None) -> None:
         if isinstance(fn, FunctionType):
 
             # Function
             self.fn = fn
             self.id = self.fn.__hash__()
+            self.dtype = None
 
             self.py_code = fn.__code__
             self.py_ast = ast.parse((inspect.getsource(fn)))
@@ -56,14 +57,12 @@ class Task:
     def new_cost(self, cost, reset: bool = False):
         if reset:
             self.cost = OrderedDict()
-            self.new_cost(cost)
 
-            return
-
-        if self.cost.get(hash(cost)):
-            self.cost[hash(cost)].append(cost)
+        id = hash(cost)
+        if self.cost.get(id):
+            self.cost[id].append((cost, id))
         else:
-            self.cost[hash(cost)] = [cost]
+            self.cost[id] = [(cost, id)]
 
         return
 

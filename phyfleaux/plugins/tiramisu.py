@@ -41,18 +41,8 @@ class Call:
         else:
             call_stack[fn_name] = [self]
 
-    def compile(self):
-        fn = Call.stack.get(self.name)
-        if not fn:
-            Function.defined[self.name] = self
-
-        return self
-
     def build(self):
-        pass
-
-    def generate(self):
-        pass
+        raise NotImplementedError
 
 
 class Computation:
@@ -60,11 +50,12 @@ class Computation:
     # while developing.
     statements = OrderedDict()
 
-    def __init__(self):
+    def __init__(self, lhs=None, rhs=None, id=None):
         """A computation has an expression (class:`Expression`) and 
         iteration domain defined using an :class:`Iterator`."""
-        self._lhs = None
-        self._rhs = None
+        self._lhs = lhs
+        self._rhs = rhs
+        self.id = id
         self.iter_domain = None
         self.name = 'S' + str(len(Computation.statements))
         Computation.statements[self.name] = self
@@ -91,10 +82,6 @@ class Computation:
     def build(self):
         Computation.statements[self.name].rhs.build()
 
-    def generate(self):
-        init_physl(self.name)
-        self.rhs.generate()
-
 
 class Constant:
     def __init__(self):
@@ -118,10 +105,9 @@ class Expr:
 
 
 class Function:
-    declared = OrderedDict()
     defined = OrderedDict()
 
-    def __init__(self, name, task=None, dtype=None):
+    def __init__(self, name, task, id, dtype=None):
         """Equivalent to a function in C; composed of multiple computations and
         possibly Vars."""
 
@@ -141,9 +127,7 @@ class Function:
         for statement in self.body:
             pass
 
-    def add_statement(self, statement):
-        # if isinstance(statement, Expr) and statement.value and not isinstance(
-        #         statement.value, str):
+    def add_statement(self, statement, id):
         self.body[statement.id] = statement
 
     def add_return(self, return_val):
@@ -151,12 +135,12 @@ class Function:
         self.returns[self.num_returns] = return_val
 
     def build(self):
-        for statement in self.body:
-            if not isinstance(statement, str):
-                statement.build()
-                self.add_statement(statement)
-
-        return self
+        init_physl(self.name)
+        body_ = self.body
+        for key in body_.items():
+            if hasattr(key[1], 'build'):
+                key[1].build()
+                self.add_statement(key[1], key[1].id)
 
     def compile(self):
 
@@ -176,13 +160,6 @@ class Function:
         else:
             Function.defined[self.name] = [(self.name, self.id)]
 
-    def generate(self):
-        init_physl(self.name)
-        body = []
-        for statement in self.body:
-            if not isinstance(statement, str):
-                body.append(statement.generate())
-
     @classmethod
     def is_defined(self, fn_name):
         return fn_name in Function.defined.keys()
@@ -194,31 +171,41 @@ class Input:
         pass
 
 
-class Var:
-    iters = list()
+class Return:
+    num_returns = 0
 
-    def __init__(self, iterator=None):
+    def __init__(self, value, id) -> None:
+        self.id = id
+        self.value = value
+
+    def build(self):
+        raise NotImplementedError
+
+
+class Var:
+    iters = OrderedDict()
+
+    def __init__(self, id, iterator=None):
         """Defines the range of the loop around the computation (its iteration
         domain). When used to declare a buffer it defines the buffer size, and
         when used with an input it defines the input size."""
 
+        self.id = hash(id)
         self.iterator = iterator
         self.bounds = {'lower': None, 'upper': None, 'stride': None}
-        self.body = list()
+        self.body = OrderedDict()
 
-    def set_bounds(self, lower, upper, stride=1):
-        self.bounds['lower'] = lower
+    def set_bounds(self, lower=None, upper=None, stride=1):
+        if lower:
+            self.bounds['lower'] = lower
+        else:
+            self.bounds['lower'] = 0
+
         self.bounds['upper'] = upper
         self.bounds['stride'] = stride
 
-    def compile(self):
-        pass
-
     def build(self):
-        for statement in self.body:
-            if statement:
-                self.body.append(statement.build())
+        for statement in self.body.items():
 
-    def generate(self):
-        Var.iters.append(self.iterator)
-        print(Var.iters)
+            if hasattr(statement[1], 'build'):
+                self.body[self.id] = statement[1].build()
