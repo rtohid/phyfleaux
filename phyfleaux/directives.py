@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import annotations
 
 __license__ = """ 
 Copyright (c) 2020 R. Tohid
@@ -7,10 +8,9 @@ Distributed under the Boost Software License, Version 1.0. (See accompanying
 file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
-import ast
-
-from typing import Callable
+from typing import Union, Any
 from types import FunctionType
+
 from phyfleaux.core import Task
 from phyfleaux.optimization.polyhedral import Polytope
 
@@ -27,7 +27,7 @@ def task(__task_arg=None, **kwargs):
         return Task
 
 
-def polyhedral(fn: [Task, FunctionType]) -> Task:
+def polyhedral(fn: Union[Task, FunctionType]) -> Task:
     """Attempts to detect SCoPs and apply polyhedral transformations.
 
     :arg fn: python function.

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from __future__ import annotations
-from collections import OrderedDict
 
 __license__ = """
 Copyright (c) 2020 R. Tohid
@@ -10,8 +9,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
 import ast
-from copy import deepcopy
-from typing import Union
+from collections import OrderedDict
+from typing import Union, Any
 
 from phyfleaux.core.task import Task
 from phyfleaux.plugins.tiramisu import Buffer, Call, Computation, Expr, Function
@@ -29,6 +28,7 @@ class Return_(Return):
     @classmethod
     def add(cls, return_):
         Return_.returns[return_.id] = return_
+        Return_.num_returns += 1
 
 
 class Polytope(ast.NodeVisitor):
@@ -50,17 +50,9 @@ class Polytope(ast.NodeVisitor):
 
     def __call__(self, *args, **kwargs):
         self.isl_tree(*args, **kwargs)
-        # self.isl_tree = self.isl_tree.compile()
-        # self.tiramisu = self.isl_tree.build()
-        # self.tiramisu.generate()
-        # self.task(*args, **kwargs)
-        # self.loops = OrderedDict()
 
     def build_isl(self):
         fn_body = self.task.py_ast.body[0]
-        # if isinstance(fn_body[0], str):
-        #     self.__doc__ = fn_body[0]
-        #     del fn_body[0]
 
         self.isl_tree = self.visit_FunctionDef(fn_body)
         self.isl_tree.build()
@@ -91,19 +83,26 @@ class Polytope(ast.NodeVisitor):
         lhs = self.visit(node.left)
         rhs = self.visit(node.right)
 
-        fn = Call(fn_name)
+        fn = Call(fn_name, hash(node))
         fn.args = [lhs, rhs]
 
         return fn
 
     def visit_Call(self, node: ast.Call) -> Call:
 
-        fn_name = self.visit(node.func)
-        fn = Call(fn_name)
+        try:
+            fn_name = self.visit(node.func)
+        except:
+            raise TypeError(
+                f"Expected :class:`ast.Name` or :class:`ast.Attribute`.\n\n Received {node.func.__class__}"
+            )
+
+        fn = Call(fn_name, self.task.id, self.task.dtype)
+
         if isinstance(node.args, list):
             fn.args = [self.visit(arg) for arg in node.args]
         else:
-            self.args = self.visit(node.args)
+            fn.args = self.visit(node.args)
 
         for attr in node.keywords:
             val = self.visit(attr.value)
@@ -118,7 +117,7 @@ class Polytope(ast.NodeVisitor):
         return Expr(self.visit(node.value))
 
     def visit_For(self, node: ast.For) -> Var:
-        loop = Var(node.target.id)
+        loop = Var(hash(node.target))
         loop.iterator = self.visit(node.target)
 
         if isinstance(node.iter, ast.Call) and 'range' == node.iter.func.id:
@@ -127,7 +126,7 @@ class Polytope(ast.NodeVisitor):
                 loop.set_bounds(upper=iter_space.args[0])
 
         if isinstance(node.iter, ast.List):
-            raise TypeError("'list' is not an affine space.")
+            raise TypeError(":class:`ast.List` might not be an affine space.")
 
         for statement in node.body:
             statement_isl = self.visit(statement)
@@ -137,7 +136,7 @@ class Polytope(ast.NodeVisitor):
         return loop
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Function:
-        
+
         Return_.reset()
         fn = Function(node.name, self.task, self.task.id)
         fn.dtype = self.task.dtype
@@ -156,6 +155,9 @@ class Polytope(ast.NodeVisitor):
 
         return fn
 
+    def visit_Index(self, node: ast.Index) -> Any:
+        return self.visit(node.value)
+
     def visit_Mult(self, node: ast.Mult) -> str:
         return '__Mult__'
 
@@ -163,27 +165,54 @@ class Polytope(ast.NodeVisitor):
         return node.id
 
     def visit_Return(self, node):
-        return_ = Return_(self.visit(node.value), id)
+        return_ = Return_(self.visit(node.value), hash(node))
         Return_.add(return_)
 
         return return_
 
+    def visit_Slice(self, node: ast.Slice) -> Any:
+        pass
+
     def visit_Subscript(self, node: ast.Subscript) -> tuple:
 
-        ir_node = deepcopy(node)
+        # ------------------------------------------------------ #
 
-        indices = []
+        def _NestedSubscript(node: ast.Subscript) -> tuple:
+            """Handles arrays with dimensions higher than 1."""
 
-        while isinstance(ir_node, ast.Subscript):
-            slice_ = ir_node.slice
-            if isinstance(slice_, ast.Index):
-                val = self.visit(slice_)
-                indices.insert(0, val)
-            ir_node = self.visit(ir_node.value)
+            if isinstance(node.value, ast.Subscript):
+                slice_, value = _NestedSubscript(node.value)
+            else:
+                slice_ = self.visit(node)
+                value = self.visit(node.value)
 
-        buffer_name = ir_node
+            if isinstance(node.slice, ast.Index):
+                indices.insert(0, slice_)
 
-        buffer = Buffer(buffer_name)
+            return (slice_, value)
+
+        # ----------------------------------------------------- #
+
+        id = hash(node)
+        indices = list()
+        context = node.ctx
+        value = node.value
+        slice_ = node.slice
+        while isinstance(value, ast.Subscript):
+            value = value.value
+            _NestedSubscript(value)
+            slice_ = value.slice
+        if isinstance(slice_, ast.Index):
+            from astpretty import pprint
+            pprint (slice_)
+        else:
+            value = self.visit(slice_)
+
+            value = self.visit(value.value)
+
+        buffer_name = value
+
+        buffer = Buffer(buffer_name, hash(node), indices, context)
         buffer.indices = indices
 
         return buffer

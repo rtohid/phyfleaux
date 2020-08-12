@@ -14,11 +14,11 @@ from phyfleaux.directives import polyhedral
 from phyfleaux.plugins import numpy as numphy
 
 # test sizes
-small = [4, 16, 64]
-medium = [4, 16, 64, 128]
-large = [4, 16, 64, 128, 256]
-xlarge = [4, 16, 64, 128, 256, 512]
-xxlarge = [4, 16, 64, 128, 256, 512, 1024]
+small = [2, 4, 8, 16]
+medium = [16, 32, 64, 128]
+large = [128, 256, 512, 1024]
+xlarge = [1024, 2048, 4096, 8192]
+
 
 # run tests
 def run(func, inputs=small):
@@ -29,6 +29,7 @@ def run(func, inputs=small):
         func(args)
         stop = time.time()
         print(stop - start)
+
 
 # naive (3-nested-loops) implementation of the matrix multiplication.
 def matmul_naive(N):
@@ -56,8 +57,9 @@ def matmul_naive_polyhedral(N: int) -> numphy.ndarray:
     for i in range(N):
         for j in range(N):
             for k in range(N):
-                c[i][j] = c[i][j] + a[i][k] * b[k][j]
+                c[i+1][j] = c[i][j] + a[i][k] * b[k][j]
     return c
+
 
 run(matmul_naive)
 run(matmul_naive_polyhedral)

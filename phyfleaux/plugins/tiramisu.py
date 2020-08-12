@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 from __future__ import annotations
+from typing import List, Union
+
+from numpy.core.numeric import indices
 
 __license__ = """
 Copyright (c) 2020 R. Tohid
@@ -10,29 +13,69 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
 from collections import OrderedDict
-from typing import Union
 
 from pytiramisu import buffer, computation, constant, expr, function
 from pytiramisu import init_physl, input, var
 from phyfleaux.core.task import Task
 
 
+class Load:
+    ...
+
+
+class Store:
+    ...
+
+
 class Buffer:
-    def __init__(self, name):
-        """Represents memory buffers"""
+    def __init__(self,
+                 name: str,
+                 id: int,
+                 indices: List,
+                 context: Union[ast.Load, ast.Store] = None) -> None:
+        """Represents memory buffers."""
+
+        self.id = id
         self.name = name
-        self.indices = list()
-        self.context = None
+        self.indices = OrderedDict()
+
+        self._read_write = {'loads': OrderedDict(), 'stores': OrderedDict()}
+        if context:
+            self.set_context(name, id, context)
+
+        self.isl = None
+
+    def build(self):
+        raise NotImplementedError
 
     def dimension(self):
         return len(self.indices)
+
+    def loads(self):
+        return self._read_write['loads']
+
+    def get_context(self, name: str, id: int) -> Union[Load, Store]:
+        return self._read_write[name][id]
+
+    def set_context(self, name: str, id: int,
+                    context: Union[ast.Load, ast.Store]) -> None:
+
+        context: Union[ast.Load, ast.Store]
+        if isinstance(context, ast.Load):
+            self._read_write['loads'][name] = id
+        else:
+            self._read_write['stores'][name] = id
+
+    def stores(self):
+        return self.get_context()['stores']
 
 
 class Call:
     stack = OrderedDict()
 
-    def __init__(self, fn_name, dtype=None):
+    def __init__(self, fn_name: str, id: int, dtype=None):
         self.name = fn_name
+        self.id = id
         self.dtype = dtype
 
         call_stack = Call.stack
@@ -41,13 +84,14 @@ class Call:
         else:
             call_stack[fn_name] = [self]
 
+        self.isl = None
+
     def build(self):
-        raise NotImplementedError
+        pass
+        # raise NotImplementedError
 
 
 class Computation:
-    # May not be needed, just a good spot to keep all info on all statements
-    # while developing.
     statements = OrderedDict()
 
     def __init__(self, lhs=None, rhs=None, id=None):
@@ -59,6 +103,8 @@ class Computation:
         self.iter_domain = None
         self.name = 'S' + str(len(Computation.statements))
         Computation.statements[self.name] = self
+
+        self.isl = None
 
     @property
     def lhs(self):
@@ -76,11 +122,11 @@ class Computation:
     def rhs(self, expr):
         self._rhs = expr
 
-    def compile(self):
-        Computation.statements[self.name].rhs.compile()
-
     def build(self):
-        Computation.statements[self.name].rhs.build()
+        rhs_ = Computation.statements[self.name].rhs
+        lhs_ = Computation.statements[self.name].lhs
+        if hasattr(rhs_, 'build'): rhs_.build()
+        if hasattr(lhs_, 'build'): lhs_.build()
 
 
 class Constant:
@@ -88,32 +134,35 @@ class Constant:
         """Designed to represent constants that are supposed to be declared at
         the beginning of a Tiramisu function. This can be used only to declare
         constant scalars."""
-        pass
+        self.isl = None
 
 
 class Expr:
     tree = OrderedDict()
 
-    def __init__(self, value: ast) -> None:
+    def __init__(self, value: ast.Expr) -> None:
         """Represnets expressions, e.g., 4, 4 + 4, 4 * i, A[i, j], ..."""
         self.id = hash(value)
         self.value = value
-        self.register()
+        self.add_to_tree()
 
-    def register(self) -> None:
+    def add_to_tree(self) -> None:
         Expr.tree[self.id] = self
+
+    def build(self):
+        raise NotImplementedError
 
 
 class Function:
     defined = OrderedDict()
 
-    def __init__(self, name, task, id, dtype=None):
+    def __init__(self, name: str, task: Task, id: int, dtype=None) -> None:
         """Equivalent to a function in C; composed of multiple computations and
         possibly Vars."""
 
         self.name = name
-        self.dtype = dtype
         self.task = task
+        self.dtype = dtype
 
         self.body = OrderedDict()
 
@@ -122,10 +171,6 @@ class Function:
 
         if task:
             self.define()
-
-    def __call__(self, *args, **kwargs):
-        for statement in self.body:
-            pass
 
     def add_statement(self, statement, id):
         self.body[statement.id] = statement
@@ -142,27 +187,19 @@ class Function:
                 key[1].build()
                 self.add_statement(key[1], key[1].id)
 
-    def compile(self):
-
-        # the first element might be the documentation ==> str
-        for statement in self.body:
-            if not isinstance(statement, str):
-                statement.compile()
-
-        return self
-
     def define(self):
+        defined_ = Function.defined.get(self.name)
+
         self.id = self.task.id
-        self.args = self.task.args_spec.args
+        args = self.task.args_spec.args
 
-        if self.is_defined(self.name):
-            Function.defined[self.name].append((self.name, self.id))
+        for arg in args:
+            print(arg)
+
+        if defined_:
+            Function.defined[self.name].append(self.id)
         else:
-            Function.defined[self.name] = [(self.name, self.id)]
-
-    @classmethod
-    def is_defined(self, fn_name):
-        return fn_name in Function.defined.keys()
+            Function.defined[self.name] = [self.id]
 
 
 class Input:
@@ -185,12 +222,12 @@ class Return:
 class Var:
     iters = OrderedDict()
 
-    def __init__(self, id, iterator=None):
+    def __init__(self, id: int, iterator=None):
         """Defines the range of the loop around the computation (its iteration
         domain). When used to declare a buffer it defines the buffer size, and
         when used with an input it defines the input size."""
 
-        self.id = hash(id)
+        self.id = id
         self.iterator = iterator
         self.bounds = {'lower': None, 'upper': None, 'stride': None}
         self.body = OrderedDict()
