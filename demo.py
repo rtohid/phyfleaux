@@ -17,7 +17,7 @@ from phyfleaux.plugins import numpy as numphy
 small = [2, 4, 8, 16]
 medium = [16, 32, 64, 128]
 large = [128, 256, 512, 1024]
-xlarge = [1024, 2048, 4096, 8192]
+x_large = [1024, 2048, 4096, 8192]
 
 
 # run tests
@@ -57,7 +57,7 @@ def matmul_naive_polyhedral(N: int) -> numphy.ndarray:
     for i in range(N):
         for j in range(N):
             for k in range(N):
-                c[i+1][j] = c[i][j] + a[i][k] * b[k][j]
+                c[i][j] = c[i][j] + a[i][k] * b[k][j]
     return c
 
 

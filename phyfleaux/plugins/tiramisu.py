@@ -1,8 +1,5 @@
 from __future__ import absolute_import
 from __future__ import annotations
-from typing import List, Union
-
-from numpy.core.numeric import indices
 
 __license__ = """
 Copyright (c) 2020 R. Tohid (@rtohid)
@@ -13,6 +10,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
 from collections import OrderedDict
+from typing import Any, List, Union
 
 from pytiramisu import buffer, computation, constant, expr, function
 from pytiramisu import init_physl, input, var
@@ -20,13 +18,32 @@ from phyfleaux.core.task import Task
 
 
 class Load:
-    ...
+    pass
 
 
 class Store:
-    ...
+    pass
 
 
+class Del:
+    pass
+
+
+class Index:
+    def __init__(self, name: str, index: List) -> None:
+        self.name = name
+        self.index = index
+
+    def variables(self):
+        vars = list()
+        for entry in self.index:
+            if not isinstance(entry, int):
+                vars.append(entry)
+        return vars
+
+
+# Tiramisu objects
+# ---------------------------------------------------------------------------- #
 class Buffer:
     def __init__(self,
                  name: str,
@@ -87,7 +104,7 @@ class Call:
         self.isl = None
 
     def build(self):
-        pass
+        print(self.args)
         # raise NotImplementedError
 
 
@@ -182,10 +199,10 @@ class Function:
     def build(self):
         init_physl(self.name)
         body_ = self.body
-        for key in body_.items():
-            if hasattr(key[1], 'build'):
-                key[1].build()
-                self.add_statement(key[1], key[1].id)
+        for value in body_.values():
+            if hasattr(value, 'build'):
+                value.build()
+                self.add_statement(value, value.id)
 
     def define(self):
         defined_ = Function.defined.get(self.name)
@@ -216,7 +233,7 @@ class Return:
         self.value = value
 
     def build(self):
-        raise NotImplementedError
+        print(self.id, self.value)
 
 
 class Var:

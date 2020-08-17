@@ -49,7 +49,8 @@ class Polytope(ast.NodeVisitor):
         self.build_isl()
 
     def __call__(self, *args, **kwargs):
-        self.isl_tree(*args, **kwargs)
+        # self.isl_tree(*args, **kwargs)
+        self.task(*args, **kwargs)
 
     def build_isl(self):
         fn_body = self.task.py_ast.body[0]
@@ -171,51 +172,60 @@ class Polytope(ast.NodeVisitor):
         return return_
 
     def visit_Slice(self, node: ast.Slice) -> Any:
-        pass
+        lower = self.visit(node.lower)
+        upper = self.visit(node.upper)
+        step = self.visit(node.step)
+
+        return (lower, upper, step)
+
+    # def visit_Subscript(self, node: ast.Subscript) -> tuple:
+    #     # from astpretty import pprint
+    #     # pprint
+    #     id = hash(node)
+    #     indices = list()
+    #     context = node.ctx
+
+    #     value = self.visit(node.value)
+    #     slice_ = self.visit(node.slice)
+
+    #     while isinstance(value, ast.Subscript):
+    #         value = self.visit(node.value)
+    #         slice_ = self.visit(node.slice)
+
+    #         if isinstance(slice_, ast.Index):
+    #             indices.insert(0, slice_)
+
+    #     buffer = Buffer('a', hash(node), indices, context)
+    #     buffer.indices = indices
+
+    #     return buffer
 
     def visit_Subscript(self, node: ast.Subscript) -> tuple:
-
-        # ------------------------------------------------------ #
-
-        def _NestedSubscript(node: ast.Subscript) -> tuple:
-            """Handles arrays with dimensions higher than 1."""
-
+        def _NestedSubscript(node):
+            value_slice = self.visit(node.value)
+            slice_ = [self.visit(node.slice)]
             if isinstance(node.value, ast.Subscript):
-                slice_, value = _NestedSubscript(node.value)
+                value_slice = _NestedSubscript(node.value)
+
+            if isinstance(value_slice, list):
+                value = value_slice + slice_
             else:
-                slice_ = self.visit(node)
-                value = self.visit(node.value)
+                value = [value_slice] + slice_
 
-            if isinstance(node.slice, ast.Index):
-                indices.insert(0, slice_)
+            return value
 
-            return (slice_, value)
-
-        # ----------------------------------------------------- #
-
-        id = hash(node)
-        indices = list()
-        context = node.ctx
-        value = node.value
-        slice_ = node.slice
-        while isinstance(value, ast.Subscript):
-            value = value.value
-            _NestedSubscript(value)
-            slice_ = value.slice
-        if isinstance(slice_, ast.Index):
-            from astpretty import pprint
-            pprint (slice_)
+        slice_ = [self.visit(node.slice)]
+        if isinstance(node.value, ast.Subscript):
+            value_slice = _NestedSubscript(node.value)
         else:
-            value = self.visit(slice_)
+            value_slice = self.visit(node.value)
 
-            value = self.visit(value.value)
-
-        buffer_name = value
-
-        buffer = Buffer(buffer_name, hash(node), indices, context)
-        buffer.indices = indices
-
-        return buffer
+        if isinstance(value_slice, list):
+            value = value_slice + slice_
+        else:
+            value = [value_slice] + slice_
+        print(value)
+        return value
 
     def visit_Tuple(self, node: ast.Tuple) -> None:
         return tuple([self.visit(expr) for expr in node.elts])
