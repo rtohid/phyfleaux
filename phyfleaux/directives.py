@@ -27,7 +27,7 @@ def task(__task_arg=None, **kwargs):
         return Task
 
 
-def polyhedral(fn: Union[Task, FunctionType]) -> Task:
+def polyhedral(fn: Union[Task, FunctionType]) -> Polytope:
     """Attempts to detect SCoPs and apply polyhedral transformations.
 
     :arg fn: python function.

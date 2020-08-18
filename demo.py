@@ -17,7 +17,7 @@ from phyfleaux.plugins import numpy as numphy
 small = [2, 4, 8, 16]
 medium = [16, 32, 64, 128]
 large = [128, 256, 512, 1024]
-x_large = [1024, 2048, 4096, 8192]
+xlarge = [1024, 2048, 4096, 8192]
 
 
 # run tests
@@ -47,7 +47,7 @@ def matmul_naive(N):
 
 
 @polyhedral
-def matmul_naive_polyhedral(N: int) -> numphy.ndarray:
+def matmul_naive_polyhedral(N: int, dtype=int) -> numphy.ndarray:
     """Apply polyhedral transformations to :fn:`matmul_naive`."""
 
     a = numphy.ones((N, N), dtype=int)

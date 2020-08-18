@@ -90,18 +90,18 @@ class Buffer:
 class Call:
     stack = OrderedDict()
 
-    def __init__(self, fn_name: str, id: int, dtype=None):
+    def __init__(self, fn_name: str, args: Any, id: int, dtype=None):
         self.name = fn_name
         self.id = id
         self.dtype = dtype
+        self.args = args
+        self.isl = None
 
         call_stack = Call.stack
         if call_stack.get(fn_name):
             call_stack[fn_name].append(self)
         else:
             call_stack[fn_name] = [self]
-
-        self.isl = None
 
     def build(self):
         print(self.args)
@@ -119,9 +119,8 @@ class Computation:
         self.id = id
         self.iter_domain = None
         self.name = 'S' + str(len(Computation.statements))
-        Computation.statements[self.name] = self
-
         self.isl = None
+        Computation.statements[self.name] = self
 
     @property
     def lhs(self):
@@ -173,7 +172,12 @@ class Expr:
 class Function:
     defined = OrderedDict()
 
-    def __init__(self, name: str, task: Task, id: int, dtype=None) -> None:
+    def __init__(self,
+                 name: str,
+                 task: Task,
+                 id: int,
+                 params: Any,
+                 dtype=None) -> None:
         """Equivalent to a function in C; composed of multiple computations and
         possibly Vars."""
 
@@ -189,7 +193,7 @@ class Function:
         if task:
             self.define()
 
-    def add_statement(self, statement, id):
+    def add_statement(self, statement: Any, id:int):
         self.body[statement.id] = statement
 
     def add_return(self, return_val):
@@ -200,9 +204,8 @@ class Function:
         init_physl(self.name)
         body_ = self.body
         for value in body_.values():
-            if hasattr(value, 'build'):
-                value.build()
-                self.add_statement(value, value.id)
+            value.build()
+            self.add_statement(value, value.id)
 
     def define(self):
         defined_ = Function.defined.get(self.name)
@@ -226,7 +229,7 @@ class Input:
 
 
 class Return:
-    num_returns = 0
+    returns = OrderedDict()
 
     def __init__(self, value, id) -> None:
         self.id = id
@@ -234,6 +237,15 @@ class Return:
 
     def build(self):
         print(self.id, self.value)
+        
+    @classmethod
+    def add(cls, return_):
+        Return.returns[return_.id] = return_
+
+    @classmethod
+    def reset(cls):
+        Return.returns = OrderedDict()
+
 
 
 class Var:
