@@ -14,6 +14,7 @@ from typing import Any, List, Union
 
 from pytiramisu import buffer, computation, constant, expr, function
 from pytiramisu import init_physl, input, var
+from pytiramisu import uint32_expr
 from phyfleaux.core.task import Task
 
 
@@ -193,7 +194,7 @@ class Function:
         if task:
             self.define()
 
-    def add_statement(self, statement: Any, id:int):
+    def add_statement(self, statement: Any, id: int):
         self.body[statement.id] = statement
 
     def add_return(self, return_val):
@@ -201,11 +202,14 @@ class Function:
         self.returns[self.num_returns] = return_val
 
     def build(self):
+        for arg in self.
         init_physl(self.name)
         body_ = self.body
         for value in body_.values():
             value.build()
             self.add_statement(value, value.id)
+        for return_ in self.returns:
+            if hasattr(return_, 'build'): return_.build()
 
     def define(self):
         defined_ = Function.defined.get(self.name)
@@ -237,15 +241,17 @@ class Return:
 
     def build(self):
         print(self.id, self.value)
-        
+
     @classmethod
     def add(cls, return_):
         Return.returns[return_.id] = return_
 
+    def num_return(self):
+        return len(Return.returns.keys())
+
     @classmethod
     def reset(cls):
         Return.returns = OrderedDict()
-
 
 
 class Var:
@@ -271,7 +277,7 @@ class Var:
         self.bounds['stride'] = stride
 
     def build(self):
-        for statement in self.body.items():
+        for statement in self.body.values():
 
-            if hasattr(statement[1], 'build'):
-                self.body[self.id] = statement[1].build()
+            if hasattr(statement, 'build'):
+                self.body[self.id] = statement.build()

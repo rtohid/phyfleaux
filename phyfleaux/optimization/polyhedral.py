@@ -9,7 +9,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
 import ast
-from collections import OrderedDict
 from typing import Callable, Union, Any
 
 from phyfleaux.core.task import Task
@@ -32,9 +31,24 @@ class Polytope(ast.NodeVisitor):
         """
 
         self.task = task_
-        self.build_isl()
+        self.isl_build()
+
+    def isl_build(self):
+        fn_body = self.task.py_ast.body[0]
+
+        self.isl_tree = self.visit_(fn_body)
+        self.isl_tree.build()
+        # self.isl_tree.gencode()
+
+    def isl_gencode(self):
+        pass
 
     def visit_(self, node: Callable, throw_exception: bool = False):
+        """By default :func:`ast.visit` returns None if the virtual class is not
+        implemented by the user. This may cause error later on.
+        :func:`Polytope.visit_` calls the default visit, and if `None` is
+        returned throws an exception.
+        """
         returned = self.visit(node)
         if returned is None:
             raise NotImplementedError(
@@ -45,12 +59,6 @@ class Polytope(ast.NodeVisitor):
     def __call__(self, *args, **kwargs):
         # self.isl_tree(*args, **kwargs)
         self.task(*args, **kwargs)
-
-    def build_isl(self):
-        fn_body = self.task.py_ast.body[0]
-
-        self.isl_tree = self.visit_(fn_body)
-        self.isl_tree.build()
 
     def visit_Add(self, node: ast.Add) -> str:
         return '__Add__'
@@ -73,8 +81,9 @@ class Polytope(ast.NodeVisitor):
     def visit_Attribute(self, node: ast.Attribute) -> None:
         return node.attr
 
-    def visit_BinOp(self, node) -> Function:
+    def visit_BinOp(self, node: ast.BinOp) -> Call:
         fn_name = self.visit_(node.op)
+
         lhs = self.visit_(node.left)
         rhs = self.visit_(node.right)
         args = [lhs, rhs]
@@ -100,8 +109,8 @@ class Polytope(ast.NodeVisitor):
         fn = Call(fn_name, args, self.task.id, self.task.dtype)
 
         for attr in node.keywords:
-            val = self.visit_(attr.value)
-            setattr(fn, attr.arg, val)
+            value = self.visit_(attr.value)
+            setattr(fn, attr.arg, value)
 
         return fn
 
@@ -123,13 +132,11 @@ class Polytope(ast.NodeVisitor):
                 if 1 == len(iter_space):
                     loop.set_bounds(lower=0, upper=iter_space[0])
                 if 2 == len(iter_space):
-                    loop.set_bounds(lower=iter_space[0],
-                                    upper=iter_space[1])
+                    loop.set_bounds(lower=iter_space[0], upper=iter_space[1])
                 if 3 == len(iter_space):
                     loop.set_bounds(lower=iter_space[0],
                                     upper=iter_space[1],
                                     stride=iter_space[2])
-
 
         if isinstance(node.iter, ast.List):
             raise TypeError(":class:`ast.List` might not be an affine space.")
@@ -159,8 +166,7 @@ class Polytope(ast.NodeVisitor):
             if not isinstance(visited_statement, str):
                 if isinstance(visited_statement, Return):
                     fn.add_return(visited_statement)
-                else:
-                    fn.add_statement(visited_statement, fn.id)
+                fn.add_statement(visited_statement, fn.id)
 
         return fn
 
