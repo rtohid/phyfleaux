@@ -9,7 +9,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
 import ast
-from collections import OrderedDict
+
+from collections import OrderedDict, defaultdict
 from typing import Any, List, Union
 
 from pytiramisu import buffer, computation, constant, expr, function
@@ -202,7 +203,7 @@ class Function:
         self.returns[self.num_returns] = return_val
 
     def build(self):
-        for arg in self.
+        # for arg in self.-+
         init_physl(self.name)
         body_ = self.body
         for value in body_.values():

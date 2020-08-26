@@ -31,35 +31,19 @@ def run(func, inputs=small):
         print(stop - start)
 
 
-# naive (3-nested-loops) implementation of the matrix multiplication.
-def matmul_naive(N):
-    """Naive implementation of matrix multiplication."""
-
-    a = numpy.ones((N, N), dtype=int)
-    b = numpy.ones((N, N), dtype=int)
-    c = numpy.zeros((N, N), dtype=int)
-
-    for i in range(N):
-        for j in range(N):
-            for k in range(N):
-                c[i][j] = c[i][j] + a[i][k] * b[k][j]
-    return c
-
-
 @polyhedral
 def matmul_naive_polyhedral(N: int, dtype=int) -> numphy.ndarray:
     """Apply polyhedral transformations to :fn:`matmul_naive`."""
 
-    a = numphy.ones((N, N), dtype=int)
-    b = numphy.ones((N, N), dtype=int)
-    c = numphy.zeros((N, N), dtype=int)
+    A = numphy.ones((N, N), dtype=int)
+    B = numphy.ones((N, N), dtype=int)
+    C = numphy.zeros((N, N), dtype=int)
 
     for i in range(N):
         for j in range(N):
             for k in range(N):
-                c[i][j] = c[i][j] + a[i][k] * b[k][j]
-    return c
+                C[i][j] = C[i][j] + A[i][k] * B[k][j]
+    return C
 
 
-run(matmul_naive)
 run(matmul_naive_polyhedral)
