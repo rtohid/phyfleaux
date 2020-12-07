@@ -57,12 +57,13 @@ class Task:
     def new_cost(self, cost, reset: bool = False):
         if reset:
             self.cost = OrderedDict()
-
-        id = hash(cost)
-        if self.cost.get(id):
-            self.cost[id].append((cost, id))
-        else:
-            self.cost[id] = [(cost, id)]
+        
+        if not cost is None:
+            id = hash(cost)
+            if self.cost.get(id):
+                self.cost[id].append((cost, id))
+            else:
+                self.cost[id] = [(cost, id)]
 
         return
 

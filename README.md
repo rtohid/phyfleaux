@@ -9,11 +9,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 ## About
 
-Phyfleaux is [Phylanx](github.com/stellar-group/phylanx) scheduler. Given a
-Python program, Phyfleaux analyze the code and generate optimized distributed
-PhySL. Phyfleaux will also support submission to various science gateways
-through [JetLag](https://github.com/STEllAR-GROUP/JetLag.git).
-
+Phyfleaux is [Phylanx](github.com/stellar-group/phylanx) distributed scheduler.
+Given a Python decorated function, Phyfleaux analyze the code and generate
+optimized distributed PhySL. 
 ## Problem
 
 ### Input

@@ -1,8 +1,5 @@
 from __future__ import absolute_import
 from __future__ import annotations
-from typing import List, Union
-
-from numpy.core.numeric import indices
 
 __license__ = """
 Copyright (c) 2020 R. Tohid (@rtohid)
@@ -12,21 +9,42 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 """
 
 import ast
-from collections import OrderedDict
+
+from collections import OrderedDict, defaultdict
+from typing import Any, List, Union
 
 from pytiramisu import buffer, computation, constant, expr, function
 from pytiramisu import init_physl, input, var
+from pytiramisu import uint32_expr
 from phyfleaux.core.task import Task
 
-
 class Load:
-    ...
+    pass
 
 
 class Store:
-    ...
+    pass
 
 
+class Del:
+    pass
+
+
+class Index:
+    def __init__(self, name: str, index: List) -> None:
+        self.name = name
+        self.index = index
+
+    def variables(self):
+        vars = list()
+        for entry in self.index:
+            if not isinstance(entry, int):
+                vars.append(entry)
+        return vars
+
+
+# Tiramisu objects
+# ---------------------------------------------------------------------------- #
 class Buffer:
     def __init__(self,
                  name: str,
@@ -73,10 +91,12 @@ class Buffer:
 class Call:
     stack = OrderedDict()
 
-    def __init__(self, fn_name: str, id: int, dtype=None):
+    def __init__(self, fn_name: str, args: Any, id: int, dtype=None):
         self.name = fn_name
         self.id = id
         self.dtype = dtype
+        self.args = args
+        self.isl = None
 
         call_stack = Call.stack
         if call_stack.get(fn_name):
@@ -84,10 +104,8 @@ class Call:
         else:
             call_stack[fn_name] = [self]
 
-        self.isl = None
-
     def build(self):
-        pass
+        print(self.args)
         # raise NotImplementedError
 
 
@@ -102,9 +120,8 @@ class Computation:
         self.id = id
         self.iter_domain = None
         self.name = 'S' + str(len(Computation.statements))
-        Computation.statements[self.name] = self
-
         self.isl = None
+        Computation.statements[self.name] = self
 
     @property
     def lhs(self):
@@ -156,7 +173,12 @@ class Expr:
 class Function:
     defined = OrderedDict()
 
-    def __init__(self, name: str, task: Task, id: int, dtype=None) -> None:
+    def __init__(self,
+                 name: str,
+                 task: Task,
+                 id: int,
+                 params: Any,
+                 dtype=None) -> None:
         """Equivalent to a function in C; composed of multiple computations and
         possibly Vars."""
 
@@ -172,7 +194,7 @@ class Function:
         if task:
             self.define()
 
-    def add_statement(self, statement, id):
+    def add_statement(self, statement: Any, id: int):
         self.body[statement.id] = statement
 
     def add_return(self, return_val):
@@ -180,12 +202,14 @@ class Function:
         self.returns[self.num_returns] = return_val
 
     def build(self):
+        # for arg in self.-+
         init_physl(self.name)
         body_ = self.body
-        for key in body_.items():
-            if hasattr(key[1], 'build'):
-                key[1].build()
-                self.add_statement(key[1], key[1].id)
+        for value in body_.values():
+            value.build()
+            self.add_statement(value, value.id)
+        for return_ in self.returns:
+            if hasattr(return_, 'build'): return_.build()
 
     def define(self):
         defined_ = Function.defined.get(self.name)
@@ -209,14 +233,25 @@ class Input:
 
 
 class Return:
-    num_returns = 0
+    returns = OrderedDict()
 
     def __init__(self, value, id) -> None:
         self.id = id
         self.value = value
 
     def build(self):
-        raise NotImplementedError
+        print(self.id, self.value)
+
+    @classmethod
+    def add(cls, return_):
+        Return.returns[return_.id] = return_
+
+    def num_return(self):
+        return len(Return.returns.keys())
+
+    @classmethod
+    def reset(cls):
+        Return.returns = OrderedDict()
 
 
 class Var:
@@ -242,7 +277,7 @@ class Var:
         self.bounds['stride'] = stride
 
     def build(self):
-        for statement in self.body.items():
+        for statement in self.body.values():
 
-            if hasattr(statement[1], 'build'):
-                self.body[self.id] = statement[1].build()
+            if hasattr(statement, 'build'):
+                self.body[self.id] = statement.build()

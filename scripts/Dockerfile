@@ -77,6 +77,6 @@ WORKDIR /tmp/
 RUN sh -c "$(wget https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -O -)"
 RUN echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/home/stellar/git/phyflow/backend" >> /home/stellar/.bashrc
 RUN echo "export PYTHONPATH=/home/stellar/git/phyflow/backend" >> /home/stellar/.bashrc
-RUN echo "export PYTHONPATH=#PYTHONPATH:/home/stellar/git/phyfleaux/" >> /home/stellar/.bashrc
+RUN echo "export PYTHONPATH=$PYTHONPATH:/home/stellar/git/phyfleaux/" >> /home/stellar/.bashrc
 
 WORKDIR /home/stellar/

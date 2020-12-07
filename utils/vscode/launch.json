@@ -17,10 +17,17 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Demo",
+            "name": "matmul",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/demo.py",
+            "program": "${workspaceFolder}/demos/matmul.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "tutorial_01",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/demos/tutorial_01.py",
             "console": "integratedTerminal"
         }
     ]

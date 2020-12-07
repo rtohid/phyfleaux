@@ -12,22 +12,20 @@ from typing import Union, Any
 from types import FunctionType
 
 from phyfleaux.core import Task
-from phyfleaux.optimization.polyhedral import Polytope
+from phyfleaux.analysis.polyhedral import Polytope
 
 
-def task(__task_arg=None, **kwargs):
+def task(__task_arg, **kwargs):
 
-    if callable(__task_arg):
+    if isinstance(__task_arg, FunctionType):
         return Task(__task_arg)
-    elif __task_arg is not None:
-        raise TypeError(
-            f"Function {task} expects {FunctionType} or {Task}"
-        )
+    elif isinstance(__task_arg, Task):
+        return __task_arg
     else:
-        return Task
+        raise TypeError(f"Function {task} expects {FunctionType} or {Task}")
 
 
-def polyhedral(fn: Union[Task, FunctionType]) -> Task:
+def polyhedral(fn: Union[Task, FunctionType]) -> Polytope:
     """Attempts to detect SCoPs and apply polyhedral transformations.
 
     :arg fn: python function.
