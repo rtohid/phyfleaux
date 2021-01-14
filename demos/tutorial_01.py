@@ -13,7 +13,7 @@ from phyfleaux.directives import polyhedral
 from phyfleaux.plugins import numpy as numphy
 
 # test sizes
-sizes = [2, 4] #, 8, 16, 32, 64, 128]
+sizes = [2, 4]  #, 8, 16, 32, 64, 128]
 
 
 # run tests
@@ -25,10 +25,10 @@ def run(func, sizes):
         print(stop - start)
 
 
-@polyhedral
-def fill_matrix(N: int, dtype=int) -> numphy.ndarray:
-    """Apply polyhedral transformations to :fn:`matmul_naive`."""
+# @polyhedral
+def fill_matrix(M) -> numphy.ndarray:
 
+    N = 10
     A = numphy.zeros((N, N), dtype=int)
 
     for i in range(N):
@@ -37,4 +37,10 @@ def fill_matrix(N: int, dtype=int) -> numphy.ndarray:
     return A
 
 
-run(fill_matrix, sizes)
+# run(fill_matrix, sizes)
+# print(fill_matrix(3))
+
+lf = lambda a: a % 2 == 0
+l = [1, 2, 3, 4, 5, 6]
+a = filter(lf, l)
+print(list(a))

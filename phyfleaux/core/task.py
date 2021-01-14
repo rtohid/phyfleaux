@@ -25,40 +25,37 @@ class Task:
     def __init__(self,
                  fn: Union[FunctionType, Task],
                  cost: FunctionType = None) -> None:
-        if isinstance(fn, FunctionType):
 
-            # Function
-            self.fn = fn
-            self.id = self.fn.__hash__()
-            self.dtype = None
+        # Function
+        self.fn = fn
+        self.id = self.fn.__hash__()
+        self.dtype = None
 
-            self.py_code = fn.__code__
-            self.py_ast = ast.parse((inspect.getsource(fn)))
+        self.py_code = fn.__code__
+        self.py_ast = ast.parse((inspect.getsource(fn)))
 
-            # Function Signature
-            self.signature = inspect.signature(fn)
-            self.args_spec = inspect.getfullargspec(fn)
+        # Function Signature
+        self.signature = inspect.signature(fn)
+        self.args_spec = inspect.getfullargspec(fn)
 
-            # Function Source
-            self.src = inspect.getsource(fn)
-            self.src_file, self.start_lineno = inspect.findsource(self.fn)
-            self.src_file = ''.join(map(str, self.src_file))
-            self.src_file_dir = '/'.join(inspect.getfile(fn).split('/')[:-1])
-            self.src_file_name = inspect.getfile(fn).split('/')[-1]
-            self.cost = OrderedDict()
-            self.new_cost(cost)
+        # Function Source
+        self.src = inspect.getsource(fn)
+        self.src_file, self.start_lineno = inspect.findsource(self.fn)
+        self.src_file = ''.join(map(str, self.src_file))
+        self.src_file_dir = '/'.join(inspect.getfile(fn).split('/')[:-1])
+        self.src_file_name = inspect.getfile(fn).split('/')[-1]
 
-        else:  # isinstance(fn, Task)
-            self = fn
-            self.new_cost(cost)
+        # costs associated to the task
+        self.cost = OrderedDict()
+        self.add_cost(cost)
 
         self.called = 0
 
-    def new_cost(self, cost, reset: bool = False):
+    def add_cost(self, cost, reset: bool = False):
         if reset:
             self.cost = OrderedDict()
         
-        if not cost is None:
+        if cost:
             id = hash(cost)
             if self.cost.get(id):
                 self.cost[id].append((cost, id))

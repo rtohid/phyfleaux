@@ -151,7 +151,7 @@ class Polytope(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Function:
 
         # Return.reset()
-        parameters = [arg for arg in node.args.args]
+        parameters = self.task.args_spec.args
         dtype = self.task.dtype
         fn = Function(node.name, self.task, self.task.id, parameters, dtype)
 

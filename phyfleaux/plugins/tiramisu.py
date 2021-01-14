@@ -142,16 +142,23 @@ class Computation:
     def build(self):
         rhs_ = Computation.statements[self.name].rhs
         lhs_ = Computation.statements[self.name].lhs
-        if hasattr(rhs_, 'build'): rhs_.build()
+        if hasattr(rhs_, 'build'): 
+            rhs_.build()
+        elif isinstance(rhs_, int):
+            value = Constant(rhs_)
+
         if hasattr(lhs_, 'build'): lhs_.build()
 
 
 class Constant:
-    def __init__(self):
+     def __init__(self, name: str, value: int):
         """Designed to represent constants that are supposed to be declared at
         the beginning of a Tiramisu function. This can be used only to declare
         constant scalars."""
-        self.isl = None
+        self.name = name
+        self.value = value
+    
+
 
 
 class Expr:
@@ -213,12 +220,7 @@ class Function:
 
     def define(self):
         defined_ = Function.defined.get(self.name)
-
         self.id = self.task.id
-        args = self.task.args_spec.args
-
-        for arg in args:
-            print(arg)
 
         if defined_:
             Function.defined[self.name].append(self.id)
