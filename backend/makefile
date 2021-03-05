@@ -31,6 +31,7 @@ INC_FLAGS=-I$(EXTRA_INC) -I$(ISL_INC_DIR) -I$(TIRAMISU_INC_DIR) -I$(ISL_SOURCE_B
 LIB_FLAGS=-L$(EXTRA_LIB) -L$(ISL_LIB_DIR) -L$(TIRAMISU_LIB_DIR)
 LIBS=-lisl -ltiramisu
 CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
+CXX_FLAGS_SCRATCHPAD=-g -Wall -std=c++14 -fPIC $(CXX_EXT)
 #-stdlib=libc++
 #-D_GLIBCXX_USE_CXX11_ABI=1
 
@@ -40,11 +41,15 @@ CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
 PYTIRAMISU_OBJ=pytiramisu`python3.8-config --extension-suffix`
 
 CXX_EXT=$(INC_FLAGS) $(LIB_FLAGS)
-CXX=clang++-8
+CXX=clang++
 #CXX=g++
 
 #all: $(PYTIRAMISU_OBJ)
 #	@echo "pytiramisu build complete"
+
+scratchpad: physl_isl.o physl_tiramisu.o scratchpad.cpp
+	$(CXX) $(CXX_FLAGS_SCRATCHPAD) physl_isl.o physl_tiramisu.o scratchpad.cpp -o scratchpad $(LIBS)
+
 
 all: physl_isl.o physl_tiramisu.o pytiramisu.cpp
 	$(CXX) $(CXX_FLAGS) physl_isl.o physl_tiramisu.o pytiramisu.cpp -o $(PYTIRAMISU_OBJ) `python3.8 -m pybind11 --includes` $(LIBS)

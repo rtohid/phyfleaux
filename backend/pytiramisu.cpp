@@ -188,7 +188,7 @@ PYBIND11_MODULE(pytiramisu, m) {
             return global::set_loop_iterator_type(t);
         });
 
-    py::class_<function> func(m, "function");
+    py::class_<function, std::shared_ptr<function>> func(m, "function");
         func.def(py::init<std::string>())
         .def("add_context_constraints", [](function &f,
             std::string new_context) {
@@ -852,7 +852,7 @@ PYBIND11_MODULE(pytiramisu, m) {
         //    g.update_producer_expr_name(comp.get(), name_to_replace, replace_with);
         //});
 
-    py::class_<buffer>(m, "buffer")
+    py::class_<buffer, std::shared_ptr<buffer>>(m, "buffer")
         .def(py::init([](std::string s, std::vector<expr> & e, primitive_t t, argument_t a, std::shared_ptr<function> &f) {
              return buffer(s, e, t, a, f.get());
         }))
