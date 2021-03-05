@@ -75,7 +75,10 @@ void generate_function(std::string name, int size)
     function0.gen_isl_ast();
 
     std::vector<tiramisu::buffer> args;
-    // physl::tiramisu::codegen(args);
+    args.push_back(buf_a);
+    args.push_back(buf_x);
+    args.push_back(buf_y);
+    physl::tiramisu::codegen(args);
     
     // function0.gen_halide_stmt();
     // function0.gen_halide_obj("generated_" + std::string(TEST_NAME_STR) + ".o");
