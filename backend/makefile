@@ -40,7 +40,7 @@ CXX_FLAGS=-g -Wall -shared -std=c++14 -fPIC $(CXX_EXT)
 PYTIRAMISU_OBJ=pytiramisu`python3.8-config --extension-suffix`
 
 CXX_EXT=$(INC_FLAGS) $(LIB_FLAGS)
-CXX=clang++
+CXX=clang++-8
 #CXX=g++
 
 #all: $(PYTIRAMISU_OBJ)
